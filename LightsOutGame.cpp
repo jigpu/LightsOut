@@ -40,6 +40,16 @@ LightsOutGame::~LightsOutGame() {
 }
 
 
+int LightsOutGame::getHeight() {
+	return height;
+}
+
+
+int LightsOutGame::getWidth() {
+	return width;
+}
+
+
 void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
 	for (int y=0; y<height; y++) {
 		for (int x=0; x<width; x++) {
@@ -106,7 +116,7 @@ void LightsOutGame::paint() {
 		
 		for (int x=0; x<width; x++) {
 			if (y < 0) {
-				cout << x << " ";
+				cout << (char)('A' + x) << " ";
 			}
 			else {
 				if (lights->getTile(x,y)->object)
