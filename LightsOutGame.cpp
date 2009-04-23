@@ -1,6 +1,9 @@
-#include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include "LightsOutGame.hpp"
+
+
+using namespace std;
 
 
 void LightsOutGame::toggleLight(int x, int y) {
@@ -63,7 +66,7 @@ void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
 	//Unsolvable
 	//How on earth we got here after the constructor ensured
 	//the board was solvable is beyond me.
-	printf("ERROR: BOARD NOT SOLVABLE! :( Goodbye.\n");
+	cout << "ERROR: BOARD NOT SOLVABLE! :( Goodbye." << endl;
 	exit(-1);
 }
 
@@ -93,14 +96,25 @@ bool LightsOutGame::winningState() {
 
 
 void LightsOutGame::paint() {
-	for (int y=0; y<height; y++) {
-		for (int x=0; x<width; x++) {
-			if (lights->getTile(x,y)->object)
-				printf("*");
-			else
-				printf(" ");
+	for (int y=-1; y<height; y++) {
+		if (y < 0) {
+			cout << "  ";
 		}
-		printf("\n");
+		else {
+			cout << y << " ";
+		}
+		
+		for (int x=0; x<width; x++) {
+			if (y < 0) {
+				cout << x << " ";
+			}
+			else {
+				if (lights->getTile(x,y)->object)
+					cout << "* ";
+				else
+					cout << "  ";
+			}
+		}
+		cout << endl;
 	}
 }
-

@@ -24,6 +24,10 @@ public:
 	
 	~LightsOutGame();
 	
+	int getHeight();
+	
+	int getWidth();
+	
 	void getMoveHint(int* suggestedX, int* suggestedY);
 	
 	void pressButton(int x, int y);

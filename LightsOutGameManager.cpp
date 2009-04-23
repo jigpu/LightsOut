@@ -1,7 +1,11 @@
-#include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include "LightsOutGameManager.hpp"
+
+
+using namespace std;
 
 
 LightsOutGameManager::LightsOutGameManager() {
@@ -11,28 +15,46 @@ LightsOutGameManager::LightsOutGameManager() {
 
 void LightsOutGameManager::run() {
 	char input;
+	bool success;
+	int x,y;
 	do {
 		game = new LightsOutGame();
 		while (!game->winningState()) {
 			game->paint();
-			printf("\nX,Y [0,%d]: ", 5);
 			
-			int x, y;
-			//scanf("%d,%d", &x, &y);
+			cout << endl;
+			/*do {
+				cout << "X Y: ";
+				success = (cin >> x >> y);
+				if (!success) {
+					cin.clear();
+					cin.ignore(256,'\n');
+					cout << "Invalid input." << endl;
+				}
+				
+			} while (!success);
+			cout << endl;*/
+
 			game->getMoveHint(&x,&y);
-			printf("%d,%d\n", x, y);
+			cout << x << "," << y << endl;
 			
 			game->pressButton(x,y);
 		}
 		
-		printf("A winner is you!\n");
+		cout << "A winner is you!" << endl;
 		
 		do {
-			printf("Play again? (Y/N) ");
-			scanf("%c", &input);
+			cout << "Play again? (Y/N) " << endl;
+			success = (cin >> input);
+			if (!success) {
+				cin.clear();
+				cin.ignore(256,'\n');
+				cout << "Invalid input." << endl;
+			}
 		} while (input != 'Y' && input != 'y' &&
 		         input != 'N' && input != 'n');
 	} while (input == 'Y' || input == 'y');
-	printf("Thanks for playing!\n");
+	
+	cout << "Thanks for playing!" << endl;
 }
 
