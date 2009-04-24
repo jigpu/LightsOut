@@ -30,33 +30,33 @@ void LightsOutGameManager::run() {
 				cout << "Coordinates: ";
 				
 				do {
-				u32 pressed;
-				do { WPAD_ScanPads(); pressed = WPAD_ButtonsDown(0); }
-				while (pressed == 0);
-				
-				if ( pressed & WPAD_BUTTON_HOME )
-					exit(0);
-				if (pressed & WPAD_BUTTON_UP)
-					y = 0;
-				if (pressed & WPAD_BUTTON_DOWN)
-					y = 1;
-				if (pressed & WPAD_BUTTON_LEFT)
-					y = 2;
-				if (pressed & WPAD_BUTTON_RIGHT)
-					y = 3;
-				if (pressed & WPAD_BUTTON_A)
-					y = 4;
-				if (pressed & WPAD_BUTTON_MINUS)
-					x = 0;
-				if (pressed & WPAD_BUTTON_PLUS)
-					x = 1;
-				if (pressed & WPAD_BUTTON_1)
-					x = 2;
-				if (pressed & WPAD_BUTTON_2)
-					x = 3;
-				if (pressed & WPAD_BUTTON_B)
-					x = 4;
-				
+					u32 pressed;
+					do { WPAD_ScanPads(); pressed = WPAD_ButtonsDown(0); }
+					while (pressed == 0);
+					
+					if ( pressed & WPAD_BUTTON_HOME )
+						exit(0);
+					if (pressed & WPAD_BUTTON_UP)
+						y = 0;
+					if (pressed & WPAD_BUTTON_DOWN)
+						y = 1;
+					if (pressed & WPAD_BUTTON_LEFT)
+						y = 2;
+					if (pressed & WPAD_BUTTON_RIGHT)
+						y = 3;
+					if (pressed & WPAD_BUTTON_A)
+						y = 4;
+					if (pressed & WPAD_BUTTON_MINUS)
+						x = 0;
+					if (pressed & WPAD_BUTTON_PLUS)
+						x = 1;
+					if (pressed & WPAD_BUTTON_1)
+						x = 2;
+					if (pressed & WPAD_BUTTON_2)
+						x = 3;
+					if (pressed & WPAD_BUTTON_B)
+						x = 4;
+					
 				} while (x == -1 || y == -1);
 				success = true;
 				
