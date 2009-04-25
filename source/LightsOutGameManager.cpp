@@ -65,10 +65,7 @@ void LightsOutGameManager::controllerAction(int type, int value) {
 
 void LightsOutGameManager::select() {
 	game->pressButton(x,y);
-	
-	cout << "\033[2J\033[1;1H"; //Clear screen
-	game->paint();
-	cout << endl << "Position: (" << x << "," << y << ")";
+	move(0,0);
 }
 
 
@@ -83,7 +80,9 @@ void LightsOutGameManager::move(int deltaX, int deltaY) {
 	
 	cout << "\033[2J\033[1;1H"; //Clear screen
 	game->paint();
-	cout << endl << "Position: (" << x << "," << y << ")";
+	cout << endl << "Position: (" << (char)(x+65) << "," << y << ")";
+	cout << "\033[" << y+2 << ";" << x*2+3 << "f\033[7m";
+	cout << "\033[0m";
 }
 
 
@@ -95,10 +94,7 @@ void LightsOutGameManager::run() {
 		x = 0;
 		y = 0;
 		game = new LightsOutGame();
-		
-		cout << "\033[2J\033[1;1H"; //Clear screen
-		game->paint();
-		cout << endl << "Position: (" << x << "," << y << ")";
+		move(0,0);
 		
 		while (!game->winningState()) {
 			usleep(100000);
