@@ -1,7 +1,9 @@
+//#include <gccore.h>
 #include "LightsOutGameManager.hpp"
-#include <gccore.h>
-#include <wiiuse/wpad.h>
+#include "Keyboard.hpp"
+#include "Wiimote.hpp"
 
+/*
 void initVideo() {
 	static void *xfb = NULL;
 	static GXRModeObj *rmode = NULL;
@@ -35,21 +37,20 @@ void initVideo() {
 	VIDEO_WaitVSync();
 	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
 }
-
-
-void initController() {
-	// This function initialises the attached controllers
-	WPAD_Init();
-}
+*/
 
 
 int main(int argc, char** argv) {
-	initVideo();
-	initController();
+	//initVideo();
 	
+	Keyboard* controller = new Keyboard();
 	LightsOutGameManager* game = new LightsOutGameManager();
-	game->run();
 	
+	controller->observer = game;
+	
+	controller->start();
+	game->start();
+	game->join();
 	return 0;
 }
 

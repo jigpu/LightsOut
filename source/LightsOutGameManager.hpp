@@ -2,6 +2,8 @@
 #define __LightsOutGameManager_hpp__
 
 
+#include "ControllerObserver.hpp"
+#include "Thread.hpp"
 #include "LightsOutGame.hpp"
 
 
@@ -12,14 +14,20 @@
  * games, etc.
  */
 
-class LightsOutGameManager {
+class LightsOutGameManager : public ControllerObserver, public Thread {
 
 protected:
 	LightsOutGame* game;
-
+	int x, y;
+	
+	void move(int deltaX, int deltaY);
+	
+	void select();
 
 public:	
 	LightsOutGameManager();
+	
+	void controllerAction(int type, int value);
 	
 	void run();
 	

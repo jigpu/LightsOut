@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <wiiuse/wpad.h>
+//#include <wiiuse/wpad.h>
+#include "Controller.hpp"
 #include "LightsOutGameManager.hpp"
 
 
@@ -14,59 +15,93 @@ LightsOutGameManager::LightsOutGameManager() {
 }
 
 
+void LightsOutGameManager::controllerAction(int type, int value) {
+	cout << "Recieved button " << value << endl;
+	switch (type) {/*
+		case WIIMOTE_BUTTON: {
+			if ( value & WPAD_BUTTON_HOME )
+				exit(0);
+			if (value & WPAD_BUTTON_UP)
+				move(0, -1);
+			if (value & WPAD_BUTTON_DOWN)
+				move(0, 1);
+			if (value & WPAD_BUTTON_LEFT)
+				move(-1, 0);
+			if (value & WPAD_BUTTON_RIGHT)
+				move(1, 0);
+			if (value & WPAD_BUTTON_A)
+				select();
+			break;
+		}*/
+		case KEYBOARD_SINGLE: {
+			if (value == 27)
+				exit(0);
+			else if (value == 87 || value == 119)
+				move(0, -1);
+			else if (value == 83 || value == 115)
+				move(0, 1);
+			else if (value == 65 || value == 97)
+				move(-1, 0);
+			else if (value == 68 || value == 100)
+				move(1, 0);
+			else if (value == 10)
+				select();
+			break;
+		}/*
+		case KEYBOARD_DOUBLE: {
+			if (value == 0x48)
+				move(0, -1);
+			else if (value == 0x50)
+				move(0, 1);
+			else if (value == 0x4B)
+				move(0, -1);
+			else if (value == 0x4D)
+				move(0, 1);
+			break;
+		}*/
+	}
+}
+
+
+void LightsOutGameManager::select() {
+	game->pressButton(x,y);
+	
+	cout << "\033[2J\033[1;1H"; //Clear screen
+	game->paint();
+	cout << endl << "Position: (" << x << "," << y << ")";
+}
+
+
+void LightsOutGameManager::move(int deltaX, int deltaY) {
+	x += deltaX;
+	y += deltaY;
+	
+	if (x < 0) x = 0;
+	if (x >= game->getWidth()) x = game->getWidth()-1;
+	if (y < 0) y = 0;
+	if (y >= game->getHeight()) y = game->getHeight()-1;
+	
+	cout << "\033[2J\033[1;1H"; //Clear screen
+	game->paint();
+	cout << endl << "Position: (" << x << "," << y << ")";
+}
+
+
 void LightsOutGameManager::run() {
 	char input;
 	bool success;
 	cout << endl;
 	do {
+		x = 0;
+		y = 0;
 		game = new LightsOutGame();
+		
+		cout << "\033[2J\033[1;1H"; //Clear screen
+		game->paint();
+		cout << endl << "Position: (" << x << "," << y << ")";
+		
 		while (!game->winningState()) {
-			game->paint();
-			
-			int x = -1;
-			int y = -1;
-			cout << endl;
-			do {
-				cout << "Coordinates: ";
-				
-				do {
-					u32 pressed;
-					do { WPAD_ScanPads(); pressed = WPAD_ButtonsDown(0); }
-					while (pressed == 0);
-					
-					if ( pressed & WPAD_BUTTON_HOME )
-						exit(0);
-					if (pressed & WPAD_BUTTON_UP)
-						y = 0;
-					if (pressed & WPAD_BUTTON_DOWN)
-						y = 1;
-					if (pressed & WPAD_BUTTON_LEFT)
-						y = 2;
-					if (pressed & WPAD_BUTTON_RIGHT)
-						y = 3;
-					if (pressed & WPAD_BUTTON_A)
-						y = 4;
-					if (pressed & WPAD_BUTTON_MINUS)
-						x = 0;
-					if (pressed & WPAD_BUTTON_PLUS)
-						x = 1;
-					if (pressed & WPAD_BUTTON_1)
-						x = 2;
-					if (pressed & WPAD_BUTTON_2)
-						x = 3;
-					if (pressed & WPAD_BUTTON_B)
-						x = 4;
-					
-				} while (x == -1 || y == -1);
-				success = true;
-				
-			} while (!success);
-			cout << endl;
-			
-			//game->getMoveHint(&x,&y);
-			//cout << (char)('A'+x) << " " << y << endl;
-			
-			game->pressButton(x,y);
+			usleep(100000);
 		}
 		
 		cout << "A winner is you!" << endl;
