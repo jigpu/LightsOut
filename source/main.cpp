@@ -1,9 +1,9 @@
-//#include <gccore.h>
+#include <gccore.h>
+//#include "Keyboard.hpp"
 #include "LightsOutGameManager.hpp"
-#include "Keyboard.hpp"
 #include "Wiimote.hpp"
 
-/*
+
 void initVideo() {
 	static void *xfb = NULL;
 	static GXRModeObj *rmode = NULL;
@@ -37,15 +37,14 @@ void initVideo() {
 	VIDEO_WaitVSync();
 	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
 }
-*/
 
 
 int main(int argc, char** argv) {
-	//initVideo();
+	initVideo();
+	Wiimote* controller = new Wiimote();
+	//Keyboard* controller = new Keyboard();
 	
-	Keyboard* controller = new Keyboard();
 	LightsOutGameManager* game = new LightsOutGameManager();
-	
 	controller->observer = game;
 	
 	controller->start();

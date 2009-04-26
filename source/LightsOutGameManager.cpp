@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-//#include <wiiuse/wpad.h>
+#include <wiiuse/wpad.h>
 #include "Controller.hpp"
 #include "LightsOutGameManager.hpp"
 
@@ -18,9 +18,9 @@ LightsOutGameManager::LightsOutGameManager() {
 void LightsOutGameManager::controllerAction(int type, int value) {
 	//cout << "Recieved button " << value << endl;
 	
-	switch (type) {/*
+	switch (type) {
 		case WIIMOTE_BUTTON: {
-			if ( value & WPAD_BUTTON_HOME )
+			if (value & WPAD_BUTTON_HOME)
 				exit(0);
 			if (value & WPAD_BUTTON_UP)
 				move(0, -1);
@@ -32,8 +32,12 @@ void LightsOutGameManager::controllerAction(int type, int value) {
 				move(1, 0);
 			if (value & WPAD_BUTTON_A)
 				select();
+			if (value & WPAD_BUTTON_B) {
+				game->getMoveHint(&x, &y);
+				select();
+			}
 			break;
-		}*/
+		}/*
 		case KEYBOARD_SINGLE: {
 			if (value == 27)
 				exit(0);
@@ -60,7 +64,7 @@ void LightsOutGameManager::controllerAction(int type, int value) {
 			}
 			
 			break;
-		}/*
+		}
 		case KEYBOARD_DOUBLE: {
 			if (value == 0x48)
 				move(0, -1);
@@ -94,14 +98,12 @@ void LightsOutGameManager::move(int deltaX, int deltaY) {
 	cout << "\033[2J\033[1;1H"; //Clear screen
 	game->paint();
 	cout << endl << "Position: (" << (char)(x+65) << "," << y << ")";
-	cout << "\033[" << y+2 << ";" << x*2+3 << "f\033[7m";
-	cout << "\033[0m";
+	//cout << "\033[" << y+2 << ";" << x*2+3 << "f\033[7m";
+	//cout << "\033[0m" << flush;
 }
 
 
 void LightsOutGameManager::run() {
-	char input;
-	bool success;
 	do {
 		x = 0;
 		y = 0;
@@ -110,13 +112,15 @@ void LightsOutGameManager::run() {
 		move(0,0);
 		
 		while (!game->winningState()) {
-			usleep(100000);
+			//usleep(100000);
+			LWP_YieldThread();
 		}
 		
-		cout << "\033[2J\033[1;1H" << "A winner is you!" << endl << "Play again? (Y/N) " << endl;
+		cout << "\033[2J\033[1;1H" << "A winner is you!" << endl << "Play again? (Y/N) " << flush;
 		
 		do {
-			usleep(100000);
+			//usleep(100000);
+			LWP_YieldThread();
 		} while (!gameover);
 	} while (newgame);
 	

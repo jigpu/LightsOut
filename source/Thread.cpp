@@ -4,6 +4,7 @@
 void* executor(void* obj) {
 	Thread* thread = (Thread*)obj;
 	thread->run();
+	return NULL;
 }
 
 

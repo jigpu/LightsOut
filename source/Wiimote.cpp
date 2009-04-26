@@ -10,16 +10,17 @@ Wiimote::Wiimote() {
 
 void Wiimote::run() {
 	while (true) {
-		//Thread sleep.
+		//usleep(25000);
+		LWP_YieldThread();
 		
 		WPAD_ScanPads();
-		//u32 pressed = WPAD_ButtonsDown(0);
-		int pressed = WPAD_ButtonsDown(0);
+		u32 pressed = WPAD_ButtonsDown(0);
+		//int pressed = WPAD_ButtonsDown(0);
 		
 		if (!pressed)
 			continue;
-		
-		observer->controllerAction(WIIMOTE_BUTTON, pressed);
+		else
+			observer->controllerAction(WIIMOTE_BUTTON, pressed);
 	}
 }
 
