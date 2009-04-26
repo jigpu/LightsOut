@@ -19,6 +19,7 @@ class LightsOutGameManager : public ControllerObserver, public Thread {
 protected:
 	LightsOutGame* game;
 	int x, y;
+	bool newgame, gameover;
 	
 	void move(int deltaX, int deltaY);
 	

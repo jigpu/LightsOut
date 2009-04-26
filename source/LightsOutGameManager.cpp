@@ -16,7 +16,8 @@ LightsOutGameManager::LightsOutGameManager() {
 
 
 void LightsOutGameManager::controllerAction(int type, int value) {
-	cout << "Recieved button " << value << endl;
+	//cout << "Recieved button " << value << endl;
+	
 	switch (type) {/*
 		case WIIMOTE_BUTTON: {
 			if ( value & WPAD_BUTTON_HOME )
@@ -46,6 +47,18 @@ void LightsOutGameManager::controllerAction(int type, int value) {
 				move(1, 0);
 			else if (value == 10)
 				select();
+			
+			//Only when game has ended and we're looking
+			//for a y/n response from the player
+			if ((value == (int)'Y' || value == (int)'y') && game->winningState()) {
+				newgame = true;	
+				gameover = true;
+			}
+			if ((value == (int)'N' || value == (int)'n') && game->winningState()) {
+				newgame = false;
+				gameover = true;
+			}
+			
 			break;
 		}/*
 		case KEYBOARD_DOUBLE: {
@@ -89,10 +102,10 @@ void LightsOutGameManager::move(int deltaX, int deltaY) {
 void LightsOutGameManager::run() {
 	char input;
 	bool success;
-	cout << endl;
 	do {
 		x = 0;
 		y = 0;
+		gameover = false;
 		game = new LightsOutGame();
 		move(0,0);
 		
@@ -100,19 +113,12 @@ void LightsOutGameManager::run() {
 			usleep(100000);
 		}
 		
-		cout << "A winner is you!" << endl;
+		cout << "\033[2J\033[1;1H" << "A winner is you!" << endl << "Play again? (Y/N) " << endl;
 		
 		do {
-			cout << "Play again? (Y/N) " << endl;
-			success = (cin >> input);
-			if (!success) {
-				cin.clear();
-				cin.ignore(256,'\n');
-				cout << "Invalid input." << endl;
-			}
-		} while (input != 'Y' && input != 'y' &&
-		         input != 'N' && input != 'n');
-	} while (input == 'Y' || input == 'y');
+			usleep(100000);
+		} while (!gameover);
+	} while (newgame);
 	
 	cout << "Thanks for playing!" << endl;
 }

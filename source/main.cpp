@@ -51,6 +51,13 @@ int main(int argc, char** argv) {
 	controller->start();
 	game->start();
 	game->join();
+	
+	//Explicit destruction, since the Keyboard controller
+	//tweaks the console and only resets it in the
+	//destructor (which isn't called by default?!)
+	delete(game);
+	delete(controller);
+	
 	return 0;
 }
 

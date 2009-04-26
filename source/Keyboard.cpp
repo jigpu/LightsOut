@@ -25,7 +25,6 @@ Keyboard::~Keyboard() {
 
 void Keyboard::run() {
 	while (true) {
-		//sched_yield();
 		usleep(20000);
 		
 		int c = cin.get();
