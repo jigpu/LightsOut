@@ -1,50 +1,49 @@
+#include <cstdlib>    // For some useful functions such as atexit :)
 #include <gccore.h>
+#include <SDL/SDL.h> //Main SDL header
+#include <fat.h>
 //#include "Keyboard.hpp"
 #include "LightsOutGameManager.hpp"
 #include "Wiimote.hpp"
 
 
-void initVideo() {
-	static void *xfb = NULL;
-	static GXRModeObj *rmode = NULL;
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
 
-	// Initialise the video system
-	VIDEO_Init();
+ 
+SDL_Surface* screen; //This pointer will reference the backbuffer 
 
-	// Obtain the preferred video mode from the system
-	// This will correspond to the settings in the Wii menu
-	rmode = VIDEO_GetPreferredMode(NULL);
-
-	// Allocate memory for the display in the uncached region
-	xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+int initVideo(Uint32 flags = SDL_DOUBLEBUF) {
+	// Load SDL
+	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
+		return false;
+	}
 	
-	// Initialise the console, required for printf
-	console_init(xfb,20,20,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
+	atexit(SDL_Quit); // Clean it up nicely :)
+ 
+	// fullscreen can be toggled at run time :) any you might want to change the flags with params?
+	//set the main screen to SCREEN_WIDTHxSCREEN_HEIGHT with a colour depth of 16:
+	screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 16, flags);
+	if (screen == NULL) {
+		fprintf(stderr, "Unable to set video mode: %s\n", SDL_GetError());
+		return false;
+	}
 	
-	// Set up the video registers with the chosen mode
-	VIDEO_Configure(rmode);
+	SDL_ShowCursor(SDL_DISABLE);
 	
-	// Tell the video hardware where our display memory is
-	VIDEO_SetNextFramebuffer(xfb);
-	
-	// Make the display visible
-	VIDEO_SetBlack(FALSE);
-
-	// Flush the video register changes to the hardware
-	VIDEO_Flush();
-
-	// Wait for Video setup to complete
-	VIDEO_WaitVSync();
-	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
+	return true;
 }
 
 
 int main(int argc, char** argv) {
+	fatInitDefault();
 	initVideo();
+	
 	Wiimote* controller = new Wiimote();
 	//Keyboard* controller = new Keyboard();
 	
-	LightsOutGameManager* game = new LightsOutGameManager();
+	LightsOutGameManager* game = new LightsOutGameManager(screen);
 	controller->observer = game;
 	
 	controller->start();
@@ -57,6 +56,7 @@ int main(int argc, char** argv) {
 	delete(game);
 	delete(controller);
 	
+	SDL_Quit();
 	return 0;
 }
 

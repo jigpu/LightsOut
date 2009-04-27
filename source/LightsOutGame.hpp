@@ -2,6 +2,7 @@
 #define __LightsOutGame_hpp__
 
 
+#include "Light.hpp"
 #include "RectangleMap.tpp"
 
 
@@ -14,7 +15,7 @@ class LightsOutGame {
 
 protected:
 	int width, height;
-	RectangleMap<bool>* lights;
+	RectangleMap<Light>* lights;
 	
 	void toggleLight(int x, int y);
 
@@ -28,13 +29,13 @@ public:
 	
 	int getWidth();
 	
+	Tile<Light>* getTile(int x, int y);
+	
 	void getMoveHint(int* suggestedX, int* suggestedY);
 	
 	void pressButton(int x, int y);
 	
 	bool winningState();
-	
-	void paint();
 
 };
 

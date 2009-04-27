@@ -1,18 +1,36 @@
 #import "Thread.hpp"
 
 
-void* executor(void* obj) {
-	Thread* thread = (Thread*)obj;
-	thread->run();
+int executor(void* val) {
+	Thread* obj = (Thread*)val;
+	obj->run();
 	return NULL;
 }
 
 
 void Thread::join() {
-	pthread_join(thid, NULL);
+	//pthreads:
+	//pthread_join(thread, NULL);
+	
+	//SDL:
+	SDL_WaitThread(thread, NULL);
 }
 
 
 void Thread::start() {
-	ret = pthread_create(&thid, NULL, executor, (void*)this);
+	//pthreads:
+	//pthread_create(thread, NULL, executor, (void*)this);
+	
+	//SDL:
+	thread = SDL_CreateThread(executor, (void*)this);
 }
+
+
+void Thread::yield(int milliseconds = 1) {
+	//pthreads:
+	//usleep(100*milliseconds);
+	
+	//SDL:
+	SDL_Delay(milliseconds);
+}
+

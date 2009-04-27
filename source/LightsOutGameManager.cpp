@@ -10,8 +10,9 @@
 using namespace std;
 
 
-LightsOutGameManager::LightsOutGameManager() {
+LightsOutGameManager::LightsOutGameManager(SDL_Surface* screen) {
 	srand ( time(NULL) );
+	this->screen = screen;
 }
 
 
@@ -95,11 +96,9 @@ void LightsOutGameManager::move(int deltaX, int deltaY) {
 	if (y < 0) y = 0;
 	if (y >= game->getHeight()) y = game->getHeight()-1;
 	
-	cout << "\033[2J\033[1;1H"; //Clear screen
-	game->paint();
-	cout << endl << "Position: (" << (char)(x+65) << "," << y << ")";
-	//cout << "\033[" << y+2 << ";" << x*2+3 << "f\033[7m";
-	//cout << "\033[0m" << flush;
+	view->select(x, y);
+	view->paint(screen);
+	SDL_Flip(screen);
 }
 
 
@@ -109,18 +108,17 @@ void LightsOutGameManager::run() {
 		y = 0;
 		gameover = false;
 		game = new LightsOutGame();
+		view = new LightsOutView(game);
 		move(0,0);
 		
 		while (!game->winningState()) {
-			//usleep(100000);
-			LWP_YieldThread();
+			yield(100);
 		}
 		
 		cout << "\033[2J\033[1;1H" << "A winner is you!" << endl << "Play again? (Y/N) " << flush;
 		
 		do {
-			//usleep(100000);
-			LWP_YieldThread();
+			yield(100);
 		} while (!gameover);
 	} while (newgame);
 	

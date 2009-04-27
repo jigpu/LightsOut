@@ -1,4 +1,3 @@
-#include <iostream>
 #include <stdlib.h>
 #include "LightsOutGame.hpp"
 
@@ -10,18 +9,18 @@ void LightsOutGame::toggleLight(int x, int y) {
 	if (x >= width || x < 0 || y >= height || y < 0)
 		return; //Assume the caller was just lazy
 	
-	lights->getTile(x,y)->object = !lights->getTile(x,y)->object;
+	lights->getTile(x,y)->object.nextState();
 }
 
 
 LightsOutGame::LightsOutGame(int width, int height) {
 	this->width = width;
 	this->height = height;
-	lights = new RectangleMap<bool>(width, height, 10, 10);
+	lights = new RectangleMap<Light>(width, height, 10, 10);
 	
 	for (int x=0; x<width; x++)
 		for (int y=0; y<height; y++)
-			lights->setTile(x, y, new Tile<bool>());
+			lights->setTile(x, y, new Tile<Light>());
 	
 	//Initialize the board to some solvable state.
 	for (int x=0; x<width; x++)
@@ -50,10 +49,15 @@ int LightsOutGame::getWidth() {
 }
 
 
+Tile<Light>* LightsOutGame::getTile(int x, int y) {
+	return lights->getTile(x, y);
+}
+
+
 void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
 	for (int y=0; y<height; y++) {
 		for (int x=0; x<width; x++) {
-			if (lights->getTile(x,y)->object) {
+			if (lights->getTile(x,y)->object.getState() == 0) {
 				if (y+1 != height) {
 					//"Chase the lights"
 					*suggestedX = x;
@@ -76,7 +80,7 @@ void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
 	//Unsolvable
 	//How on earth we got here after the constructor ensured
 	//the board was solvable is beyond me.
-	cout << "ERROR: BOARD NOT SOLVABLE! :( Goodbye." << endl;
+	//Should throw an exception...
 	exit(-1);
 }
 
@@ -96,7 +100,7 @@ void LightsOutGame::pressButton(int x, int y) {
 bool LightsOutGame::winningState() {
 	for (int y=0; y<height; y++) {
 		for (int x=0; x<width; x++) {
-			if (lights->getTile(x,y)->object)
+			if (lights->getTile(x,y)->object.getState() == 0)
 				return false;
 			
 		}
@@ -104,27 +108,3 @@ bool LightsOutGame::winningState() {
 	return true;
 }
 
-
-void LightsOutGame::paint() {
-	for (int y=-1; y<height; y++) {
-		if (y < 0) {
-			cout << "  ";
-		}
-		else {
-			cout << y << " ";
-		}
-		
-		for (int x=0; x<width; x++) {
-			if (y < 0) {
-				cout << (char)('A' + x) << " ";
-			}
-			else {
-				if (lights->getTile(x,y)->object)
-					cout << "* ";
-				else
-					cout << "  ";
-			}
-		}
-		cout << endl;
-	}
-}
