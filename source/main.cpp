@@ -1,10 +1,11 @@
 #include <cstdlib>    // For some useful functions such as atexit :)
-#include <gccore.h>
+//#include <gccore.h>
 #include <SDL/SDL.h> //Main SDL header
-#include <fat.h>
-//#include "Keyboard.hpp"
+//#include <fat.h>
+#include "Keyboard.hpp"
 #include "LightsOutGameManager.hpp"
-#include "Wiimote.hpp"
+#include "Renderer.hpp"
+//#include "Wiimote.hpp"
 
 
 #define SCREEN_WIDTH 640
@@ -30,24 +31,28 @@ int initVideo(Uint32 flags = SDL_DOUBLEBUF) {
 		return false;
 	}
 	
-	SDL_ShowCursor(SDL_DISABLE);
+	//SDL_ShowCursor(SDL_DISABLE);
 	
 	return true;
 }
 
 
 int main(int argc, char** argv) {
-	fatInitDefault();
+	//fatInitDefault();
 	initVideo();
 	
-	Wiimote* controller = new Wiimote();
-	//Keyboard* controller = new Keyboard();
+	//Wiimote* controller = new Wiimote();
+	Keyboard* controller = new Keyboard();
 	
-	LightsOutGameManager* game = new LightsOutGameManager(screen);
+	LightsOutGameManager* game = new LightsOutGameManager();
 	controller->observer = game;
+	
+	Renderer* renderer = new Renderer(screen, game);
 	
 	controller->start();
 	game->start();
+	renderer->start();
+	
 	game->join();
 	
 	//Explicit destruction, since the Keyboard controller

@@ -2,10 +2,13 @@
 #define __ControllerObserver_hpp__
 
 
+#include <SDL/SDL.h>
+
+
 class ControllerObserver {
 
 public:
-	virtual void controllerAction(int type, int value) = 0;
+	virtual void controllerAction(int type, SDLKey* value) = 0;
 };
 
 

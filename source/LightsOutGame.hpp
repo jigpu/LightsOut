@@ -4,6 +4,7 @@
 
 #include "Light.hpp"
 #include "RectangleMap.tpp"
+#include "Renderable.hpp"
 
 
 /**
@@ -11,17 +12,17 @@
  * Additional rounds may be played by creating a new object.
  */
 
-class LightsOutGame {
+class LightsOutGame : public Renderable {
 
 protected:
 	int width, height;
-	RectangleMap<Light>* lights;
+	RectangleMap<Light*>* lights;
 	
 	void toggleLight(int x, int y);
 
 
 public:
-	LightsOutGame(int width=5, int height=5);
+	LightsOutGame(int width=5, int height=5, int states=2);
 	
 	~LightsOutGame();
 	
@@ -29,13 +30,15 @@ public:
 	
 	int getWidth();
 	
-	Tile<Light>* getTile(int x, int y);
+	Tile<Light*>* getTile(int x, int y);
 	
 	void getMoveHint(int* suggestedX, int* suggestedY);
 	
 	void pressButton(int x, int y);
 	
 	bool winningState();
+	
+	int paint(SDL_Surface* surface);
 
 };
 

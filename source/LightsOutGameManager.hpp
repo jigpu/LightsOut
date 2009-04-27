@@ -2,11 +2,11 @@
 #define __LightsOutGameManager_hpp__
 
 
-#include <SDL/SDL.h>
 #include "ControllerObserver.hpp"
 #include "Thread.hpp"
 #include "LightsOutGame.hpp"
 #include "LightsOutView.hpp"
+#include "Renderable.hpp"
 
 
 /**
@@ -16,26 +16,25 @@
  * games, etc.
  */
 
-class LightsOutGameManager : public ControllerObserver, public Thread {
+class LightsOutGameManager : public ControllerObserver, public Thread, public Renderable {
 
 protected:
 	LightsOutGame* game;
-	LightsOutView* view;
-	SDL_Surface* screen;
 	int x, y;
-	bool newgame, gameover;
+	bool newgame, gameover, dirty;
 	
 	void move(int deltaX, int deltaY);
 	
 	void select();
 
 public:	
-	LightsOutGameManager(SDL_Surface* screen);
+	LightsOutGameManager();
 	
-	void controllerAction(int type, int value);
+	void controllerAction(int type, SDLKey* value);
 	
 	void run();
 	
+	int paint(SDL_Surface* surface);
 };
 
 

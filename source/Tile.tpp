@@ -13,6 +13,10 @@ class Tile {
 
 public:
 	T object;
+	
+	Tile(T object) {
+		this->object = object;
+	}
 
 };
 

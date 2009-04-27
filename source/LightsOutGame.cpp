@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include "LightsOutGame.hpp"
 
@@ -9,23 +10,23 @@ void LightsOutGame::toggleLight(int x, int y) {
 	if (x >= width || x < 0 || y >= height || y < 0)
 		return; //Assume the caller was just lazy
 	
-	lights->getTile(x,y)->object.nextState();
+	lights->getTile(x,y)->object->nextState();
 }
 
 
-LightsOutGame::LightsOutGame(int width, int height) {
+LightsOutGame::LightsOutGame(int width, int height, int states) {
 	this->width = width;
 	this->height = height;
-	lights = new RectangleMap<Light>(width, height, 10, 10);
+	lights = new RectangleMap<Light*>(width, height, 10, 10);
 	
 	for (int x=0; x<width; x++)
 		for (int y=0; y<height; y++)
-			lights->setTile(x, y, new Tile<Light>());
+			lights->setTile(x, y, new Tile<Light*>(new Light(states)));
 	
 	//Initialize the board to some solvable state.
 	for (int x=0; x<width; x++)
 		for (int y=0; y<height; y++)
-			if (rand() % 2 == 0)
+			for (int i=0; i<rand()%states; i++)
 				pressButton(x,y);
 }
 
@@ -49,7 +50,7 @@ int LightsOutGame::getWidth() {
 }
 
 
-Tile<Light>* LightsOutGame::getTile(int x, int y) {
+Tile<Light*>* LightsOutGame::getTile(int x, int y) {
 	return lights->getTile(x, y);
 }
 
@@ -57,7 +58,7 @@ Tile<Light>* LightsOutGame::getTile(int x, int y) {
 void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
 	for (int y=0; y<height; y++) {
 		for (int x=0; x<width; x++) {
-			if (lights->getTile(x,y)->object.getState() == 0) {
+			if (lights->getTile(x,y)->object->getState() != 0) {
 				if (y+1 != height) {
 					//"Chase the lights"
 					*suggestedX = x;
@@ -100,7 +101,7 @@ void LightsOutGame::pressButton(int x, int y) {
 bool LightsOutGame::winningState() {
 	for (int y=0; y<height; y++) {
 		for (int x=0; x<width; x++) {
-			if (lights->getTile(x,y)->object.getState() == 0)
+			if (lights->getTile(x,y)->object->getState() != 0)
 				return false;
 			
 		}
@@ -108,3 +109,24 @@ bool LightsOutGame::winningState() {
 	return true;
 }
 
+
+int LightsOutGame::paint(SDL_Surface* surface) {
+	SDL_Rect dest;
+	dest.w = 64;
+	dest.h = 64;
+	
+	for (int y=0; y<height; y++) {
+		dest.y = y*dest.h;
+		for (int x=0; x<width; x++) {
+			dest.x = x*dest.w;
+			
+			SDL_Surface* subsurface = SDL_CreateRGBSurface(surface->flags,dest.w,dest.h,16,0,0,0,0);
+			lights->getTile(x,y)->object->paint(subsurface);
+			
+			SDL_BlitSurface(subsurface, NULL, surface, &dest);
+			SDL_FreeSurface(subsurface);
+		}
+	}
+	
+	return 0;
+}
