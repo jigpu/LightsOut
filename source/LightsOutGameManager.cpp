@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <wiiuse/wpad.h>
 #include "Controller.hpp"
 #include "LightsOutGameManager.hpp"
 
@@ -44,14 +43,11 @@ LightsOutGameManager::LightsOutGameManager(Controller* controller) {
 
 void LightsOutGameManager::controllerAction(int type, SDLKey* value) {	
 	switch (type) {
-		/*case WIIMOTE_BUTTON: {
-			if (value & WPAD_BUTTON_HOME)
-				exit(0);
-		}*/
 		case SDL_KEYDOWN: {
 			switch(*value) {
 				case SDLK_ESCAPE:
 				case SDLK_HOME:   exit(0);
+				default: break;
 			}
 		}
 	}

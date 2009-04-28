@@ -69,6 +69,7 @@ void LightsOutGame::controllerAction(int type, SDLKey* value) {
 				case SDLK_b:      getMoveHint(&x, &y); move(0,0); break;
 				case SDLK_RETURN:
 				case SDLK_a:      select(); break;
+				default: break;
 			}
 		}
 	}
