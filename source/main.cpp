@@ -22,14 +22,18 @@
  */
 
 
-#include <cstdlib>    // For some useful functions such as atexit :)
-//#include <fat.h>
-//#include <gccore.h>
-#include <SDL/SDL.h> //Main SDL header
+#include <cstdlib>
+#include <SDL/SDL.h>
 #include "Keyboard.hpp"
 #include "LightsOutGameManager.hpp"
 #include "Renderer.hpp"
-//#include "Wiimote.hpp"
+
+
+#ifndef PC
+#include <fat.h>
+#include <gccore.h>
+#include "Wiimote.hpp"
+#endif
 
 
 #define SCREEN_WIDTH 640
@@ -61,11 +65,14 @@ int initVideo(Uint32 flags = SDL_DOUBLEBUF) {
 
 
 int main(int argc, char** argv) {
-	//fatInitDefault();
 	initVideo();
 	
-	//Wiimote* controller = new Wiimote();
+	#ifndef PC
+	fatInitDefault();		
+	Wiimote* controller = new Wiimote();
+	#else
 	Keyboard* controller = new Keyboard();
+	#endif
 	
 	LightsOutGameManager* game = new LightsOutGameManager(controller);
 	

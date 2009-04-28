@@ -22,6 +22,8 @@
  */
 
 
+#ifndef PC
+
 #include <SDL/SDL.h>
 #include <SDL/SDL_keysym.h>
 #include <wiiuse/wpad.h>
@@ -139,4 +141,7 @@ void Wiimote::run() {
 		}
 	}
 }
+
+
+#endif
 
