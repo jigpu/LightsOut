@@ -23,6 +23,7 @@
 
 
 #include <SDL/SDL.h>
+#include <SDL/SDL_keysym.h>
 #include <wiiuse/wpad.h>
 #include "Wiimote.hpp"
 
@@ -34,6 +35,7 @@ Wiimote::Wiimote() {
 
 void Wiimote::run() {
 	u32 laststate = 0;
+	SDLKey key;
 	while (true) {
 		yield(25);
 		
@@ -45,52 +47,96 @@ void Wiimote::run() {
 		
 		laststate = state;
 		
-		if (press & WPAD_BUTTON_UP)
-			notifyObservers(SDL_KEYDOWN, SDLK_UP);
-		if (press & WPAD_BUTTON_DOWN)
-			notifyObservers(SDL_KEYDOWN, SDLK_DOWN);
-		if (press & WPAD_BUTTON_LEFT)
-			notifyObservers(SDL_KEYDOWN, &SDLK_LEFT);
-		if (press & WPAD_BUTTON_RIGHT)
-			notifyObservers(SDL_KEYDOWN, &SDLK_RIGHT);
-		if (press & WPAD_BUTTON_A)
-			notifyObservers(SDL_KEYDOWN, new SDLK_a);
-		if (press & WPAD_BUTTON_B)
-			notifyObservers(SDL_KEYDOWN, new SDLK_b);
-		if (press & WPAD_BUTTON_1)
-			notifyObservers(SDL_KEYDOWN, new SDLK_1);
-		if (press & WPAD_BUTTON_2)
-			notifyObservers(SDL_KEYDOWN, new SDLK_2);
-		if (press & WPAD_BUTTON_PLUS)
-			notifyObservers(SDL_KEYDOWN, new SDLK_PLUS);
-		if (press & WPAD_BUTTON_MINUS)
-			notifyObservers(SDL_KEYDOWN, new SDLK_MINUS);
-		if (press & WPAD_BUTTON_HOME)
-			notifyObservers(SDL_KEYDOWN, new SDLK_HOME);
+		if (press & WPAD_BUTTON_UP) {
+			key = SDLK_UP;
+			notifyObservers(SDL_KEYDOWN, &key);
+		}
+		if (press & WPAD_BUTTON_DOWN) {
+			key = SDLK_DOWN;
+			notifyObservers(SDL_KEYDOWN, &key);
+		}
+		if (press & WPAD_BUTTON_LEFT) {
+			key = SDLK_LEFT;
+			notifyObservers(SDL_KEYDOWN, &key);
+		}
+		if (press & WPAD_BUTTON_RIGHT) {
+			key = SDLK_RIGHT;
+			notifyObservers(SDL_KEYDOWN, &key);
+		}
+		if (press & WPAD_BUTTON_A) {
+			key = SDLK_a;
+			notifyObservers(SDL_KEYDOWN, &key);
+		}
+		if (press & WPAD_BUTTON_B) {
+			key = SDLK_b;
+			notifyObservers(SDL_KEYDOWN, &key);
+		}
+		if (press & WPAD_BUTTON_1) {
+			key = SDLK_1;
+			notifyObservers(SDL_KEYDOWN, &key);
+		}
+		if (press & WPAD_BUTTON_2) {
+			key = SDLK_2;
+			notifyObservers(SDL_KEYDOWN, &key);
+		}
+		if (press & WPAD_BUTTON_PLUS) {
+			key = SDLK_PLUS;
+			notifyObservers(SDL_KEYDOWN, &key);
+		}
+		if (press & WPAD_BUTTON_MINUS) {
+			key = SDLK_MINUS;
+			notifyObservers(SDL_KEYDOWN, &key);
+		}
+		if (press & WPAD_BUTTON_HOME) {
+			key = SDLK_HOME;
+			notifyObservers(SDL_KEYDOWN, &key);
+		}
 		
 		
-		if (release & WPAD_BUTTON_UP)
-			notifyObservers(SDL_KEYUP, new SDLK_UP);
-		if (release & WPAD_BUTTON_DOWN)
-			notifyObservers(SDL_KEYUP, new SDLK_DOWN);
-		if (release & WPAD_BUTTON_LEFT)
-			notifyObservers(SDL_KEYUP, new SDLK_LEFT);
-		if (release & WPAD_BUTTON_RIGHT)
-			notifyObservers(SDL_KEYUP, new SDLK_RIGHT);
-		if (release & WPAD_BUTTON_A)
-			notifyObservers(SDL_KEYUP, new SDLK_a);
-		if (release & WPAD_BUTTON_B)
-			notifyObservers(SDL_KEYUP, new SDLK_b);
-		if (release & WPAD_BUTTON_1)
-			notifyObservers(SDL_KEYUP, new SDLK_1);
-		if (release & WPAD_BUTTON_2)
-			notifyObservers(SDL_KEYUP, new SDLK_2);
-		if (release & WPAD_BUTTON_PLUS)
-			notifyObservers(SDL_KEYUP, new SDLK_PLUS);
-		if (release & WPAD_BUTTON_MINUS)
-			notifyObservers(SDL_KEYUP, new SDLK_MINUS);
-		if (release & WPAD_BUTTON_HOME)
-			notifyObservers(SDL_KEYUP, new SDLK_HOME);
+		if (release & WPAD_BUTTON_UP) {
+			key = SDLK_UP;
+			notifyObservers(SDL_KEYUP, &key);
+		}
+		if (release & WPAD_BUTTON_DOWN) {
+			key = SDLK_DOWN;
+			notifyObservers(SDL_KEYUP, &key);
+		}
+		if (release & WPAD_BUTTON_LEFT) {
+			key = SDLK_LEFT;
+			notifyObservers(SDL_KEYUP, &key);
+		}
+		if (release & WPAD_BUTTON_RIGHT) {
+			key = SDLK_RIGHT;
+			notifyObservers(SDL_KEYUP, &key);
+		}
+		if (release & WPAD_BUTTON_A) {
+			key = SDLK_a;
+			notifyObservers(SDL_KEYUP, &key);
+		}
+		if (release & WPAD_BUTTON_B) {
+			key = SDLK_b;
+			notifyObservers(SDL_KEYUP, &key);
+		}
+		if (release & WPAD_BUTTON_1) {
+			key = SDLK_1;
+			notifyObservers(SDL_KEYUP, &key);
+		}
+		if (release & WPAD_BUTTON_2) {
+			key = SDLK_2;
+			notifyObservers(SDL_KEYUP, &key);
+		}
+		if (release & WPAD_BUTTON_PLUS) {
+			key = SDLK_PLUS;
+			notifyObservers(SDL_KEYUP, &key);
+		}
+		if (release & WPAD_BUTTON_MINUS) {
+			key = SDLK_MINUS;
+			notifyObservers(SDL_KEYUP, &key);
+		}
+		if (release & WPAD_BUTTON_HOME) {
+			key = SDLK_HOME;
+			notifyObservers(SDL_KEYUP, &key);
+		}
 	}
 }
 
