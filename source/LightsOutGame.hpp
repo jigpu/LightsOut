@@ -26,6 +26,9 @@
 #define __LightsOutGame_hpp__
 
 
+#include <iostream>
+#include <SDL/SDL_image.h>
+#include <SDL/SDL_rotozoom.h>
 #include "ControllerObserver.hpp"
 #include "Light.hpp"
 #include "RectangleMap.tpp"
@@ -44,6 +47,8 @@ protected:
 	
 	int x, y;
 	
+	SDL_Surface* glow;
+	
 	RectangleMap<Light*>* lights;
 	
 	void toggleLight(int x, int y);
@@ -51,7 +56,7 @@ protected:
 	void moveAbsolute(int x, int y);
 	
 public:
-	LightsOutGame(int width=5, int height=5, int states=2);
+	LightsOutGame(int width=5, int height=5, int states=4);
 	
 	~LightsOutGame();
 	

@@ -28,9 +28,15 @@
 
 LightsOutGame::LightsOutGame(int width, int height, int states) {
 	this->width = width;
-	this->height = height;	
+	this->height = height;
 	x = 0;
 	y = 0;
+	
+	glow = IMG_Load("glow.png");
+	if (glow == NULL) {
+		std::cout << "Error loading glow.png: " << SDL_GetError() << std::endl;
+	}
+	
 	lights = new RectangleMap<Light*>(width, height, 10, 10);
 	dirty = true;
 	
@@ -66,7 +72,7 @@ void LightsOutGame::controllerAction(int type, SDLKey* value) {
 				case SDLK_LEFT:   move(-1, 0); break;
 				case SDLK_RIGHT:  move( 1, 0); break;
 				case SDLK_TAB:
-				case SDLK_b:      getMoveHint(&x, &y); move(0,0); break;
+				case SDLK_b:      getMoveHint(&x, &y); move(0,0);
 				case SDLK_RETURN:
 				case SDLK_a:      select(); break;
 				default: break;
@@ -137,14 +143,17 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 	if (!dirty)
 		return 1;
 	
-	SDL_Rect dest;
-	dest.w = 64;
-	dest.h = 64;
+	double tileWidth  = (double)surface->w/(double)width;
+	double tileHeight = (double)surface->h/(double)height;
 	
-	for (int y=0; y<height; y++) {
-		dest.y = y*dest.h;
-		for (int x=0; x<width; x++) {
-			dest.x = x*dest.w;
+	//Draw each light tile
+	SDL_Rect dest;
+	for (int x=0; x<width; x++) {
+		dest.x = (int)(tileWidth*x);
+		dest.w = (int)(tileWidth*(x+1)) - dest.x;
+		for (int y=0; y<height; y++) {
+			dest.y = (int)(tileHeight*y);
+			dest.h = (int)(tileHeight*(y+1)) - dest.y;
 			
 			SDL_Surface* subsurface = SDL_CreateRGBSurface(surface->flags,dest.w,dest.h,16,0,0,0,0);
 			lights->getTile(x,y)->object->paint(subsurface);
@@ -153,6 +162,20 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 			SDL_FreeSurface(subsurface);
 		}
 	}
+	
+	//Draw the cursor
+	dest.x = (int)(tileWidth*(this->x-1));
+	dest.w = (int)(tileWidth*3);
+	
+	dest.y = (int)(tileHeight*(this->y-1));
+	dest.h = (int)(tileHeight*3);
+	
+	SDL_Surface* zoom = rotozoomSurfaceXY(glow, 0.0, ((double)(dest.w))/((double)(glow->w)), ((double)(dest.h))/((double)(glow->h)), 1);
+	SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
+	
+	SDL_BlitSurface(zoom, NULL, surface, &dest);
+	
+	SDL_FreeSurface(zoom);
 	
 	dirty = false;
 	return 0;

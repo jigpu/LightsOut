@@ -47,7 +47,7 @@ class Light : public Renderable {
 protected:
 	int state, states;
 	
-	SDL_Rect rect;
+	SDL_Surface* glass;
 	
 public:
 	Light(int states=2);

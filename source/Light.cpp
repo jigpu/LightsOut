@@ -22,14 +22,20 @@
  */
 
 
+#include <iostream>
+#include <SDL/SDL_image.h>
+#include <SDL/SDL_rotozoom.h>
 #include "Light.hpp"
 
 
 Light::Light(int states) {
 	this->states = states;
 	state = 0;
-	rect.x = 0;
-	rect.y = 0;
+	
+	glass = IMG_Load("glass.png");
+	if (glass == NULL) {
+		std::cout << "Error loading glass.png: " << SDL_GetError() << std::endl;
+	}
 }
 
 
@@ -45,17 +51,21 @@ void Light::nextState() {
 }
 
 
-int Light::paint(SDL_Surface* surface) {
-	rect.w = surface->w;
-	rect.h = surface->h;
-	
+int Light::paint(SDL_Surface* surface) {	
 	switch (state) {
-		case 0:	SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, COLOR_0)); break;
-		case 1:	SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, COLOR_1)); break;
-		case 2:	SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, COLOR_2)); break;
-		case 3:	SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, COLOR_3)); break;
-		default: SDL_FillRect(surface, &rect, SDL_MapRGB(surface->format, COLOR_UNK)); break;
+		case 0:	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, COLOR_0)); break;
+		case 1:	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, COLOR_1)); break;
+		case 2:	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, COLOR_2)); break;
+		case 3:	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, COLOR_3)); break;
+		default: SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, COLOR_UNK)); break;
 	}
+	
+	SDL_Surface* zoom = rotozoomSurfaceXY(glass, 0.0, ((double)(surface->w))/((double)(glass->w)), ((double)(surface->h))/((double)(glass->h)), 1);
+	SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
+	
+	SDL_BlitSurface(zoom, NULL, surface, NULL);
+	
+	SDL_FreeSurface(zoom);
 	
 	return 0;
 }
