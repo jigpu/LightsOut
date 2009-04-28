@@ -44,16 +44,13 @@ SDL_Surface* screen; //This pointer will reference the backbuffer
 
 
 int initVideo(Uint32 flags = SDL_DOUBLEBUF) {
-	// Load SDL
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
 		return false;
 	}
 	
-	atexit(SDL_Quit); // Clean it up nicely :)
- 
-	// fullscreen can be toggled at run time :) any you might want to change the flags with params?
-	//set the main screen to SCREEN_WIDTHxSCREEN_HEIGHT with a colour depth of 16:
+	atexit(SDL_Quit);
+ 	
 	screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 16, flags);
 	if (screen == NULL) {
 		fprintf(stderr, "Unable to set video mode: %s\n", SDL_GetError());
@@ -73,13 +70,12 @@ int main(int argc, char** argv) {
 	#else
 	Keyboard* controller = new Keyboard();
 	#endif
+	controller->start();
 	
 	LightsOutGameManager* game = new LightsOutGameManager(controller);
+	game->start();
 	
 	Renderer* renderer = new Renderer(screen, game);
-	
-	controller->start();
-	game->start();
 	renderer->start();
 	
 	game->join();
