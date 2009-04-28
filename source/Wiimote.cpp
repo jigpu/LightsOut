@@ -1,3 +1,27 @@
+/**
+ * Copyright © 2009, Localhost Labs, Jason Gerecke
+ * 
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ * 
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ * 
+ *   1. The origin of this software must not be misrepresented; you must not
+ *      claim that you wrote the original software. If you use this software
+ *      in a product, an acknowledgment in the product documentation would be
+ *      appreciated but is not required.
+ *   
+ *   2. Altered source versions must be plainly marked as such, and must not be
+ *      misrepresented as being the original software.
+ *   
+ *   3. This notice may not be removed or altered from any source
+ *      distribution.
+ */
+
+
 #include <SDL/SDL.h>
 #include <wiiuse/wpad.h>
 #include "Wiimote.hpp"
@@ -22,51 +46,51 @@ void Wiimote::run() {
 		laststate = state;
 		
 		if (press & WPAD_BUTTON_UP)
-			observer->controllerAction(SDL_KEYDOWN, SDLK_UP);
+			notifyObservers(SDL_KEYDOWN, SDLK_UP);
 		if (press & WPAD_BUTTON_DOWN)
-			observer->controllerAction(SDL_KEYDOWN, SDLK_DOWN);
+			notifyObservers(SDL_KEYDOWN, SDLK_DOWN);
 		if (press & WPAD_BUTTON_LEFT)
-			observer->controllerAction(SDL_KEYDOWN, &SDLK_LEFT);
+			notifyObservers(SDL_KEYDOWN, &SDLK_LEFT);
 		if (press & WPAD_BUTTON_RIGHT)
-			observer->controllerAction(SDL_KEYDOWN, &SDLK_RIGHT);
+			notifyObservers(SDL_KEYDOWN, &SDLK_RIGHT);
 		if (press & WPAD_BUTTON_A)
-			observer->controllerAction(SDL_KEYDOWN, new SDLK_a);
+			notifyObservers(SDL_KEYDOWN, new SDLK_a);
 		if (press & WPAD_BUTTON_B)
-			observer->controllerAction(SDL_KEYDOWN, new SDLK_b);
+			notifyObservers(SDL_KEYDOWN, new SDLK_b);
 		if (press & WPAD_BUTTON_1)
-			observer->controllerAction(SDL_KEYDOWN, new SDLK_1);
+			notifyObservers(SDL_KEYDOWN, new SDLK_1);
 		if (press & WPAD_BUTTON_2)
-			observer->controllerAction(SDL_KEYDOWN, new SDLK_2);
+			notifyObservers(SDL_KEYDOWN, new SDLK_2);
 		if (press & WPAD_BUTTON_PLUS)
-			observer->controllerAction(SDL_KEYDOWN, new SDLK_PLUS);
+			notifyObservers(SDL_KEYDOWN, new SDLK_PLUS);
 		if (press & WPAD_BUTTON_MINUS)
-			observer->controllerAction(SDL_KEYDOWN, new SDLK_MINUS);
+			notifyObservers(SDL_KEYDOWN, new SDLK_MINUS);
 		if (press & WPAD_BUTTON_HOME)
-			observer->controllerAction(SDL_KEYDOWN, new SDLK_HOME);
+			notifyObservers(SDL_KEYDOWN, new SDLK_HOME);
 		
 		
 		if (release & WPAD_BUTTON_UP)
-			observer->controllerAction(SDL_KEYUP, new SDLK_UP);
+			notifyObservers(SDL_KEYUP, new SDLK_UP);
 		if (release & WPAD_BUTTON_DOWN)
-			observer->controllerAction(SDL_KEYUP, new SDLK_DOWN);
+			notifyObservers(SDL_KEYUP, new SDLK_DOWN);
 		if (release & WPAD_BUTTON_LEFT)
-			observer->controllerAction(SDL_KEYUP, new SDLK_LEFT);
+			notifyObservers(SDL_KEYUP, new SDLK_LEFT);
 		if (release & WPAD_BUTTON_RIGHT)
-			observer->controllerAction(SDL_KEYUP, new SDLK_RIGHT);
+			notifyObservers(SDL_KEYUP, new SDLK_RIGHT);
 		if (release & WPAD_BUTTON_A)
-			observer->controllerAction(SDL_KEYUP, new SDLK_a);
+			notifyObservers(SDL_KEYUP, new SDLK_a);
 		if (release & WPAD_BUTTON_B)
-			observer->controllerAction(SDL_KEYUP, new SDLK_b);
+			notifyObservers(SDL_KEYUP, new SDLK_b);
 		if (release & WPAD_BUTTON_1)
-			observer->controllerAction(SDL_KEYUP, new SDLK_1);
+			notifyObservers(SDL_KEYUP, new SDLK_1);
 		if (release & WPAD_BUTTON_2)
-			observer->controllerAction(SDL_KEYUP, new SDLK_2);
+			notifyObservers(SDL_KEYUP, new SDLK_2);
 		if (release & WPAD_BUTTON_PLUS)
-			observer->controllerAction(SDL_KEYUP, new SDLK_PLUS);
+			notifyObservers(SDL_KEYUP, new SDLK_PLUS);
 		if (release & WPAD_BUTTON_MINUS)
-			observer->controllerAction(SDL_KEYUP, new SDLK_MINUS);
+			notifyObservers(SDL_KEYUP, new SDLK_MINUS);
 		if (release & WPAD_BUTTON_HOME)
-			observer->controllerAction(SDL_KEYUP, new SDLK_HOME);
+			notifyObservers(SDL_KEYUP, new SDLK_HOME);
 	}
 }
 

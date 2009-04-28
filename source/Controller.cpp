@@ -22,30 +22,24 @@
  */
 
 
-#ifndef __Renderable_hpp__
-#define __Renderable_hpp__
+#include "Controller.hpp"
 
 
-#include <SDL/SDL.h>
+void Controller::addObserver(ControllerObserver* observer) {
+	observers.push_back(observer);
+}
 
 
-/**
- * Renderable objects have the ability to paint themselves onto
- * an SDL surface. Many Renderable objects are "complex" objects
- * which are composed of other Renderables. In this case, a new
- * surface for each component should be created, and the result
- * blitted into the given surface.
- */
-class Renderable {
-
-protected:
-	bool dirty;
-	
-public:
-	virtual int paint(SDL_Surface* surface) = 0;
-	
-};
+void Controller::notifyObservers(int type, SDLKey* value) {
+	std::list<ControllerObserver*>::iterator iter = observers.begin();
+	while (iter != observers.end()) {
+		(*iter)->controllerAction(type, value);
+		iter++;
+	}
+}
 
 
-#endif
+void Controller::removeObserver(ControllerObserver* observer) {
+	observers.remove(observer);
+}
 

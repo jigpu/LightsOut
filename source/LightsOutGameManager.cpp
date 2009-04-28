@@ -1,3 +1,27 @@
+/**
+ * Copyright © 2009, Localhost Labs, Jason Gerecke
+ * 
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ * 
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ * 
+ *   1. The origin of this software must not be misrepresented; you must not
+ *      claim that you wrote the original software. If you use this software
+ *      in a product, an acknowledgment in the product documentation would be
+ *      appreciated but is not required.
+ *   
+ *   2. Altered source versions must be plainly marked as such, and must not be
+ *      misrepresented as being the original software.
+ *   
+ *   3. This notice may not be removed or altered from any source
+ *      distribution.
+ */
+
+
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
@@ -10,80 +34,41 @@
 using namespace std;
 
 
-LightsOutGameManager::LightsOutGameManager() {
+LightsOutGameManager::LightsOutGameManager(Controller* controller) {
+	this->controller = controller;
+	
+	controller->addObserver(this);
 	srand ( time(NULL) );
 }
 
 
-void LightsOutGameManager::controllerAction(int type, SDLKey* value) {
-	//cout << "Recieved button " << value << endl;
-	
+void LightsOutGameManager::controllerAction(int type, SDLKey* value) {	
 	switch (type) {
 		/*case WIIMOTE_BUTTON: {
 			if (value & WPAD_BUTTON_HOME)
 				exit(0);
-			if (value & WPAD_BUTTON_UP)
-				move(0, -1);
-			if (value & WPAD_BUTTON_DOWN)
-				move(0, 1);
-			if (value & WPAD_BUTTON_LEFT)
-				move(-1, 0);
-			if (value & WPAD_BUTTON_RIGHT)
-				move(1, 0);
-			if (value & WPAD_BUTTON_A)
-				select();
-			if (value & WPAD_BUTTON_B) {
-				game->getMoveHint(&x, &y);
-				select();
-			}
-			break;
 		}*/
 		case SDL_KEYDOWN: {
 			switch(*value) {
 				case SDLK_ESCAPE: exit(0);
-				case SDLK_UP:     move( 0,-1); break;
-				case SDLK_DOWN:   move( 0, 1); break;
-				case SDLK_LEFT:   move(-1, 0); break;
-				case SDLK_RIGHT:  move( 1, 0); break;
-				case SDLK_TAB:    game->getMoveHint(&x, &y);
-				case SDLK_RETURN: select(); break;
 			}
 		}
 	}
 }
 
 
-void LightsOutGameManager::select() {
-	game->pressButton(x,y);
-	move(0,0);
-}
-
-
-void LightsOutGameManager::move(int deltaX, int deltaY) {
-	x += deltaX;
-	y += deltaY;
-	
-	if (x < 0) x = 0;
-	if (x >= game->getWidth()) x = game->getWidth()-1;
-	if (y < 0) y = 0;
-	if (y >= game->getHeight()) y = game->getHeight()-1;
-	
-	dirty = true;
-}
-
-
 void LightsOutGameManager::run() {
 	do {
-		x = 0;
-		y = 0;
-		dirty = false;
+		dirty = true;
 		gameover = false;
 		game = new LightsOutGame();
-		move(0,0);
+		controller->addObserver(game);
 		
 		while (!game->winningState()) {
 			yield(100);
 		}
+		
+		controller->removeObserver(game);
 		
 		cout << "\033[2J\033[1;1H" << "A winner is you!" << endl << "Play again? (Y/N) " << flush;
 		
@@ -97,14 +82,9 @@ void LightsOutGameManager::run() {
 
 
 int LightsOutGameManager::paint(SDL_Surface* surface) {
-	if (!dirty)
-		return 1;
-	
 	if (game == NULL)
 		return 1;
 	
-	game->paint(surface);
-	dirty = false;
-	return 0;
+	return game->paint(surface);
 }
 

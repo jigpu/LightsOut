@@ -1,7 +1,31 @@
+/**
+ * Copyright © 2009, Localhost Labs, Jason Gerecke
+ * 
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ * 
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ * 
+ *   1. The origin of this software must not be misrepresented; you must not
+ *      claim that you wrote the original software. If you use this software
+ *      in a product, an acknowledgment in the product documentation would be
+ *      appreciated but is not required.
+ *   
+ *   2. Altered source versions must be plainly marked as such, and must not be
+ *      misrepresented as being the original software.
+ *   
+ *   3. This notice may not be removed or altered from any source
+ *      distribution.
+ */
+
+
 #include <cstdlib>    // For some useful functions such as atexit :)
+//#include <fat.h>
 //#include <gccore.h>
 #include <SDL/SDL.h> //Main SDL header
-//#include <fat.h>
 #include "Keyboard.hpp"
 #include "LightsOutGameManager.hpp"
 #include "Renderer.hpp"
@@ -13,6 +37,7 @@
 
  
 SDL_Surface* screen; //This pointer will reference the backbuffer 
+
 
 int initVideo(Uint32 flags = SDL_DOUBLEBUF) {
 	// Load SDL
@@ -31,8 +56,6 @@ int initVideo(Uint32 flags = SDL_DOUBLEBUF) {
 		return false;
 	}
 	
-	//SDL_ShowCursor(SDL_DISABLE);
-	
 	return true;
 }
 
@@ -44,8 +67,7 @@ int main(int argc, char** argv) {
 	//Wiimote* controller = new Wiimote();
 	Keyboard* controller = new Keyboard();
 	
-	LightsOutGameManager* game = new LightsOutGameManager();
-	controller->observer = game;
+	LightsOutGameManager* game = new LightsOutGameManager(controller);
 	
 	Renderer* renderer = new Renderer(screen, game);
 	
