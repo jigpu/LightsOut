@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-//#include <wiiuse/wpad.h>
+#include <wiiuse/wpad.h>
 #include "Controller.hpp"
 #include "LightsOutGameManager.hpp"
 
@@ -50,7 +50,8 @@ void LightsOutGameManager::controllerAction(int type, SDLKey* value) {
 		}*/
 		case SDL_KEYDOWN: {
 			switch(*value) {
-				case SDLK_ESCAPE: exit(0);
+				case SDLK_ESCAPE:
+				case SDLK_HOME:   exit(0);
 			}
 		}
 	}

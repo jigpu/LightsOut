@@ -65,8 +65,10 @@ void LightsOutGame::controllerAction(int type, SDLKey* value) {
 				case SDLK_DOWN:   move( 0, 1); break;
 				case SDLK_LEFT:   move(-1, 0); break;
 				case SDLK_RIGHT:  move( 1, 0); break;
-				case SDLK_TAB:    getMoveHint(&x, &y); move(0,0); break;
-				case SDLK_RETURN: select(); break;
+				case SDLK_TAB:
+				case SDLK_b:      getMoveHint(&x, &y); move(0,0); break;
+				case SDLK_RETURN:
+				case SDLK_a:      select(); break;
 			}
 		}
 	}
