@@ -54,6 +54,11 @@ int Light::getState() {
 }
 
 
+int Light::getStates() {
+	return states;
+}
+
+
 void Light::nextState() {
 	SDL_mutexP(paintMutex);
 	state++;

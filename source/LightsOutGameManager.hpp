@@ -40,7 +40,7 @@
  */
 class LightsOutGameManager : public ControllerObserver, public Thread, public Renderable {
 
-protected:
+protected:	
 	Controller* controller;
 	
 	SDL_mutex* paintMutex;

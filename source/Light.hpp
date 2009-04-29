@@ -58,6 +58,8 @@ public:
 	
 	int getState();
 	
+	int getStates();
+	
 	void nextState();
 	
 	int paint(SDL_Surface* surface);

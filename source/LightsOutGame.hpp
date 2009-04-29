@@ -28,11 +28,14 @@
 
 #include <iostream>
 #include <SDL/SDL_image.h>
+#include <SDL/SDL_ttf.h>
 #include <SDL/SDL_rotozoom.h>
+#include <string>
 #include "ControllerObserver.hpp"
 #include "Light.hpp"
 #include "RectangleMap.tpp"
 #include "Renderable.hpp"
+#include "Thread.hpp"
 #include "Tile.tpp"
 
 
@@ -40,12 +43,14 @@
  * A LightsOutGame is a single "play" of the game of Lights Out.
  * Additional rounds of play should create new objects.
  */
-class LightsOutGame : public ControllerObserver, public Renderable {
+class LightsOutGame : public ControllerObserver, public Renderable, public Thread {
 
 protected:
-	int x, y, width, height;
+	int x, y, width, height, gameStartTime, minMoves, moves;
 	
 	SDL_mutex* paintMutex;
+	
+	TTF_Font* font;
 	
 	SDL_Surface* glow;
 	
@@ -56,7 +61,7 @@ protected:
 	void moveAbsolute(int x, int y);
 	
 public:
-	LightsOutGame(int width=5, int height=5, int states=4);
+	LightsOutGame(int width=5, int height=5, int states=2);
 	
 	~LightsOutGame();
 	
@@ -71,6 +76,8 @@ public:
 	int paint(SDL_Surface* surface);
 	
 	void pressButton(int x, int y);
+	
+	void run();
 	
 	void select();
 	

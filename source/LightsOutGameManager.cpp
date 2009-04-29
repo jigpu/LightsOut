@@ -30,9 +30,6 @@
 #include "LightsOutGameManager.hpp"
 
 
-using namespace std;
-
-
 LightsOutGameManager::LightsOutGameManager(Controller* controller) {
 	this->controller = controller;
 	controller->addObserver(this);
@@ -74,20 +71,18 @@ void LightsOutGameManager::run() {
 		controller->addObserver(game);
 		SDL_mutexV(paintMutex);
 		
-		while (!game->winningState()) {
-			yield(100);
-		}
-		
+		game->start();
+		game->join();
 		controller->removeObserver(game);
 		
-		cout << "\033[2J\033[1;1H" << "A winner is you!" << endl << "Play again? (Y/N) " << flush;
+		std::cout << "\033[2J\033[1;1H" << "A winner is you!" << std::endl << "Play again? (Y/N) " << std::flush;
 		
 		do {
 			yield(100);
 		} while (!gameover);
 	} while (newgame);
 	
-	cout << "Thanks for playing!" << endl;
+	std::cout << "Thanks for playing!" << std::endl;
 }
 
 
@@ -107,20 +102,14 @@ int LightsOutGameManager::paint(SDL_Surface* surface) {
 	bool dirtysub = false;
 	SDL_Rect dest;
 	
-	dest.x = 16;
-	dest.y = 16;
-	dest.w  = 448;
-	dest.h = 448;
+	dest.x = 8;
+	dest.y = 8;
+	dest.w  = 624;
+	dest.h = 464;
 	SDL_Surface* subsurface = SDL_CreateRGBSurface(surface->flags,dest.w,dest.h,16,0,0,0,0);
 	if (game->paint(subsurface) == 0) dirtysub = true;
 	SDL_BlitSurface(subsurface, NULL, this->surface, &dest);
 	SDL_FreeSurface(subsurface);
-	
-	
-	//Paint this object itself if dirty, or if underlying
-	//objects were dirty
-	if (dirty || dirtysub) {
-	}
 	
 	
 	//Blit onto the target surface and return

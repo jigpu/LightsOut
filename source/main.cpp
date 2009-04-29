@@ -24,6 +24,7 @@
 
 #include <cstdlib>
 #include <SDL/SDL.h>
+#include <SDL/SDL_ttf.h>
 #include "Keyboard.hpp"
 #include "LightsOutGameManager.hpp"
 #include "Renderer.hpp"
@@ -50,6 +51,9 @@ int initVideo(Uint32 flags = SDL_DOUBLEBUF) {
 	}
 	
 	atexit(SDL_Quit);
+	
+	TTF_Init();
+	atexit(TTF_Quit);
  	
 	screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 16, flags);
 	if (screen == NULL) {

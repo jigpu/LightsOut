@@ -22,6 +22,8 @@
  */
 
 
+#include <iomanip>
+#include <sstream>
 #include <stdlib.h>
 #include "LightsOutGame.hpp"
 
@@ -31,8 +33,14 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 	y = 0;
 	this->width = width;
 	this->height = height;
+	minMoves = 0;
 	
 	paintMutex = SDL_CreateMutex();
+	
+	font = TTF_OpenFont("Go Boom!.ttf", 36);
+	if (font == NULL) {
+		std::cout << "Error loading Go Boom!.ttf: " << SDL_GetError() << std::endl;
+	}
 	
 	glow = IMG_Load("glow.png");
 	if (glow == NULL) {
@@ -46,11 +54,16 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 			lights->setTile(x, y, new Tile<Light*>(new Light(states)));
 	
 	//Initialize the board to some solvable state.
-	for (int x=0; x<width; x++)
-		for (int y=0; y<height; y++)
-			for (int i=0; i<rand()%states; i++)
+	for (int x=0; x<width; x++) {
+		for (int y=0; y<height; y++) {
+			for (int i=0; i<rand()%states; i++) {
+				minMoves++;
 				pressButton(x,y);
-	
+			}
+		}
+	}
+		
+	moves = 0; //Reset since its called in pressButton :D 
 	surface = NULL;
 	dirty = true;
 }
@@ -58,7 +71,7 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 
 LightsOutGame::~LightsOutGame() {
 	SDL_DestroyMutex(paintMutex);
-	
+	TTF_CloseFont(font);
 	SDL_FreeSurface(glow);
 	
 	for (int x=0; x<width; x++) {
@@ -161,10 +174,10 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 	    this->surface->h != surface->h)
 		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
 	
-	
-	//Create subsurfaces and paint them
-	double tileWidth  = (double)surface->w/(double)width;
-	double tileHeight = (double)surface->h/(double)height;
+	//Paint the gameboard
+	SDL_Surface* board = SDL_CreateRGBSurface(surface->flags,surface->h,surface->h,16,0,0,0,0);
+	double tileWidth  = (double)board->w/(double)width;
+	double tileHeight = (double)board->h/(double)height;
 	
 	SDL_Rect dest;
 	bool dirtysub = false;
@@ -178,7 +191,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 			SDL_Surface* subsurface = SDL_CreateRGBSurface(surface->flags,dest.w,dest.h,16,0,0,0,0);
 			if (lights->getTile(x,y)->object->paint(subsurface) == 0) dirtysub = true;
 			
-			SDL_BlitSurface(subsurface, NULL, this->surface, &dest);
+			SDL_BlitSurface(subsurface, NULL, board, &dest);
 			SDL_FreeSurface(subsurface);
 		}
 	}
@@ -187,6 +200,9 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 	//Paint this object itself if dirty, or if underlying
 	//objects were dirty
 	if (dirty || dirtysub) {
+		SDL_FreeSurface(this->surface);
+		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
+		//Paint the cursor onto the gameboard		
 		dest.x = (int)(tileWidth*(this->x-1));
 		dest.w = (int)(tileWidth*3);
 		
@@ -195,10 +211,59 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 		
 		SDL_Surface* zoom = rotozoomSurfaceXY(glow, 0.0, ((double)(dest.w))/((double)(glow->w)), ((double)(dest.h))/((double)(glow->h)), 1);
 		SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
-		SDL_BlitSurface(zoom, NULL, this->surface, &dest);
+		SDL_BlitSurface(zoom, NULL, board, &dest);
 		SDL_FreeSurface(zoom);
+		
+		
+		//Paint text *off* the gameboard
+		SDL_Color clrFg = {255,255,255,0};
+		
+		dest.x = board->h + 8;
+		dest.y = 16;
+		dest.w = 0;
+		dest.h = 0;
+		SDL_Surface* movesLS = TTF_RenderText_Blended(font, "Moves:", clrFg);
+		SDL_BlitSurface(movesLS, NULL, this->surface, &dest);
+		SDL_FreeSurface(movesLS);
+		
+		dest.y = 48;
+		std::stringstream movesString;
+		movesString << moves << "/" << minMoves;
+		SDL_Surface* movesS = TTF_RenderText_Blended(font, movesString.str().c_str(), clrFg );
+		SDL_BlitSurface(movesS, NULL, this->surface, &dest);
+		SDL_FreeSurface(movesS);
+				
+		dest.y = 112;
+		SDL_Surface* timeLS = TTF_RenderText_Blended(font, "Time:", clrFg);
+		SDL_BlitSurface(timeLS, NULL, this->surface, &dest);
+		SDL_FreeSurface(timeLS);
+		
+		dest.y = 144;
+		int elapsed = SDL_GetTicks() - gameStartTime;
+		std::stringstream timeString;
+		timeString << std::setw(2) << std::setfill('0') << elapsed/36000000 << ":"
+		           << std::setw(2) << std::setfill('0') << elapsed/60000 % 60 << ":"
+		           << std::setw(2) << std::setfill('0') << elapsed/1000 % 60;
+		SDL_Surface* timeS = TTF_RenderText_Blended(font, timeString.str().c_str(), clrFg);
+		SDL_BlitSurface(timeS, NULL, this->surface, &dest);
+		SDL_FreeSurface(timeS);
+				
+		dest.y = 374;
+		SDL_Surface* diffLS = TTF_RenderText_Blended(font, "Difficulty:", clrFg);
+		SDL_BlitSurface(diffLS, NULL, this->surface, &dest);
+		SDL_FreeSurface(diffLS);
+				
+		dest.y = 406;
+		std::stringstream difficultyText;
+		difficultyText << getTile(0,0)->object->getStates() << " States";
+		SDL_Surface* diffS = TTF_RenderText_Blended(font, difficultyText.str().c_str(), clrFg);
+		SDL_BlitSurface(diffS, NULL, this->surface, &dest);
+		SDL_FreeSurface(diffS);
 	}
 	
+	//Copy the gameboard to the game's surface
+	SDL_BlitSurface(board, NULL, this->surface, NULL);
+	SDL_FreeSurface(board);
 	
 	//Blit onto the target surface and return
 	SDL_BlitSurface(this->surface, NULL, surface, NULL);
@@ -218,11 +283,26 @@ void LightsOutGame::pressButton(int x, int y) {
 	if (x >= width || x < 0 || y >= height || y < 0)
 		return; //Should throw an invalid move exception...
 	
+	SDL_mutexP(paintMutex);
+	moves++;
+	SDL_mutexV(paintMutex);
+	
 	toggleLight(x,y);
 	toggleLight(x-1,y);
 	toggleLight(x+1,y);
 	toggleLight(x,y-1);
 	toggleLight(x,y+1);
+}
+
+
+void LightsOutGame::run() {
+	gameStartTime = SDL_GetTicks();
+	do {
+		yield(250);
+		
+		//Periodically dirty ourselves to ensure the timer is updated
+		dirty = true;
+	} while (!winningState());
 }
 
 

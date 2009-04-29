@@ -40,7 +40,7 @@ void Renderer::run() {
 	
 	//Frame-rate independent code based on
 	//http://hdrlab.org.nz/frame-rate-independent-animation-using-sdl-and-opengl-with-frame-rate-limiting/
-	yield(500);
+	//yield(500);
 	while (running) {
 		currTime = SDL_GetTicks();
 		timeElapsed = currTime - prevTime;
