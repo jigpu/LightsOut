@@ -41,6 +41,8 @@ class Renderable {
 protected:
 	bool dirty;
 	
+	SDL_Surface* surface;
+	
 public:
 	virtual int paint(SDL_Surface* surface) = 0;
 	

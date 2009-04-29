@@ -37,6 +37,8 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 		std::cout << "Error loading glow.png: " << SDL_GetError() << std::endl;
 	}
 	
+	surface = NULL;
+	
 	lights = new RectangleMap<Light*>(width, height, 10, 10);
 	dirty = true;
 	
@@ -62,7 +64,7 @@ LightsOutGame::~LightsOutGame() {
 
 
 void LightsOutGame::controllerAction(int type, SDLKey* value) {
-	//cout << "Recieved button " << value << endl;
+	//std::cout << "Recieved button " << value << std::endl;
 	
 	switch (type) {
 		case SDL_KEYDOWN: {
@@ -140,14 +142,18 @@ void LightsOutGame::moveAbsolute(int x, int y) {
 
 
 int LightsOutGame::paint(SDL_Surface* surface) {
-	if (!dirty)
-		return 1;
+	if (this->surface == NULL ||
+	    this->surface->w != surface->w ||
+	    this->surface->h != surface->h)
+		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
 	
+	
+	//Create subsurfaces and paint them
 	double tileWidth  = (double)surface->w/(double)width;
 	double tileHeight = (double)surface->h/(double)height;
 	
-	//Draw each light tile
 	SDL_Rect dest;
+	bool dirtysub = false;
 	for (int x=0; x<width; x++) {
 		dest.x = (int)(tileWidth*x);
 		dest.w = (int)(tileWidth*(x+1)) - dest.x;
@@ -156,29 +162,39 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 			dest.h = (int)(tileHeight*(y+1)) - dest.y;
 			
 			SDL_Surface* subsurface = SDL_CreateRGBSurface(surface->flags,dest.w,dest.h,16,0,0,0,0);
-			lights->getTile(x,y)->object->paint(subsurface);
+			if (lights->getTile(x,y)->object->paint(subsurface) == 0) dirtysub = true;
 			
-			SDL_BlitSurface(subsurface, NULL, surface, &dest);
+			SDL_BlitSurface(subsurface, NULL, this->surface, &dest);
 			SDL_FreeSurface(subsurface);
 		}
 	}
 	
-	//Draw the cursor
-	dest.x = (int)(tileWidth*(this->x-1));
-	dest.w = (int)(tileWidth*3);
 	
-	dest.y = (int)(tileHeight*(this->y-1));
-	dest.h = (int)(tileHeight*3);
+	//Paint this object itself if dirty, or if underlying
+	//objects were dirty
+	if (dirty || dirtysub) {
+		dest.x = (int)(tileWidth*(this->x-1));
+		dest.w = (int)(tileWidth*3);
+		
+		dest.y = (int)(tileHeight*(this->y-1));
+		dest.h = (int)(tileHeight*3);
+		
+		SDL_Surface* zoom = rotozoomSurfaceXY(glow, 0.0, ((double)(dest.w))/((double)(glow->w)), ((double)(dest.h))/((double)(glow->h)), 1);
+		SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
+		SDL_BlitSurface(zoom, NULL, this->surface, &dest);
+		SDL_FreeSurface(zoom);
+	}
 	
-	SDL_Surface* zoom = rotozoomSurfaceXY(glow, 0.0, ((double)(dest.w))/((double)(glow->w)), ((double)(dest.h))/((double)(glow->h)), 1);
-	SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
 	
-	SDL_BlitSurface(zoom, NULL, surface, &dest);
-	
-	SDL_FreeSurface(zoom);
-	
-	dirty = false;
-	return 0;
+	//Blit onto the target surface and return
+	SDL_BlitSurface(this->surface, NULL, surface, NULL);
+	if (dirty || dirtysub) {
+		dirty = false;
+		return 0;
+	}
+	else {
+		return 1;
+	}
 }
 
 
@@ -196,7 +212,6 @@ void LightsOutGame::pressButton(int x, int y) {
 
 void LightsOutGame::select() {
 	pressButton(x,y);
-	dirty = true;
 }
 
 

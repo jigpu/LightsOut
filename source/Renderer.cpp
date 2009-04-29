@@ -50,8 +50,9 @@ void Renderer::run() {
 			timeElapsed = currTime - prevTime;
 		}
 		prevTime = currTime;
-		if (child->paint(surface) == 0)
+		if (child->paint(surface) == 0) {
 			SDL_Flip(surface);
+		}
 	}
 }
 

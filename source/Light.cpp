@@ -36,6 +36,8 @@ Light::Light(int states) {
 	if (glass == NULL) {
 		std::cout << "Error loading glass.png: " << SDL_GetError() << std::endl;
 	}
+	
+	surface = NULL;
 }
 
 
@@ -48,25 +50,40 @@ void Light::nextState() {
 	state++;
 	if (state >= states)
 		state = 0;
+	
+	dirty = true;
 }
 
 
-int Light::paint(SDL_Surface* surface) {	
-	switch (state) {
-		case 0:	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, COLOR_0)); break;
-		case 1:	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, COLOR_1)); break;
-		case 2:	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, COLOR_2)); break;
-		case 3:	SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, COLOR_3)); break;
-		default: SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, COLOR_UNK)); break;
+int Light::paint(SDL_Surface* surface) {
+	if (this->surface == NULL ||
+	    this->surface->w != surface->w ||
+	    this->surface->h != surface->h)
+		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
+	
+	if (dirty) {
+		switch (state) {
+			case 0:	SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_0)); break;
+			case 1:	SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_1)); break;
+			case 2:	SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_2)); break;
+			case 3:	SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_3)); break;
+			default: SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_UNK)); break;
+		}
+		
+		SDL_Surface* zoom = rotozoomSurfaceXY(glass, 0.0, ((double)(this->surface->w))/((double)(glass->w)), ((double)(this->surface->h))/((double)(glass->h)), 1);
+		SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
+		SDL_BlitSurface(zoom, NULL, this->surface, NULL);
+		SDL_FreeSurface(zoom);
 	}
 	
-	SDL_Surface* zoom = rotozoomSurfaceXY(glass, 0.0, ((double)(surface->w))/((double)(glass->w)), ((double)(surface->h))/((double)(glass->h)), 1);
-	SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
-	
-	SDL_BlitSurface(zoom, NULL, surface, NULL);
-	
-	SDL_FreeSurface(zoom);
-	
-	return 0;
+	//Blit onto the target surface and return
+	SDL_BlitSurface(this->surface, NULL, surface, NULL);
+	if (dirty) {
+		dirty = false;
+		return 0;
+	}
+	else {
+		return 1;
+	}
 }
 

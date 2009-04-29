@@ -35,8 +35,9 @@ using namespace std;
 
 LightsOutGameManager::LightsOutGameManager(Controller* controller) {
 	this->controller = controller;
-	
 	controller->addObserver(this);
+	
+	surface = NULL;
 	srand ( time(NULL) );
 }
 
@@ -82,6 +83,41 @@ int LightsOutGameManager::paint(SDL_Surface* surface) {
 	if (game == NULL)
 		return 1;
 	
-	return game->paint(surface);
+	
+	if (this->surface == NULL ||
+	    this->surface->w != surface->w ||
+	    this->surface->h != surface->h)
+		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
+	
+	
+	//Create subsurfaces and paint them
+	bool dirtysub = false;
+	SDL_Rect dest;
+	
+	dest.x = 16;
+	dest.y = 16;
+	dest.w  = 448;
+	dest.h = 448;
+	SDL_Surface* subsurface = SDL_CreateRGBSurface(surface->flags,dest.w,dest.h,16,0,0,0,0);
+	if (game->paint(subsurface) == 0) dirtysub = true;
+	SDL_BlitSurface(subsurface, NULL, this->surface, &dest);
+	SDL_FreeSurface(subsurface);
+	
+	
+	//Paint this object itself if dirty, or if underlying
+	//objects were dirty
+	if (dirty || dirtysub) {
+	}
+	
+	
+	//Blit onto the target surface and return
+	SDL_BlitSurface(this->surface, NULL, surface, NULL);
+	if (dirty || dirtysub) {
+		dirty = false;
+		return 0;
+	}
+	else {
+		return 1;
+	}
 }
 
