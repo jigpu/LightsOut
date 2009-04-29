@@ -32,6 +32,8 @@ Light::Light(int states) {
 	this->states = states;
 	state = 0;
 	
+	paintMutex = SDL_CreateMutex();
+	
 	glass = IMG_Load("glass.png");
 	if (glass == NULL) {
 		std::cout << "Error loading glass.png: " << SDL_GetError() << std::endl;
@@ -41,21 +43,30 @@ Light::Light(int states) {
 }
 
 
+Light::~Light() {
+	SDL_DestroyMutex(paintMutex);
+	SDL_FreeSurface(glass);
+}
+
+
 int Light::getState() {
 	return state;
 }
 
 
 void Light::nextState() {
+	SDL_mutexP(paintMutex);
 	state++;
 	if (state >= states)
 		state = 0;
 	
 	dirty = true;
+	SDL_mutexV(paintMutex);
 }
 
 
 int Light::paint(SDL_Surface* surface) {
+	SDL_mutexP(paintMutex);
 	if (this->surface == NULL ||
 	    this->surface->w != surface->w ||
 	    this->surface->h != surface->h)
@@ -80,9 +91,11 @@ int Light::paint(SDL_Surface* surface) {
 	SDL_BlitSurface(this->surface, NULL, surface, NULL);
 	if (dirty) {
 		dirty = false;
+		SDL_mutexV(paintMutex);
 		return 0;
 	}
 	else {
+		SDL_mutexV(paintMutex);
 		return 1;
 	}
 }

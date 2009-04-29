@@ -27,20 +27,19 @@
 
 
 LightsOutGame::LightsOutGame(int width, int height, int states) {
-	this->width = width;
-	this->height = height;
 	x = 0;
 	y = 0;
+	this->width = width;
+	this->height = height;
+	
+	paintMutex = SDL_CreateMutex();
 	
 	glow = IMG_Load("glow.png");
 	if (glow == NULL) {
 		std::cout << "Error loading glow.png: " << SDL_GetError() << std::endl;
 	}
 	
-	surface = NULL;
-	
 	lights = new RectangleMap<Light*>(width, height, 10, 10);
-	dirty = true;
 	
 	for (int x=0; x<width; x++)
 		for (int y=0; y<height; y++)
@@ -51,15 +50,24 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 		for (int y=0; y<height; y++)
 			for (int i=0; i<rand()%states; i++)
 				pressButton(x,y);
+	
+	surface = NULL;
+	dirty = true;
 }
 
 
 LightsOutGame::~LightsOutGame() {
+	SDL_DestroyMutex(paintMutex);
+	
+	SDL_FreeSurface(glow);
+	
 	for (int x=0; x<width; x++) {
 		for (int y=0; y<height; y++) {
 			delete lights->getTile(x, y);
 		}
 	}
+	
+	delete lights;
 }
 
 
@@ -69,14 +77,17 @@ void LightsOutGame::controllerAction(int type, SDLKey* value) {
 	switch (type) {
 		case SDL_KEYDOWN: {
 			switch(*value) {
+				case SDLK_TAB:
+				case SDLK_b:
+					int newX, newY;
+					getMoveHint(&newX, &newY);
+					moveAbsolute(newX,newY);
+				case SDLK_RETURN:
+				case SDLK_a:      select();    break;
 				case SDLK_UP:     move( 0,-1); break;
 				case SDLK_DOWN:   move( 0, 1); break;
 				case SDLK_LEFT:   move(-1, 0); break;
 				case SDLK_RIGHT:  move( 1, 0); break;
-				case SDLK_TAB:
-				case SDLK_b:      getMoveHint(&x, &y); move(0,0);
-				case SDLK_RETURN:
-				case SDLK_a:      select(); break;
 				default: break;
 			}
 		}
@@ -134,14 +145,17 @@ void LightsOutGame::move(int deltaX, int deltaY) {
 
 
 void LightsOutGame::moveAbsolute(int x, int y) {
+	SDL_mutexP(paintMutex);
 	this->x = x;
 	this->y = y;
 	
 	dirty = true;
+	SDL_mutexV(paintMutex);
 }
 
 
 int LightsOutGame::paint(SDL_Surface* surface) {
+	SDL_mutexP(paintMutex);
 	if (this->surface == NULL ||
 	    this->surface->w != surface->w ||
 	    this->surface->h != surface->h)
@@ -190,9 +204,11 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 	SDL_BlitSurface(this->surface, NULL, surface, NULL);
 	if (dirty || dirtysub) {
 		dirty = false;
+		SDL_mutexV(paintMutex);
 		return 0;
 	}
 	else {
+		SDL_mutexV(paintMutex);
 		return 1;
 	}
 }
@@ -219,7 +235,9 @@ void LightsOutGame::toggleLight(int x, int y) {
 	if (x >= width || x < 0 || y >= height || y < 0)
 		return; //Assume the caller was just lazy
 	
+	SDL_mutexP(paintMutex);
 	lights->getTile(x,y)->object->nextState();
+	SDL_mutexV(paintMutex);
 }
 
 

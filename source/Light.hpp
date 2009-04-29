@@ -47,10 +47,14 @@ class Light : public Renderable {
 protected:
 	int state, states;
 	
+	SDL_mutex* paintMutex;
+	
 	SDL_Surface* glass;
 	
 public:
 	Light(int states=2);
+	
+	~Light();
 	
 	int getState();
 	

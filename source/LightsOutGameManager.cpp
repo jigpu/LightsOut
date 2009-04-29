@@ -37,8 +37,18 @@ LightsOutGameManager::LightsOutGameManager(Controller* controller) {
 	this->controller = controller;
 	controller->addObserver(this);
 	
+	paintMutex = SDL_CreateMutex();
+	
 	surface = NULL;
+	dirty = true;
+	
 	srand ( time(NULL) );
+}
+
+
+LightsOutGameManager::~LightsOutGameManager() {
+	SDL_FreeSurface(surface);
+	SDL_DestroyMutex(paintMutex);
 }
 
 
@@ -57,10 +67,12 @@ void LightsOutGameManager::controllerAction(int type, SDLKey* value) {
 
 void LightsOutGameManager::run() {
 	do {
+		SDL_mutexP(paintMutex);
 		dirty = true;
 		gameover = false;
 		game = new LightsOutGame();
 		controller->addObserver(game);
+		SDL_mutexV(paintMutex);
 		
 		while (!game->winningState()) {
 			yield(100);
@@ -80,6 +92,7 @@ void LightsOutGameManager::run() {
 
 
 int LightsOutGameManager::paint(SDL_Surface* surface) {
+	SDL_mutexP(paintMutex);
 	if (game == NULL)
 		return 1;
 	
@@ -114,9 +127,11 @@ int LightsOutGameManager::paint(SDL_Surface* surface) {
 	SDL_BlitSurface(this->surface, NULL, surface, NULL);
 	if (dirty || dirtysub) {
 		dirty = false;
+		SDL_mutexV(paintMutex);
 		return 0;
 	}
 	else {
+		SDL_mutexV(paintMutex);
 		return 1;
 	}
 }

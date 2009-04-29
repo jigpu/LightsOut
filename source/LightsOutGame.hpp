@@ -43,9 +43,9 @@
 class LightsOutGame : public ControllerObserver, public Renderable {
 
 protected:
-	int width, height;
+	int x, y, width, height;
 	
-	int x, y;
+	SDL_mutex* paintMutex;
 	
 	SDL_Surface* glow;
 	

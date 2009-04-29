@@ -43,12 +43,16 @@ class LightsOutGameManager : public ControllerObserver, public Thread, public Re
 protected:
 	Controller* controller;
 	
+	SDL_mutex* paintMutex;
+	
 	LightsOutGame* game;
 	
 	bool newgame, gameover;
 	
 public:
 	LightsOutGameManager(Controller* controller);
+	
+	~LightsOutGameManager();
 	
 	void controllerAction(int type, SDLKey* value);
 	
