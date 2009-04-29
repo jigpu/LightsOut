@@ -28,6 +28,7 @@
 
 #include <SDL/SDL.h>
 #include <vector>
+#include "EventObserver.hpp"
 #include "Renderable.hpp"
 #include "Thread.hpp"
 
@@ -41,7 +42,7 @@
  * periodically calls the paint method of its child Renderable
  * to ensure that the display is up to date.
  */
-class Renderer : public Thread {
+class Renderer : public Thread, public EventObserver {
 
 protected:
 	SDL_Surface* surface;
@@ -50,6 +51,8 @@ protected:
 	
 public:
 	Renderer(SDL_Surface* surface, Renderable* child);
+	
+	void eventOccured(SDL_Event* event);
 	
 	void run();
 	

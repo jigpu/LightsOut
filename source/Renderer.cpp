@@ -32,6 +32,16 @@ Renderer::Renderer(SDL_Surface* surface, Renderable* child) {
 }
 
 
+void Renderer::eventOccured(SDL_Event* event) {
+	switch (event->type) {
+		case SDL_QUIT: {
+			stop();
+			break;
+		}
+	}
+}
+
+
 void Renderer::run() {
 	bool running    = true;
 	int currTime    = 0;
@@ -41,10 +51,10 @@ void Renderer::run() {
 	//Frame-rate independent code based on
 	//http://hdrlab.org.nz/frame-rate-independent-animation-using-sdl-and-opengl-with-frame-rate-limiting/
 	//yield(500);
-	while (running) {
+	while (runThread) {
 		currTime = SDL_GetTicks();
 		timeElapsed = currTime - prevTime;
-		while (timeElapsed < MIN_FRAMETIME_MSECS) {
+		while (timeElapsed < MIN_FRAMETIME_MSECS && runThread) {
 			yield(MIN_FRAMETIME_MSECS - timeElapsed);
 			currTime = SDL_GetTicks();
 			timeElapsed = currTime - prevTime;

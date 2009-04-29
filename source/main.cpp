@@ -25,7 +25,7 @@
 #include <cstdlib>
 #include <SDL/SDL.h>
 #include <SDL/SDL_ttf.h>
-#include "Keyboard.hpp"
+#include "EventPublisher.hpp"
 #include "LightsOutGameManager.hpp"
 #include "Renderer.hpp"
 
@@ -33,7 +33,6 @@
 #ifndef PC
 #include <fat.h>
 #include <gccore.h>
-#include "Wiimote.hpp"
 #endif
 
 
@@ -44,7 +43,7 @@
 SDL_Surface* screen; //This pointer will reference the backbuffer 
 
 
-int initVideo(Uint32 flags = SDL_DOUBLEBUF) {
+int initVideo(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
 		return false;
@@ -65,32 +64,24 @@ int initVideo(Uint32 flags = SDL_DOUBLEBUF) {
 }
 
 
+void stopEventPublisher() {
+	EventPublisher::getInstance().stop();
+}
+
+
 int main(int argc, char** argv) {
 	initVideo();
+	EventPublisher::getInstance().start();
+	atexit(stopEventPublisher);
 	
-	#ifndef PC
-	fatInitDefault();		
-	Wiimote* controller = new Wiimote();
-	#else
-	Keyboard* controller = new Keyboard();
-	#endif
-	controller->start();
-	
-	LightsOutGameManager* game = new LightsOutGameManager(controller);
+	LightsOutGameManager* game = new LightsOutGameManager();
 	game->start();
 	
-	Renderer* renderer = new Renderer(screen, game);
+	Renderer* renderer = new Renderer(screen, game);	
 	renderer->start();
 	
 	game->join();
 	
-	//Explicit destruction, since the Keyboard controller
-	//tweaks the console and only resets it in the
-	//destructor (which isn't called by default?!)
-	delete(game);
-	delete(controller);
-	
-	SDL_Quit();
 	return 0;
 }
 

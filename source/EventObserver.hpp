@@ -22,37 +22,21 @@
  */
 
 
-#ifndef __Controller_hpp__
-#define __Controller_hpp__
+#ifndef __ControllerObserver_hpp__
+#define __ControllerObserver_hpp__
 
 
-#include <list>
 #include <SDL/SDL.h>
-#include "ControllerObserver.hpp"
-#include "Thread.hpp"
 
 
 /**
- * Controllers are responsible for checking the input devices for a
- * change in status, and notifying all observers when necessary.
- * This abstraction is necessary desspite SDL for two reasons:
- * 
- *  * SDL does not support the Wiimote
- *  * SDL events disappear off the queue after read (...I think...)
+ * An EventObserver is a class which is interested in recieving
+ * SDL_Events.
  */
-class Controller : public Thread {
+class EventObserver {
 
-protected:
-	std::list<ControllerObserver*> observers;
-	
-	void notifyObservers(int type, SDLKey* value);
-	
 public:
-	void addObserver(ControllerObserver* observer);
-	
-	void removeObserver(ControllerObserver* observer);
-	
-	virtual void run() = 0;
+	virtual void eventOccured(SDL_Event* event) = 0;
 	
 };
 

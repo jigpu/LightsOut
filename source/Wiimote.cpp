@@ -35,10 +35,20 @@ Wiimote::Wiimote() {
 }
 
 
+void Renderer::eventOccured(SDL_Event* event) {
+	switch (event->type) {
+		case SDL_QUIT: {
+			stop();
+			break;
+		}
+	}
+}
+
+
 void Wiimote::run() {
 	u32 laststate = 0;
 	SDLKey key;
-	while (true) {
+	while (runThread) {
 		yield(25);
 		
 		WPAD_ScanPads();
@@ -49,95 +59,97 @@ void Wiimote::run() {
 		
 		laststate = state;
 		
+		SDL_Event event;
+		
 		if (press & WPAD_BUTTON_UP) {
-			key = SDLK_UP;
-			notifyObservers(SDL_KEYDOWN, &key);
+			event.key = { SDL_KEYDOWN, SDL_PRESSED, SDLK_UP };
+			SDL_PushEvent(event);
 		}
 		if (press & WPAD_BUTTON_DOWN) {
-			key = SDLK_DOWN;
-			notifyObservers(SDL_KEYDOWN, &key);
+			event.key = { SDL_KEYDOWN, SDL_PRESSED, SDLK_DOWN };
+			SDL_PushEvent(event);
 		}
 		if (press & WPAD_BUTTON_LEFT) {
-			key = SDLK_LEFT;
-			notifyObservers(SDL_KEYDOWN, &key);
+			event.key = { SDL_KEYDOWN, SDL_PRESSED, SDLK_LEFT };
+			SDL_PushEvent(event);
 		}
 		if (press & WPAD_BUTTON_RIGHT) {
-			key = SDLK_RIGHT;
-			notifyObservers(SDL_KEYDOWN, &key);
+			event.key = { SDL_KEYDOWN, SDL_PRESSED, SDLK_RIGHT };
+			SDL_PushEvent(event);
 		}
 		if (press & WPAD_BUTTON_A) {
-			key = SDLK_a;
-			notifyObservers(SDL_KEYDOWN, &key);
+			event.key = { SDL_KEYDOWN, SDL_PRESSED, SDLK_a };
+			SDL_PushEvent(event);
 		}
 		if (press & WPAD_BUTTON_B) {
-			key = SDLK_b;
-			notifyObservers(SDL_KEYDOWN, &key);
+			event.key = { SDL_KEYDOWN, SDL_PRESSED, SDLK_b };
+			SDL_PushEvent(event);
 		}
 		if (press & WPAD_BUTTON_1) {
-			key = SDLK_1;
-			notifyObservers(SDL_KEYDOWN, &key);
+			event.key = { SDL_KEYDOWN, SDL_PRESSED, SDLK_1 };
+			SDL_PushEvent(event);
 		}
 		if (press & WPAD_BUTTON_2) {
-			key = SDLK_2;
-			notifyObservers(SDL_KEYDOWN, &key);
+			event.key = { SDL_KEYDOWN, SDL_PRESSED, SDLK_2 };
+			SDL_PushEvent(event);
 		}
 		if (press & WPAD_BUTTON_PLUS) {
-			key = SDLK_PLUS;
-			notifyObservers(SDL_KEYDOWN, &key);
+			event.key = { SDL_KEYDOWN, SDL_PRESSED, SDLK_PLUS };
+			SDL_PushEvent(event);
 		}
 		if (press & WPAD_BUTTON_MINUS) {
-			key = SDLK_MINUS;
-			notifyObservers(SDL_KEYDOWN, &key);
+			event.key = { SDL_KEYDOWN, SDL_PRESSED, SDLK_MINUS };
+			SDL_PushEvent(event);
 		}
 		if (press & WPAD_BUTTON_HOME) {
-			key = SDLK_HOME;
-			notifyObservers(SDL_KEYDOWN, &key);
+			event.key = { SDL_KEYDOWN, SDL_PRESSED, SDLK_HOME };
+			SDL_PushEvent(event);
 		}
 		
 		
 		if (release & WPAD_BUTTON_UP) {
-			key = SDLK_UP;
-			notifyObservers(SDL_KEYUP, &key);
+			event.key = { SDL_KEYUP, SDL_RELEASED, SDLK_UP };
+			SDL_PushEvent(event);
 		}
 		if (release & WPAD_BUTTON_DOWN) {
-			key = SDLK_DOWN;
-			notifyObservers(SDL_KEYUP, &key);
+			event.key = { SDL_KEYUP, SDL_RELEASED, SDLK_DOWN };
+			SDL_PushEvent(event);
 		}
 		if (release & WPAD_BUTTON_LEFT) {
-			key = SDLK_LEFT;
-			notifyObservers(SDL_KEYUP, &key);
+			event.key = { SDL_KEYUP, SDL_RELEASED, SDLK_LEFT };
+			SDL_PushEvent(event);
 		}
 		if (release & WPAD_BUTTON_RIGHT) {
-			key = SDLK_RIGHT;
-			notifyObservers(SDL_KEYUP, &key);
+			event.key = { SDL_KEYUP, SDL_RELEASED, SDLK_RIGHT };
+			SDL_PushEvent(event);
 		}
 		if (release & WPAD_BUTTON_A) {
-			key = SDLK_a;
-			notifyObservers(SDL_KEYUP, &key);
+			event.key = { SDL_KEYUP, SDL_RELEASED, SDLK_a };
+			SDL_PushEvent(event);
 		}
 		if (release & WPAD_BUTTON_B) {
-			key = SDLK_b;
-			notifyObservers(SDL_KEYUP, &key);
+			event.key = { SDL_KEYUP, SDL_RELEASED, SDLK_b };
+			SDL_PushEvent(event);
 		}
 		if (release & WPAD_BUTTON_1) {
-			key = SDLK_1;
-			notifyObservers(SDL_KEYUP, &key);
+			event.key = { SDL_KEYUP, SDL_RELEASED, SDLK_1 };
+			SDL_PushEvent(event);
 		}
 		if (release & WPAD_BUTTON_2) {
-			key = SDLK_2;
-			notifyObservers(SDL_KEYUP, &key);
+			event.key = { SDL_KEYUP, SDL_RELEASED, SDLK_2 };
+			SDL_PushEvent(event);
 		}
 		if (release & WPAD_BUTTON_PLUS) {
-			key = SDLK_PLUS;
-			notifyObservers(SDL_KEYUP, &key);
+			event.key = { SDL_KEYUP, SDL_RELEASED, SDLK_PLUS };
+			SDL_PushEvent(event);
 		}
 		if (release & WPAD_BUTTON_MINUS) {
-			key = SDLK_MINUS;
-			notifyObservers(SDL_KEYUP, &key);
+			event.key = { SDL_KEYUP, SDL_RELEASED, SDLK_MINUS };
+			SDL_PushEvent(event);
 		}
 		if (release & WPAD_BUTTON_HOME) {
-			key = SDLK_HOME;
-			notifyObservers(SDL_KEYUP, &key);
+			event.key = { SDL_KEYUP, SDL_RELEASED, SDLK_HOME };
+			SDL_PushEvent(event);
 		}
 	}
 }

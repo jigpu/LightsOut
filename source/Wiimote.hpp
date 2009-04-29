@@ -26,18 +26,21 @@
 #define __Wiimote_hpp__
 
 
-#include "Controller.hpp"
+#include "EventObserver.hpp"
+#include "Thread.hpp"
 
 
 /**
  * A Wiimote is an abstraction of the Wii remote. Since SDL
  * provides no support for it, the run method polls the Wiimote
- * itself, creating faux SDL keyboard events when necessary.
+ * itself, pushing SDL_Events when necessary.
  */
-class Wiimote : public Controller {
+class Wiimote : public Thread, public EventObserver {
 
 public:
 	Wiimote();
+	
+	void eventOccured(SDL_Event* event);
 	
 	void run();
 	

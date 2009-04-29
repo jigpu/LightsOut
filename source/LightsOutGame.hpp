@@ -31,7 +31,7 @@
 #include <SDL/SDL_ttf.h>
 #include <SDL/SDL_rotozoom.h>
 #include <string>
-#include "ControllerObserver.hpp"
+#include "EventObserver.hpp"
 #include "Light.hpp"
 #include "RectangleMap.tpp"
 #include "Renderable.hpp"
@@ -43,7 +43,7 @@
  * A LightsOutGame is a single "play" of the game of Lights Out.
  * Additional rounds of play should create new objects.
  */
-class LightsOutGame : public ControllerObserver, public Renderable, public Thread {
+class LightsOutGame : public EventObserver, public Renderable, public Thread {
 
 protected:
 	int x, y, width, height, gameStartTime, minMoves, moves;
@@ -52,7 +52,7 @@ protected:
 	
 	TTF_Font* font;
 	
-	SDL_Surface* glow;
+	SDL_Surface* cursor;
 	
 	RectangleMap<Light*>* lights;
 	
@@ -65,7 +65,7 @@ public:
 	
 	~LightsOutGame();
 	
-	void controllerAction(int type, SDLKey* value);
+	void eventOccured(SDL_Event* event);
 	
 	void getMoveHint(int* suggestedX, int* suggestedY);
 	

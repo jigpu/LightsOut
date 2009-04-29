@@ -22,24 +22,51 @@
  */
 
 
-#ifndef __Keyboard_hpp__
-#define __Keyboard_hpp__
+#include <iostream>
+#include "EventPublisher.hpp"
 
 
-#include "Controller.hpp"
+EventPublisher::EventPublisher() {
+}
 
 
-/**
- * A Keyboard is the controller you probably spend 90% of your time
- * with if you use a computer ;)
- */
-class Keyboard : public Controller {
+EventPublisher::~EventPublisher() {
+}
 
-public:	
-	void run();
+
+void EventPublisher::addEventObserver(EventObserver* observer) {
+	observers.push_back(observer);
+}
+
+
+EventPublisher& EventPublisher::getInstance() {
+	static EventPublisher singleton;
+	return singleton;
+}
+
+
+void EventPublisher::notifyEventObservers(SDL_Event* event) {
+	std::list<EventObserver*>::iterator iter = observers.begin();
+	while (iter != observers.end()) {
+		(*iter)->eventOccured(event);
+		iter++;
+	}
+}
+
+
+void EventPublisher::removeEventObserver(EventObserver* observer) {
+	observers.remove(observer);
+}
+
+
+void EventPublisher::run() {
+	SDL_Event event;
 	
-};
-
-
-#endif
+	while(runThread) {
+		while(SDL_PollEvent(&event))
+			notifyEventObservers(&event);
+		
+		yield(25);
+	}
+}
 

@@ -33,15 +33,20 @@
 class Thread {
 
 protected:
+	bool runThread;
 	//pthread_t*  thread;
 	SDL_Thread* thread;
 	
 public:
 	void join();
 	
+	void kill();
+	
 	virtual void run() = 0;
 	
 	void start();
+	
+	void stop();
 	
 	void yield(int milliseconds);
 	

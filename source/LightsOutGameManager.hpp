@@ -26,7 +26,7 @@
 #define __LightsOutGameManager_hpp__
 
 
-#include "ControllerObserver.hpp"
+#include "EventObserver.hpp"
 #include "Thread.hpp"
 #include "LightsOutGame.hpp"
 #include "Renderable.hpp"
@@ -38,11 +38,9 @@
  * to end the set of games, keeping track of scores across the set of
  * games, etc.
  */
-class LightsOutGameManager : public ControllerObserver, public Thread, public Renderable {
+class LightsOutGameManager : public EventObserver, public Thread, public Renderable {
 
 protected:	
-	Controller* controller;
-	
 	SDL_mutex* paintMutex;
 	
 	LightsOutGame* game;
@@ -50,11 +48,11 @@ protected:
 	bool newgame, gameover;
 	
 public:
-	LightsOutGameManager(Controller* controller);
+	LightsOutGameManager();
 	
 	~LightsOutGameManager();
 	
-	void controllerAction(int type, SDLKey* value);
+	void eventOccured(SDL_Event* event);
 	
 	int paint(SDL_Surface* surface);
 	

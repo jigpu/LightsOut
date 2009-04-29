@@ -22,6 +22,7 @@
  */
 
 
+#include <iostream>
 #import "Thread.hpp"
 
 
@@ -41,12 +42,26 @@ void Thread::join() {
 }
 
 
+void Thread::kill() {
+	//SDL:
+	runThread = false;
+	SDL_KillThread(thread);
+}
+
+
 void Thread::start() {
+	runThread = true;
+	
 	//pthreads:
 	//pthread_create(thread, NULL, executor, (void*)this);
 	
 	//SDL:
 	thread = SDL_CreateThread(executor, (void*)this);
+}
+
+
+void Thread::stop() {
+	runThread = false;
 }
 
 

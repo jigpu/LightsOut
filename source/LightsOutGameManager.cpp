@@ -26,15 +26,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "Controller.hpp"
+#include "EventPublisher.hpp"
 #include "LightsOutGameManager.hpp"
+#include <SDL/SDL_keysym.h>
 
 
-LightsOutGameManager::LightsOutGameManager(Controller* controller) {
-	this->controller = controller;
-	controller->addObserver(this);
-	
+LightsOutGameManager::LightsOutGameManager() {
 	paintMutex = SDL_CreateMutex();
+	
+	newgame = false;
+	gameover = false;
 	
 	surface = NULL;
 	dirty = true;
@@ -49,48 +50,53 @@ LightsOutGameManager::~LightsOutGameManager() {
 }
 
 
-void LightsOutGameManager::controllerAction(int type, SDLKey* value) {	
-	switch (type) {
+void LightsOutGameManager::eventOccured(SDL_Event* event) {
+	switch (event->type) {
 		case SDL_KEYDOWN: {
-			switch(*value) {
+			switch(event->key.keysym.sym) {
 				case SDLK_ESCAPE:
-				case SDLK_HOME:   exit(0);
-				default: break;
+				case SDLK_HOME:
+					SDL_Event die;
+					die.quit.type = SDL_QUIT;
+					SDL_PushEvent(&die);
 			}
+			break;
 		}
+		
+		case SDL_QUIT: {
+			stop();
+			break;
+		} 
 	}
 }
 
 
 void LightsOutGameManager::run() {
-	do {
+	EventPublisher::getInstance().addEventObserver(this);
+	
+	while (runThread) {
 		SDL_mutexP(paintMutex);
 		dirty = true;
 		gameover = false;
-		game = new LightsOutGame();
-		controller->addObserver(game);
+		this->game = new LightsOutGame();
 		SDL_mutexV(paintMutex);
 		
-		game->start();
-		game->join();
-		controller->removeObserver(game);
-		
-		std::cout << "\033[2J\033[1;1H" << "A winner is you!" << std::endl << "Play again? (Y/N) " << std::flush;
-		
-		do {
-			yield(100);
-		} while (!gameover);
-	} while (newgame);
+		this->game->start();
+		this->game->join();
+	};
 	
 	std::cout << "Thanks for playing!" << std::endl;
+	
+	EventPublisher::getInstance().removeEventObserver(this);
 }
 
 
 int LightsOutGameManager::paint(SDL_Surface* surface) {
 	SDL_mutexP(paintMutex);
-	if (game == NULL)
+	if (this->game == NULL) {
+		std::cout << "No game yet..." << std::endl;
 		return 1;
-	
+	}
 	
 	if (this->surface == NULL ||
 	    this->surface->w != surface->w ||

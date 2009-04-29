@@ -25,6 +25,7 @@
 #include <iomanip>
 #include <sstream>
 #include <stdlib.h>
+#include "EventPublisher.hpp"
 #include "LightsOutGame.hpp"
 
 
@@ -42,9 +43,9 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 		std::cout << "Error loading Go Boom!.ttf: " << SDL_GetError() << std::endl;
 	}
 	
-	glow = IMG_Load("glow.png");
-	if (glow == NULL) {
-		std::cout << "Error loading glow.png: " << SDL_GetError() << std::endl;
+	cursor = IMG_Load("cursor.png");
+	if (cursor == NULL) {
+		std::cout << "Error loading cursor.png: " << SDL_GetError() << std::endl;
 	}
 	
 	lights = new RectangleMap<Light*>(width, height, 10, 10);
@@ -72,7 +73,7 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 LightsOutGame::~LightsOutGame() {
 	SDL_DestroyMutex(paintMutex);
 	TTF_CloseFont(font);
-	SDL_FreeSurface(glow);
+	SDL_FreeSurface(cursor);
 	
 	for (int x=0; x<width; x++) {
 		for (int y=0; y<height; y++) {
@@ -84,12 +85,10 @@ LightsOutGame::~LightsOutGame() {
 }
 
 
-void LightsOutGame::controllerAction(int type, SDLKey* value) {
-	//std::cout << "Recieved button " << value << std::endl;
-	
-	switch (type) {
+void LightsOutGame::eventOccured(SDL_Event* event) {	
+	switch (event->type) {
 		case SDL_KEYDOWN: {
-			switch(*value) {
+			switch(event->key.keysym.sym) {
 				case SDLK_TAB:
 				case SDLK_b:
 					int newX, newY;
@@ -101,8 +100,13 @@ void LightsOutGame::controllerAction(int type, SDLKey* value) {
 				case SDLK_DOWN:   move( 0, 1); break;
 				case SDLK_LEFT:   move(-1, 0); break;
 				case SDLK_RIGHT:  move( 1, 0); break;
-				default: break;
 			}
+			break;
+		}
+		
+		case SDL_QUIT: {
+			stop();
+			break;
 		}
 	}
 }
@@ -169,6 +173,7 @@ void LightsOutGame::moveAbsolute(int x, int y) {
 
 int LightsOutGame::paint(SDL_Surface* surface) {
 	SDL_mutexP(paintMutex);
+	
 	if (this->surface == NULL ||
 	    this->surface->w != surface->w ||
 	    this->surface->h != surface->h) {
@@ -210,7 +215,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 	dest.y = (int)(tileHeight*(this->y-1));
 	dest.h = (int)(tileHeight*3);
 	
-	SDL_Surface* zoom = rotozoomSurfaceXY(glow, 0.0, ((double)(dest.w))/((double)(glow->w)), ((double)(dest.h))/((double)(glow->h)), 1);
+	SDL_Surface* zoom = rotozoomSurfaceXY(cursor, 0.0, ((double)(dest.w))/((double)(cursor->w)), ((double)(dest.h))/((double)(cursor->h)), 1);
 	SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
 	SDL_BlitSurface(zoom, NULL, board, &dest);
 	SDL_FreeSurface(zoom);
@@ -303,13 +308,15 @@ void LightsOutGame::pressButton(int x, int y) {
 
 
 void LightsOutGame::run() {
+	EventPublisher::getInstance().addEventObserver(this);
+	
 	gameStartTime = SDL_GetTicks();
-	do {
-		yield(250);
-		
-		//Periodically dirty ourselves to ensure the timer is updated
+	while (runThread && !winningState()) {
 		dirty = true;
-	} while (!winningState());
+		yield(250);
+	};
+	
+	EventPublisher::getInstance().removeEventObserver(this);
 }
 
 
