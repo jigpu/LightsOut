@@ -74,8 +74,10 @@ int Light::paint(SDL_Surface* surface) {
 	SDL_mutexP(paintMutex);
 	if (this->surface == NULL ||
 	    this->surface->w != surface->w ||
-	    this->surface->h != surface->h)
+	    this->surface->h != surface->h) {
 		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
+		dirty = true;
+	}
 	
 	if (dirty) {
 		switch (state) {

@@ -171,8 +171,11 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 	SDL_mutexP(paintMutex);
 	if (this->surface == NULL ||
 	    this->surface->w != surface->w ||
-	    this->surface->h != surface->h)
+	    this->surface->h != surface->h) {
 		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
+		dirty = true;
+	}
+	
 	
 	//Paint the gameboard
 	SDL_Surface* board = SDL_CreateRGBSurface(surface->flags,surface->h,surface->h,16,0,0,0,0);
@@ -189,7 +192,8 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 			dest.h = (int)(tileHeight*(y+1)) - dest.y;
 			
 			SDL_Surface* subsurface = SDL_CreateRGBSurface(surface->flags,dest.w,dest.h,16,0,0,0,0);
-			if (lights->getTile(x,y)->object->paint(subsurface) == 0) dirtysub = true;
+			if (lights->getTile(x,y)->object->paint(subsurface) == 0)
+				dirtysub = true;
 			
 			SDL_BlitSurface(subsurface, NULL, board, &dest);
 			SDL_FreeSurface(subsurface);
@@ -197,25 +201,27 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 	}
 	
 	
-	//Paint this object itself if dirty, or if underlying
-	//objects were dirty
-	if (dirty || dirtysub) {
+	//Paint the cursor over the gameboard regardless of dirt
+	//If not painted when us and lights are clean, the lights will
+	//still be blitted to board, making the cursor "disappear".
+	dest.x = (int)(tileWidth*(this->x-1));
+	dest.w = (int)(tileWidth*3);
+	
+	dest.y = (int)(tileHeight*(this->y-1));
+	dest.h = (int)(tileHeight*3);
+	
+	SDL_Surface* zoom = rotozoomSurfaceXY(glow, 0.0, ((double)(dest.w))/((double)(glow->w)), ((double)(dest.h))/((double)(glow->h)), 1);
+	SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
+	SDL_BlitSurface(zoom, NULL, board, &dest);
+	SDL_FreeSurface(zoom);
+	
+	
+	if (dirty) {
+		//Recreate our surface so we have a clean slate
 		SDL_FreeSurface(this->surface);
 		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
-		//Paint the cursor onto the gameboard		
-		dest.x = (int)(tileWidth*(this->x-1));
-		dest.w = (int)(tileWidth*3);
 		
-		dest.y = (int)(tileHeight*(this->y-1));
-		dest.h = (int)(tileHeight*3);
-		
-		SDL_Surface* zoom = rotozoomSurfaceXY(glow, 0.0, ((double)(dest.w))/((double)(glow->w)), ((double)(dest.h))/((double)(glow->h)), 1);
-		SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
-		SDL_BlitSurface(zoom, NULL, board, &dest);
-		SDL_FreeSurface(zoom);
-		
-		
-		//Paint text *off* the gameboard
+		//Paint game text
 		SDL_Color clrFg = {255,255,255,0};
 		
 		dest.x = board->h + 8;
@@ -260,6 +266,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 		SDL_BlitSurface(diffS, NULL, this->surface, &dest);
 		SDL_FreeSurface(diffS);
 	}
+	
 	
 	//Copy the gameboard to the game's surface
 	SDL_BlitSurface(board, NULL, this->surface, NULL);
