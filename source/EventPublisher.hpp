@@ -43,6 +43,10 @@
  * would end up competing over the single event queue (which
  * is precicely what we wanted to avoid!).
  *
+ * Although EventPublisher is a thread, it does not make sense
+ * to have it watch itself for an SDL_QUIT event. Instead it
+ * checks each event just after dispatching to see if it is one.
+ *
  * This class replaces the old Controller class since it was
  * essentially just a specialized event publisher.
  */
@@ -50,6 +54,8 @@ class EventPublisher : public Thread {
 
 protected:	
 	std::list<EventObserver*> observers;
+	
+	SDL_mutex* mutex;
 	
 	EventPublisher();
 	
@@ -63,8 +69,6 @@ protected:
 	
 public:	
 	void addEventObserver(EventObserver* observer);
-	
-	//void eventOccured(SDL_Event* event);
 	
 	static EventPublisher& getInstance();
 	

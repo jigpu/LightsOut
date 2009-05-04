@@ -27,15 +27,19 @@
 
 
 EventPublisher::EventPublisher() {
+	mutex = SDL_CreateMutex();
 }
 
 
 EventPublisher::~EventPublisher() {
+	SDL_DestroyMutex(mutex);
 }
 
 
 void EventPublisher::addEventObserver(EventObserver* observer) {
+	SDL_mutexP(mutex);
 	observers.push_back(observer);
+	SDL_mutexV(mutex);
 }
 
 
@@ -46,16 +50,20 @@ EventPublisher& EventPublisher::getInstance() {
 
 
 void EventPublisher::notifyEventObservers(SDL_Event* event) {
+	SDL_mutexP(mutex);
 	std::list<EventObserver*>::iterator iter = observers.begin();
 	while (iter != observers.end()) {
 		(*iter)->eventOccured(event);
 		iter++;
 	}
+	SDL_mutexV(mutex);
 }
 
 
 void EventPublisher::removeEventObserver(EventObserver* observer) {
+	SDL_mutexP(mutex);
 	observers.remove(observer);
+	SDL_mutexV(mutex);
 }
 
 
@@ -63,8 +71,12 @@ void EventPublisher::run() {
 	SDL_Event event;
 	
 	while(runThread) {
-		while(SDL_PollEvent(&event))
+		while(SDL_PollEvent(&event)) {
 			notifyEventObservers(&event);
+			if (event.type == SDL_QUIT) {
+				stop();
+			}
+		}
 		
 		yield(25);
 	}
