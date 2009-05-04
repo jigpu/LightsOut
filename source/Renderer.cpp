@@ -23,6 +23,7 @@
 
 
 #include <iostream>
+#include "EventPublisher.hpp"
 #include "Renderer.hpp"
 
 
@@ -43,10 +44,11 @@ void Renderer::eventOccured(SDL_Event* event) {
 
 
 void Renderer::run() {
-	bool running    = true;
 	int currTime    = 0;
 	int prevTime    = 0;
 	int timeElapsed = 0;
+	
+	EventPublisher::getInstance().addEventObserver(this);
 	
 	//Frame-rate independent code based on
 	//http://hdrlab.org.nz/frame-rate-independent-animation-using-sdl-and-opengl-with-frame-rate-limiting/
@@ -64,5 +66,7 @@ void Renderer::run() {
 			SDL_Flip(surface);
 		}
 	}
+	
+	EventPublisher::getInstance().removeEventObserver(this);
 }
 
