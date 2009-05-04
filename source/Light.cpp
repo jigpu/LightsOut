@@ -28,16 +28,18 @@
 #include "Light.hpp"
 
 
+SDL_Surface* Light::glassTexture;
+
+
 Light::Light(int states) {
 	this->states = states;
 	state = 0;
 	
 	paintMutex = SDL_CreateMutex();
 	
-	glass = IMG_Load("glass.png");
-	if (glass == NULL) {
+	glassTexture = IMG_Load("glass.png");
+	if (glassTexture == NULL)
 		std::cout << "Error loading glass.png: " << SDL_GetError() << std::endl;
-	}
 	
 	surface = NULL;
 }
@@ -45,8 +47,8 @@ Light::Light(int states) {
 
 Light::~Light() {
 	SDL_DestroyMutex(paintMutex);
-	SDL_FreeSurface(glass);
 	SDL_FreeSurface(surface);
+	//Do not free glassTexture on destruction since its static
 }
 
 
@@ -89,7 +91,7 @@ int Light::paint(SDL_Surface* surface) {
 			default: SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_UNK)); break;
 		}
 		
-		SDL_Surface* zoom = rotozoomSurfaceXY(glass, 0.0, ((double)(this->surface->w))/((double)(glass->w)), ((double)(this->surface->h))/((double)(glass->h)), 1);
+		SDL_Surface* zoom = rotozoomSurfaceXY(glassTexture, 0.0, ((double)(this->surface->w))/((double)(glassTexture->w)), ((double)(this->surface->h))/((double)(glassTexture->h)), 1);
 		SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
 		SDL_BlitSurface(zoom, NULL, this->surface, NULL);
 		SDL_FreeSurface(zoom);

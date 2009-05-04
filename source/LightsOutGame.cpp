@@ -29,6 +29,12 @@
 #include "LightsOutGame.hpp"
 
 
+TTF_Font* LightsOutGame::font;
+
+
+SDL_Surface* LightsOutGame::cursorTexture;
+
+
 LightsOutGame::LightsOutGame(int width, int height, int states) {
 	x = 0;
 	y = 0;
@@ -39,14 +45,12 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 	paintMutex = SDL_CreateMutex();
 	
 	font = TTF_OpenFont("Go Boom!.ttf", 36);
-	if (font == NULL) {
+	if (font == NULL)
 		std::cout << "Error loading Go Boom!.ttf: " << SDL_GetError() << std::endl;
-	}
 	
-	cursor = IMG_Load("cursor.png");
-	if (cursor == NULL) {
+	cursorTexture = IMG_Load("cursor.png");
+	if (cursorTexture == NULL)
 		std::cout << "Error loading cursor.png: " << SDL_GetError() << std::endl;
-	}
 	
 	lights = new RectangleMap<Light*>(width, height, 10, 10);
 	
@@ -72,9 +76,9 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 
 LightsOutGame::~LightsOutGame() {
 	SDL_DestroyMutex(paintMutex);
-	TTF_CloseFont(font);
-	SDL_FreeSurface(cursor);
 	SDL_FreeSurface(surface);
+	//Do not free cursorTexture on destruction since its static
+	//Do not close font on destruction since its static
 	
 	for (int x=0; x<width; x++) {
 		for (int y=0; y<height; y++) {
@@ -216,7 +220,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 	dest.y = (int)(tileHeight*(this->y-1));
 	dest.h = (int)(tileHeight*3);
 	
-	SDL_Surface* zoom = rotozoomSurfaceXY(cursor, 0.0, ((double)(dest.w))/((double)(cursor->w)), ((double)(dest.h))/((double)(cursor->h)), 1);
+	SDL_Surface* zoom = rotozoomSurfaceXY(cursorTexture, 0.0, ((double)(dest.w))/((double)(cursorTexture->w)), ((double)(dest.h))/((double)(cursorTexture->h)), 1);
 	SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
 	SDL_BlitSurface(zoom, NULL, board, &dest);
 	SDL_FreeSurface(zoom);

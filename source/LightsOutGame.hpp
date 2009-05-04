@@ -46,13 +46,13 @@
 class LightsOutGame : public EventObserver, public Renderable, public Thread {
 
 protected:
+	static TTF_Font* font;
+	
+	static SDL_Surface* cursorTexture;
+	
 	int x, y, width, height, gameStartTime, minMoves, moves;
 	
 	SDL_mutex* paintMutex;
-	
-	TTF_Font* font;
-	
-	SDL_Surface* cursor;
 	
 	RectangleMap<Light*>* lights;
 	

@@ -45,11 +45,11 @@
 class Light : public Renderable {
 
 protected:
+	static SDL_Surface* glassTexture;
+	
 	int state, states;
 	
 	SDL_mutex* paintMutex;
-	
-	SDL_Surface* glass;
 	
 public:
 	Light(int states=2);
