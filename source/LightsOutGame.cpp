@@ -74,6 +74,7 @@ LightsOutGame::~LightsOutGame() {
 	SDL_DestroyMutex(paintMutex);
 	TTF_CloseFont(font);
 	SDL_FreeSurface(cursor);
+	SDL_FreeSurface(surface);
 	
 	for (int x=0; x<width; x++) {
 		for (int y=0; y<height; y++) {

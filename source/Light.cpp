@@ -46,6 +46,7 @@ Light::Light(int states) {
 Light::~Light() {
 	SDL_DestroyMutex(paintMutex);
 	SDL_FreeSurface(glass);
+	SDL_FreeSurface(surface);
 }
 
 
