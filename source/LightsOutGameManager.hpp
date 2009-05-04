@@ -47,6 +47,8 @@ protected:
 	
 	bool newgame, gameover;
 	
+	int level;
+	
 public:
 	LightsOutGameManager();
 	

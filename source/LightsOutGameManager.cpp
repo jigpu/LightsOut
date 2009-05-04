@@ -37,6 +37,8 @@ LightsOutGameManager::LightsOutGameManager() {
 	newgame = false;
 	gameover = false;
 	
+	level = 2;
+	
 	surface = NULL;
 	dirty = true;
 	
@@ -59,6 +61,19 @@ void LightsOutGameManager::eventOccured(SDL_Event* event) {
 					SDL_Event die;
 					die.quit.type = SDL_QUIT;
 					SDL_PushEvent(&die);
+					break;
+				case SDLK_PAGEUP:
+				case SDLK_PLUS:
+					level++;
+					if (level > 4) level = 4;
+					game->stop();
+					break;
+				case SDLK_PAGEDOWN:
+				case SDLK_MINUS:
+					level--;
+					if (level < 2) level = 2;
+					game->stop();
+					break;
 			}
 			break;
 		}
@@ -78,7 +93,7 @@ void LightsOutGameManager::run() {
 		SDL_mutexP(paintMutex);
 		dirty = true;
 		gameover = false;
-		this->game = new LightsOutGame();
+		this->game = new LightsOutGame(5,5,level);
 		SDL_mutexV(paintMutex);
 		
 		this->game->start();
