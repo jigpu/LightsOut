@@ -33,6 +33,7 @@
 #ifndef PC
 #include <fat.h>
 #include <gccore.h>
+#include "Wiimote.hpp"
 #endif
 
 
@@ -64,15 +65,14 @@ int initVideo(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
 }
 
 
-void stopEventPublisher() {
-	EventPublisher::getInstance().stop();
-}
-
-
 int main(int argc, char** argv) {
 	initVideo();
 	EventPublisher::getInstance().start();
-	atexit(stopEventPublisher);
+	
+	#ifndef PC
+	Wiimote* wiimote = new Wiimote();
+	wiimote->start();
+	#endif
 	
 	LightsOutGameManager* game = new LightsOutGameManager();
 	game->start();
