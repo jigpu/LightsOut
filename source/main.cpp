@@ -70,6 +70,7 @@ int main(int argc, char** argv) {
 	EventPublisher::getInstance().start();
 	
 	#ifndef PC
+	fatInitDefault();
 	Wiimote* wiimote = new Wiimote();
 	wiimote->start();
 	#endif
