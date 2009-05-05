@@ -140,11 +140,18 @@ void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
 		}
 	}
 	
+	//There's no reasonable "hint" for a board that has already won ;)
+	if (winningState()) {
+		*suggestedX = 0;
+		*suggestedY = 0;
+		return;
+	}
+	
 	//Unsolvable
 	//How on earth we got here after the constructor ensured
 	//the board was solvable is beyond me.
 	//Should throw an exception...
-	exit(-1);
+	exit(-50);
 }
 
 
