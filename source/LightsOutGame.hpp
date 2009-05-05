@@ -40,8 +40,10 @@
 
 
 /**
- * A LightsOutGame is a single "play" of the game of Lights Out.
- * Additional rounds of play should create new objects.
+ * A LightsOutGame allows for a single "play" of the game of Lights Out.
+ * After creating the game, just start (and optionally join) the thread.
+ * When the game ends, the thread will exit. Simply create a new
+ * LightsOutGame if additional rounds of play are requested.
  */
 class LightsOutGame : public EventObserver, public Renderable, public Thread {
 

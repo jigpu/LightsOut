@@ -36,6 +36,8 @@ SDL_Surface* LightsOutGame::cursorTexture;
 
 
 LightsOutGame::LightsOutGame(int width, int height, int states) {
+	std::clog << "Creating new LightsOutGame." << std::endl;
+	
 	x = 0;
 	y = 0;
 	this->width = width;
@@ -46,11 +48,11 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 	
 	font = TTF_OpenFont("Go Boom!.ttf", 36);
 	if (font == NULL)
-		std::cout << "Error loading Go Boom!.ttf: " << SDL_GetError() << std::endl;
+		std::cerr << "Error loading Go Boom!.ttf: " << SDL_GetError() << std::endl;
 	
 	cursorTexture = IMG_Load("cursor.png");
 	if (cursorTexture == NULL)
-		std::cout << "Error loading cursor.png: " << SDL_GetError() << std::endl;
+		std::cerr << "Error loading cursor.png: " << SDL_GetError() << std::endl;
 	
 	lights = new RectangleMap<Light*>(width, height, 10, 10);
 	
@@ -75,6 +77,8 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 
 
 LightsOutGame::~LightsOutGame() {
+	std::clog << "Deleting LightsOutGame." << std::endl;
+	
 	SDL_DestroyMutex(paintMutex);
 	SDL_FreeSurface(surface);
 	//Do not free cursorTexture on destruction since its static
@@ -142,6 +146,7 @@ void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
 	
 	//There's no reasonable "hint" for a board that has already won ;)
 	if (winningState()) {
+		std::clog << "Game has already been won, providing bogus hint of (0,0)." << std::endl;
 		*suggestedX = 0;
 		*suggestedY = 0;
 		return;
@@ -151,6 +156,7 @@ void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
 	//How on earth we got here after the constructor ensured
 	//the board was solvable is beyond me.
 	//Should throw an exception...
+	std::cerr << "Game is not solvable, cannot give move hint." << std::endl;
 	exit(-50);
 }
 

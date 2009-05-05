@@ -33,9 +33,9 @@
 /**
  * Classes which may be run as a seperate thread can extend this
  * class to obtain some convienient methods. Note that if using
- * SDL and the EventPublisher, Threads should add themselves as
- * observers so that they can recieve the SDL_QUIT event and
- * stop running.
+ * SDL and the EventPublisher, Threads should also extend EventObserver
+ * and register themselves with the EventPublisher to recieve the
+ * SDL_QUIT event and stop running.
  */
 class Thread {
 

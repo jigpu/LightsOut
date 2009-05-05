@@ -32,6 +32,8 @@ SDL_Surface* Light::glassTexture;
 
 
 Light::Light(int states) {
+	std::clog << "Creating new light." << std::endl;
+	
 	this->states = states;
 	state = 0;
 	
@@ -39,13 +41,15 @@ Light::Light(int states) {
 	
 	glassTexture = IMG_Load("glass.png");
 	if (glassTexture == NULL)
-		std::cout << "Error loading glass.png: " << SDL_GetError() << std::endl;
+		std::cerr << "Error loading glass.png: " << SDL_GetError() << std::endl;
 	
 	surface = NULL;
 }
 
 
 Light::~Light() {
+	std::clog << "Deleting light." << std::endl;
+	
 	SDL_DestroyMutex(paintMutex);
 	SDL_FreeSurface(surface);
 	//Do not free glassTexture on destruction since its static
@@ -84,10 +88,10 @@ int Light::paint(SDL_Surface* surface) {
 	
 	if (dirty) {
 		switch (state) {
-			case 0:	SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_0)); break;
-			case 1:	SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_1)); break;
-			case 2:	SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_2)); break;
-			case 3:	SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_3)); break;
+			case 0:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_0));   break;
+			case 1:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_1));   break;
+			case 2:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_2));   break;
+			case 3:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_3));   break;
 			default: SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_UNK)); break;
 		}
 		

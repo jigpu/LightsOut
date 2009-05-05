@@ -32,6 +32,8 @@
 
 
 LightsOutGameManager::LightsOutGameManager() {
+	std::clog << "Creating new LightsOutGameManager." << std::endl;
+	
 	paintMutex = SDL_CreateMutex();
 	
 	newgame = false;
@@ -47,6 +49,8 @@ LightsOutGameManager::LightsOutGameManager() {
 
 
 LightsOutGameManager::~LightsOutGameManager() {
+	std::clog << "Deleting LightsOutGameManager." << std::endl;
+	
 	SDL_FreeSurface(surface);
 	SDL_DestroyMutex(paintMutex);
 }
@@ -109,7 +113,7 @@ void LightsOutGameManager::run() {
 int LightsOutGameManager::paint(SDL_Surface* surface) {
 	SDL_mutexP(paintMutex);
 	if (this->game == NULL) {
-		std::cout << "No game yet..." << std::endl;
+		std::clog << "No game yet..." << std::endl;
 		return 1;
 	}
 	

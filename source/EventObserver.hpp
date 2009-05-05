@@ -31,7 +31,9 @@
 
 /**
  * An EventObserver is a class which is interested in recieving
- * SDL_Events.
+ * SDL_Events. Threads in an application making use of the
+ * EventPublisher should extend this class and register themselves
+ * to recieve the SDL_QUIT event.
  */
 class EventObserver {
 
