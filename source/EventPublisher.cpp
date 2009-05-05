@@ -27,20 +27,21 @@
 
 
 EventPublisher::EventPublisher() {
-	mutex = SDL_CreateMutex();
+	listMutex = SDL_CreateMutex();
 }
 
 
 EventPublisher::~EventPublisher() {
-	SDL_DestroyMutex(mutex);
+	SDL_DestroyMutex(listMutex);
 }
 
 
 void EventPublisher::addEventObserver(EventObserver* observer) {
-	SDL_mutexP(mutex);
 	std::clog << "Adding new event observer (" << observer << ")" << std::endl;
+	
+	SDL_mutexP(listMutex);
 	observers.push_back(observer);
-	SDL_mutexV(mutex);
+	SDL_mutexV(listMutex);
 }
 
 
@@ -51,22 +52,24 @@ EventPublisher& EventPublisher::getInstance() {
 
 
 void EventPublisher::notifyEventObservers(SDL_Event* event) {
-	SDL_mutexP(mutex);
 	std::clog << "Notifying observers of new event." << std::endl;
+	
+	SDL_mutexP(listMutex);
 	std::list<EventObserver*>::iterator iter = observers.begin();
 	while (iter != observers.end()) {
 		(*iter)->eventOccured(event);
 		iter++;
 	}
-	SDL_mutexV(mutex);
+	SDL_mutexV(listMutex);
 }
 
 
 void EventPublisher::removeEventObserver(EventObserver* observer) {
-	SDL_mutexP(mutex);
 	std::clog << "Removing event observer (" << observer << ")" << std::endl;
+	
+	SDL_mutexP(listMutex);
 	observers.remove(observer);
-	SDL_mutexV(mutex);
+	SDL_mutexV(listMutex);
 }
 
 
@@ -76,9 +79,11 @@ void EventPublisher::run() {
 	while(runThread) {
 		while(SDL_PollEvent(&event)) {
 			notifyEventObservers(&event);
-			if (event.type == SDL_QUIT) {
+			
+			//As a thread making use of SDL, we need to be
+			//sure to stop when SDL quits ;)
+			if (event.type == SDL_QUIT)
 				stop();
-			}
 		}
 		
 		yield(25);

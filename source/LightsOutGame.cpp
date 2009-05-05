@@ -23,8 +23,12 @@
 
 
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <stdlib.h>
+#include <string>
+#include <SDL/SDL_image.h>
+#include <SDL/SDL_rotozoom.h>
 #include "EventPublisher.hpp"
 #include "LightsOutGame.hpp"
 
@@ -38,27 +42,30 @@ SDL_Surface* LightsOutGame::cursorTexture;
 LightsOutGame::LightsOutGame(int width, int height, int states) {
 	std::clog << "Creating new LightsOutGame." << std::endl;
 	
-	x = 0;
-	y = 0;
-	this->width = width;
-	this->height = height;
-	minMoves = 0;
-	
-	paintMutex = SDL_CreateMutex();
-	
 	font = TTF_OpenFont("Go Boom!.ttf", 36);
-	if (font == NULL)
+	if (font == NULL) {
 		std::cerr << "Error loading Go Boom!.ttf: " << SDL_GetError() << std::endl;
+		throw 1;
+	}
 	
 	cursorTexture = IMG_Load("cursor.png");
-	if (cursorTexture == NULL)
+	if (cursorTexture == NULL) {
 		std::cerr << "Error loading cursor.png: " << SDL_GetError() << std::endl;
+		throw 1;
+	}
 	
-	lights = new RectangleMap<Light*>(width, height, 10, 10);
+	x = 0;
+	y = 0;
+	this->states = states;
 	
-	for (int x=0; x<width; x++)
-		for (int y=0; y<height; y++)
+	lights = new RectangleMap<Light*>(width, height);
+	
+	//Create all gameboard lights
+	for (int x=0; x<width; x++) {
+		for (int y=0; y<height; y++) {
 			lights->setTile(x, y, new Tile<Light*>(new Light(states)));
+		}
+	}
 	
 	//Initialize the board to some solvable state.
 	for (int x=0; x<width; x++) {
@@ -70,7 +77,9 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 		}
 	}
 		
-	moves = 0; //Reset since its called in pressButton :D 
+	moves = 0; //Moves is modified by the initialization above, so we reset it here
+	
+	paintMutex = SDL_CreateMutex();
 	surface = NULL;
 	dirty = true;
 }
@@ -84,8 +93,8 @@ LightsOutGame::~LightsOutGame() {
 	//Do not free cursorTexture on destruction since its static
 	//Do not close font on destruction since its static
 	
-	for (int x=0; x<width; x++) {
-		for (int y=0; y<height; y++) {
+	for (int x=0; x<lights->getWidth(); x++) {
+		for (int y=0; y<lights->getHeight(); y++) {
 			delete lights->getTile(x, y);
 		}
 	}
@@ -122,10 +131,10 @@ void LightsOutGame::eventOccured(SDL_Event* event) {
 
 
 void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
-	for (int y=0; y<height; y++) {
-		for (int x=0; x<width; x++) {
-			if (lights->getTile(x,y)->object->getState() != 0) {
-				if (y+1 != height) {
+	for (int y=0; y<lights->getHeight(); y++) {
+		for (int x=0; x<lights->getWidth(); x++) {
+			if (lights->getTile(x,y)->object->isLightOn()) {
+				if (y+1 != lights->getHeight()) {
 					//"Chase the lights"
 					*suggestedX = x;
 					*suggestedY = y+1;
@@ -155,25 +164,21 @@ void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
 	//Unsolvable
 	//How on earth we got here after the constructor ensured
 	//the board was solvable is beyond me.
-	//Should throw an exception...
 	std::cerr << "Game is not solvable, cannot give move hint." << std::endl;
-	exit(-50);
-}
-
-
-Tile<Light*>* LightsOutGame::getTile(int x, int y) {
-	return lights->getTile(x, y);
+	throw 10;
 }
 
 
 void LightsOutGame::move(int deltaX, int deltaY) {
+	SDL_mutexP(paintMutex);
 	int newX = x+deltaX;
 	int newY = y+deltaY;
+	SDL_mutexV(paintMutex);
 	
 	if (newX < 0) newX = 0;
-	if (newX >= width) newX = width-1;
+	if (newX >= lights->getWidth()) newX = lights->getWidth()-1;
 	if (newY < 0) newY = 0;
-	if (newY >= height) newY = height-1;
+	if (newY >= lights->getHeight()) newY = lights->getHeight()-1;
 	
 	moveAbsolute(newX, newY);
 }
@@ -202,15 +207,15 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 	
 	//Paint the gameboard
 	SDL_Surface* board = SDL_CreateRGBSurface(surface->flags,surface->h,surface->h,16,0,0,0,0);
-	double tileWidth  = (double)board->w/(double)width;
-	double tileHeight = (double)board->h/(double)height;
+	double tileWidth  = (double)board->w/(double)lights->getWidth();
+	double tileHeight = (double)board->h/(double)lights->getHeight();
 	
 	SDL_Rect dest;
 	bool dirtysub = false;
-	for (int x=0; x<width; x++) {
+	for (int x=0; x<lights->getWidth(); x++) {
 		dest.x = (int)(tileWidth*x);
 		dest.w = (int)(tileWidth*(x+1)) - dest.x;
-		for (int y=0; y<height; y++) {
+		for (int y=0; y<lights->getHeight(); y++) {
 			dest.y = (int)(tileHeight*y);
 			dest.h = (int)(tileHeight*(y+1)) - dest.y;
 			
@@ -233,7 +238,9 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 	dest.y = (int)(tileHeight*(this->y-1));
 	dest.h = (int)(tileHeight*3);
 	
-	SDL_Surface* zoom = rotozoomSurfaceXY(cursorTexture, 0.0, ((double)(dest.w))/((double)(cursorTexture->w)), ((double)(dest.h))/((double)(cursorTexture->h)), 1);
+	double widthPercent  = ((double)(dest.w))/((double)(cursorTexture->w));
+	double heightPercent = ((double)(dest.h))/((double)(cursorTexture->h));
+	SDL_Surface* zoom = rotozoomSurfaceXY(cursorTexture, 0.0, widthPercent, heightPercent, 1);
 	SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
 	SDL_BlitSurface(zoom, NULL, board, &dest);
 	SDL_FreeSurface(zoom);
@@ -284,7 +291,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 				
 		dest.y = 406;
 		std::stringstream difficultyText;
-		difficultyText << getTile(0,0)->object->getStates() << " States";
+		difficultyText << states << " States";
 		SDL_Surface* diffS = TTF_RenderText_Blended(font, difficultyText.str().c_str(), clrFg);
 		SDL_BlitSurface(diffS, NULL, this->surface, &dest);
 		SDL_FreeSurface(diffS);
@@ -310,7 +317,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 
 
 void LightsOutGame::pressButton(int x, int y) {
-	if (x >= width || x < 0 || y >= height || y < 0)
+	if (x >= lights->getWidth() || x < 0 || y >= lights->getHeight() || y < 0)
 		return; //Should throw an invalid move exception...
 	
 	SDL_mutexP(paintMutex);
@@ -344,7 +351,7 @@ void LightsOutGame::select() {
 
 
 void LightsOutGame::toggleLight(int x, int y) {
-	if (x >= width || x < 0 || y >= height || y < 0)
+	if (x >= lights->getWidth() || x < 0 || y >= lights->getHeight() || y < 0)
 		return; //Assume the caller was just lazy
 	
 	SDL_mutexP(paintMutex);
@@ -354,9 +361,9 @@ void LightsOutGame::toggleLight(int x, int y) {
 
 
 bool LightsOutGame::winningState() {
-	for (int y=0; y<height; y++) {
-		for (int x=0; x<width; x++) {
-			if (lights->getTile(x,y)->object->getState() != 0)
+	for (int y=0; y<lights->getHeight(); y++) {
+		for (int x=0; x<lights->getWidth(); x++) {
+			if (lights->getTile(x,y)->object->isLightOn())
 				return false;
 			
 		}

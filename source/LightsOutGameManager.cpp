@@ -34,17 +34,12 @@
 LightsOutGameManager::LightsOutGameManager() {
 	std::clog << "Creating new LightsOutGameManager." << std::endl;
 	
-	paintMutex = SDL_CreateMutex();
-	
-	newgame = false;
-	gameover = false;
-	
+	srand ( time(NULL) );
 	level = 2;
 	
+	paintMutex = SDL_CreateMutex();
 	surface = NULL;
 	dirty = true;
-	
-	srand ( time(NULL) );
 }
 
 
@@ -96,7 +91,6 @@ void LightsOutGameManager::run() {
 	while (runThread) {
 		SDL_mutexP(paintMutex);
 		dirty = true;
-		gameover = false;
 		this->game = new LightsOutGame(5,5,level);
 		SDL_mutexV(paintMutex);
 		

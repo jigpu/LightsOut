@@ -34,14 +34,16 @@ SDL_Surface* Light::glassTexture;
 Light::Light(int states) {
 	std::clog << "Creating new light." << std::endl;
 	
+	glassTexture = IMG_Load("glass.png");
+	if (glassTexture == NULL) {
+		std::cerr << "Error loading glass.png: " << SDL_GetError() << std::endl;
+		throw 1;
+	}
+	
 	this->states = states;
 	state = 0;
 	
 	paintMutex = SDL_CreateMutex();
-	
-	glassTexture = IMG_Load("glass.png");
-	if (glassTexture == NULL)
-		std::cerr << "Error loading glass.png: " << SDL_GetError() << std::endl;
 	
 	surface = NULL;
 }
@@ -52,17 +54,12 @@ Light::~Light() {
 	
 	SDL_DestroyMutex(paintMutex);
 	SDL_FreeSurface(surface);
-	//Do not free glassTexture on destruction since its static
+	//Do not free glassTexture on destruction since it is static
 }
 
 
-int Light::getState() {
-	return state;
-}
-
-
-int Light::getStates() {
-	return states;
+bool Light::isLightOn() {
+	return state != 0;
 }
 
 
@@ -86,6 +83,7 @@ int Light::paint(SDL_Surface* surface) {
 		dirty = true;
 	}
 	
+	//If we're dirty, draw onto our own surface
 	if (dirty) {
 		switch (state) {
 			case 0:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_0));   break;
@@ -95,13 +93,15 @@ int Light::paint(SDL_Surface* surface) {
 			default: SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_UNK)); break;
 		}
 		
-		SDL_Surface* zoom = rotozoomSurfaceXY(glassTexture, 0.0, ((double)(this->surface->w))/((double)(glassTexture->w)), ((double)(this->surface->h))/((double)(glassTexture->h)), 1);
+		double widthPercent  = ((double)(this->surface->w))/((double)(glassTexture->w));
+		double heightPercent = ((double)(this->surface->h))/((double)(glassTexture->h));
+		SDL_Surface* zoom = rotozoomSurfaceXY(glassTexture, 0.0, widthPercent, heightPercent, 1);
 		SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
 		SDL_BlitSurface(zoom, NULL, this->surface, NULL);
 		SDL_FreeSurface(zoom);
 	}
 	
-	//Blit onto the target surface and return
+	//Blit our own surface onto the target surface and return
 	SDL_BlitSurface(this->surface, NULL, surface, NULL);
 	if (dirty) {
 		dirty = false;

@@ -27,17 +27,24 @@
 
 
 /**
- * A Tile is a container for objects of type T that can be placed onto
- * a Map. Tiles may contain Player objects, Terrain objects, etc as
- * needed.
+ * A Tile is a container for objects of type T that can be placed
+ * onto a Map. Tiles may contain Player objects, Terrain objects, etc
+ * as needed.
  */
 template <typename T>
 class Tile {
 
 public:
+	/**
+	 * The object that is to be contained in the tile.
+	 */
 	T object;
 	
 	
+	/**
+	 * Creating a new Tile requires an object of type T for it
+	 * to contain.
+	 */
 	Tile(T object) {
 		this->object = object;
 	}

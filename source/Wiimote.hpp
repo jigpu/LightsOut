@@ -31,9 +31,9 @@
 
 
 /**
- * A Wiimote is an abstraction of the Wii remote. Since SDL
- * provides no support for it, the run method polls the Wiimote
- * itself, pushing SDL_Events when necessary.
+ * A Wiimote is an abstraction of the Wii remote. Since SDL provides
+ * no support for it, the run method polls the Wiimote itself,
+ * pushing SDL_Events when necessary.
  */
 class Wiimote : public Thread, public EventObserver {
 
@@ -42,6 +42,11 @@ public:
 	
 	void eventOccured(SDL_Event* event);
 	
+	/**
+	 * The Wiimote thread periodically polls the state of the
+	 * Wiimote and pushes events onto the SDL event queue when
+	 * anything interesting happens.
+	 */
 	void run();
 	
 };

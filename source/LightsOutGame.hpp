@@ -26,11 +26,7 @@
 #define __LightsOutGame_hpp__
 
 
-#include <iostream>
-#include <SDL/SDL_image.h>
 #include <SDL/SDL_ttf.h>
-#include <SDL/SDL_rotozoom.h>
-#include <string>
 #include "EventObserver.hpp"
 #include "Light.hpp"
 #include "RectangleMap.tpp"
@@ -40,49 +36,125 @@
 
 
 /**
- * A LightsOutGame allows for a single "play" of the game of Lights Out.
- * After creating the game, just start (and optionally join) the thread.
- * When the game ends, the thread will exit. Simply create a new
- * LightsOutGame if additional rounds of play are requested.
+ * A LightsOutGame allows for a single "play" of the game of Lights
+ * Out. After creating the game, just start (and optionally join) the
+ * thread. When the game ends, the thread will exit. Simply create a
+ * new LightsOutGame if additional rounds of play are requested.
  */
 class LightsOutGame : public EventObserver, public Renderable, public Thread {
 
 protected:
+	/**
+	 * A static font used for display of game statistics on the
+	 * screen. DO NOT CLOSE THIS FONT! AFTER CREATION IT SHOULD
+	 * REMAIN IN MEMORY FOR OTHER LIGHTSOUTGAMES.
+	 */
 	static TTF_Font* font;
 	
+	/**
+	 * A static surface containing the cursor which the user uses
+	 * to select a light. DO NOT FREE THIS SURFACE! AFTER
+	 * CREATION IT SHOULD REMAIN IN MEMORY FOR OTHER
+	 * LIGHTSOUTGAMES.
+	 */
 	static SDL_Surface* cursorTexture;
 	
-	int x, y, width, height, gameStartTime, minMoves, moves;
+	/**
+	 * X and Y contain the location of the cursor.
+	 */
+	int x, y;
 	
+	/**
+	 * The time as returned by SDL_GetTicks when this game was
+	 * started. This is used for game statistics.
+	 */
+	int gameStartTime;
+	
+	/**
+	 * The minimum number of moves required to solve the game,
+	 * and the total number of moves played so far.
+	 */
+	int minMoves, moves;
+	
+	/**
+	 * The number of states that the lights are allowed to take
+	 * on.
+	 */
+	int states;
+	
+	/**
+	 * A mutex to prevent the modification of internal state
+	 * durring a paint operation (or vice-versa).
+	 */
 	SDL_mutex* paintMutex;
 	
+	/**
+	 * The map containing the individual light objects.
+	 */
 	RectangleMap<Light*>* lights;
 	
+	/**
+	 * Has the light at (X,Y) go to its next available state.
+	 * This operation marks the game as dirty.
+	 */
 	void toggleLight(int x, int y);
 	
-	void moveAbsolute(int x, int y);
-	
 public:
+	/**
+	 * Create a new game of Lights Out. This game will have the
+	 * traditional 5x5 board size, with 2-state lights. Board
+	 * size and number of states may be changed if desired.
+	 */
 	LightsOutGame(int width=5, int height=5, int states=2);
 	
 	~LightsOutGame();
 	
 	void eventOccured(SDL_Event* event);
 	
+	/**
+	 * Suggests a move that will lead to the completion of the
+	 * game. The values of suggestedX and suggestedY will contain
+	 * the location after the call completes.
+	 */
 	void getMoveHint(int* suggestedX, int* suggestedY);
 	
-	Tile<Light*>* getTile(int x, int y);
-	
+	/**
+	 * Move the cursor a specified ammount.
+	 */
 	void move(int deltaX, int deltaY);
+	
+	/**
+	 * Moves the cursor to the absolute coordinate (X,Y). This
+	 * operation marks the game as dirty.
+	 */
+	void moveAbsolute(int x, int y);
 	
 	int paint(SDL_Surface* surface);
 	
+	/**
+	 * Press the button at the given cursor location. This causes
+	 * it and the four neighboring lights to advance to their
+	 * next state. This method DOES NOT move the cursor.
+	 */
 	void pressButton(int x, int y);
 	
+	/**
+	 * Runs the game, which does nothing but wait for a winning
+	 * state.
+	 */
 	void run();
 	
+	/**
+	 * Press the button at the current cursor location. This
+	 * causes it and the four neighboring lights to advance to
+	 * their next state.
+	 */
 	void select();
 	
+	/**
+	 * Returns true if the board is in a winning state (that is,
+	 * all lights off).
+	 */
 	bool winningState();
 	
 };

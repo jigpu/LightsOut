@@ -45,21 +45,46 @@
 class Light : public Renderable {
 
 protected:
+	/**
+	 * A static surface containing the glass texture that
+	 * overlays all Light objects. DO NOT FREE THIS SURFACE!
+	 * AFTER CREATION IT SHOULD REMAIN IN MEMORY FOR ALL FUTURE
+	 * LIGHT OBJECTS TO USE.
+	 */
 	static SDL_Surface* glassTexture;
 	
+	/**
+	 * The current state and total number of states that the
+	 * Light may take on. State 0 has special meaning as the
+	 * "off" state.
+	 */
 	int state, states;
 	
+	/**
+	 * A mutex to prevent the change of internal object state
+	 * while a paint is taking place (or vice-versa).
+	 */
 	SDL_mutex* paintMutex;
 	
 public:
+	/**
+	 * Create a new Light. By default the light will have two
+	 * states (off and on) if no maximum is specified.
+	 */
 	Light(int states=2);
 	
 	~Light();
 	
-	int getState();
+	/**
+	 * Returns true if the light is on.
+	 */
+	bool isLightOn();
 	
-	int getStates();
-	
+	/**
+	 * Cycles the light to the next available state. Lights at
+	 * the highest available state will be reset to the "off"
+	 * state.
+	 */
 	void nextState();
 	
 	int paint(SDL_Surface* surface);

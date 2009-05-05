@@ -39,11 +39,38 @@
 class Renderable {
 
 protected:
+	/**
+	 * This boolean describes the state of the object itself.
+	 * When a modification occurs, this should be made true so
+	 * that the paint method knows that it needs to repaint the
+	 * surface.
+	 *
+	 * This boolean should not depend on the dirtyness of
+	 * sub-objects, though obviously something with dirty
+	 * sub-objects will need to be re-painted.
+	 */
 	bool dirty;
 	
+	/**
+	 * When painting a dirty object, paint operations should be
+	 * sent to this object. This surface can then be blitted onto
+	 * the surface that is given in the paint method.
+	 *
+	 * If an object and all sub-objects are clean, this surface
+	 * can be blitted onto the surface given in the paint method
+	 * without needing to perform any other drawing operations.
+	 */
 	SDL_Surface* surface;
 	
 public:
+	/**
+	 * The paint method will be called any time that the screen
+	 * needs to be updated. The given surface should be painted
+	 * to any time this method is called. Given this fact, it
+	 * will be faster to use the surface above as a "clean"
+	 * reference and blit it onto the given surface if this
+	 * object and all sub-objects are clean.
+	 */
 	virtual int paint(SDL_Surface* surface) = 0;
 	
 };

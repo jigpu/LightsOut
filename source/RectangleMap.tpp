@@ -30,9 +30,9 @@
 
 
 /**
- * A RectangleMap is a type of Map where the center of tiles are placed
- * on a rectangular grid. Given rectangular tiles, this reproduces the
- * layout of many simple (and not-so-simple) games.
+ * A RectangleMap is a type of Map where the center of tiles are
+ * placed on a rectangular grid. Given rectangular tiles, this
+ * reproduces the layout of many simple (and not-so-simple) games.
  */
 template <typename T>
 class RectangleMap : public Map<T> {
@@ -41,11 +41,9 @@ protected:
 	int width, height;
 	
 public:
-	RectangleMap(int width, int height, int deltaX, int deltaY) {
+	RectangleMap(int width, int height) {
 		this->width  = width;
 		this->height = height;
-		this->deltaX = deltaX;
-		this->deltaY = deltaY;
 		
 		this->tileRows = new Tile<T>**[height];
 		for (int y=0; y<height; y++)

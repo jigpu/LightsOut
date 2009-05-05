@@ -39,14 +39,22 @@
 /**
  * The Renderer is in charge of the SDL GUI. While it does not
  * initialize SDL, it should be started shortly afterward. It
- * periodically calls the paint method of its child Renderable
- * to ensure that the display is up to date.
+ * periodically calls the paint method of its child Renderable to
+ * ensure that the display is up to date.
  */
 class Renderer : public Thread, public EventObserver {
 
 protected:
+	/**
+	 * The surface which the Renderer is rendering onto. This
+	 * will typically be the screen surface.
+	 */
 	SDL_Surface* surface;
 	
+	/**
+	 * The primary object to be rendered. All paint operations
+	 * will trickle through this Renderable.
+	 */
 	Renderable* child;
 	
 public:
@@ -54,6 +62,10 @@ public:
 	
 	void eventOccured(SDL_Event* event);
 	
+	/**
+	 * Runs the renderer, periodically calling the paint method
+	 * on the child.
+	 */
 	void run();
 	
 };

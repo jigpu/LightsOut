@@ -34,19 +34,27 @@
 
 /**
  * A simple manager for the multiple games of Lights Out. The manager
- * dictates how multiple games are played: how to choose players, when
- * to end the set of games, keeping track of scores across the set of
- * games, etc.
+ * dictates how multiple games are played: how to choose players,
+ * when to end the set of games, keeping track of scores across the
+ * set of games, etc.
  */
 class LightsOutGameManager : public EventObserver, public Thread, public Renderable {
 
-protected:	
+protected:
+	/**
+	 * Mutex to prevent the modification of internal state
+	 * durring a paint operation (or vice-versa).
+	 */
 	SDL_mutex* paintMutex;
 	
+	/**
+	 * The currently active game of Lights Out.
+	 */
 	LightsOutGame* game;
 	
-	bool newgame, gameover;
-	
+	/**
+	 * The level of play that new games should be created at.
+	 */
 	int level;
 	
 public:
@@ -58,6 +66,10 @@ public:
 	
 	int paint(SDL_Surface* surface);
 	
+	/**
+	 * Runs the manager, which creates new games for the player
+	 * until the program terminates.
+	 */
 	void run();
 	
 };
