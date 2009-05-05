@@ -40,8 +40,6 @@ class RectangleMap : public Map<T> {
 protected:
 	int width, height;
 	
-	int deltaX, deltaY;
-	
 public:
 	RectangleMap(int width, int height, int deltaX, int deltaY) {
 		this->width  = width;
@@ -59,6 +57,16 @@ public:
 		for (int y=0; y<height; y++)
 			delete (this->tileRows[y])[width];
 		delete (this->tileRows)[height];
+	}
+	
+	
+	int getWidth() {
+		return width;
+	}
+	
+	
+	int getHeight() {
+		return height;
 	}
 	
 };
