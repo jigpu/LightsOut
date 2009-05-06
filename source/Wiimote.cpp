@@ -51,10 +51,12 @@ void Wiimote::eventOccured(SDL_Event* event) {
 void Wiimote::run() {
 	EventPublisher::getInstance().addEventObserver(this);
 	
+	u32 lastDown = 0;
 	while (runThread) {
 		WPAD_ScanPads();
-		u32 press   = WPAD_ButtonsDown(0);
-		u32 release = WPAD_ButtonsUp(0);
+		u32 down    = WPAD_ButtonsHeld(0);
+		u32 press   = ~lastDown & down;
+		u32 release = lastDown & ~down;
 		
 		SDL_Event event;
 		event.key.type   = SDL_KEYDOWN;
@@ -160,6 +162,7 @@ void Wiimote::run() {
 			}
 		}
 		
+		lastDown = down;
 		yield(25);
 	}
 	
