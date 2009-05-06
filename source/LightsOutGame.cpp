@@ -76,6 +76,7 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 	paintMutex = SDL_CreateMutex();
 	
 	//Initialize the board to some solvable state.
+	minMoves = 0;
 	for (int x=0; x<width; x++) {
 		for (int y=0; y<height; y++) {
 			for (int i=0; i<rand()%states; i++) {
