@@ -33,6 +33,9 @@
 #define COLOR_1   64,192,64
 #define COLOR_2   192,64,64
 #define COLOR_3   64,64,192
+#define COLOR_4   64,192,192
+#define COLOR_5   192,64,192
+#define COLOR_6   192,192,64
 #define COLOR_UNK 255,255,255
 
 

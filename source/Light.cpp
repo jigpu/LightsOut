@@ -92,6 +92,9 @@ int Light::paint(SDL_Surface* surface) {
 			case 1:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_1));   break;
 			case 2:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_2));   break;
 			case 3:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_3));   break;
+			case 4:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_4));   break;
+			case 5:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_5));   break;
+			case 6:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_6));   break;
 			default: SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_UNK)); break;
 		}
 		

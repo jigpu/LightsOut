@@ -65,7 +65,7 @@ void LightsOutGameManager::eventOccured(SDL_Event* event) {
 				case SDLK_PAGEUP:
 				case SDLK_PLUS:
 					level++;
-					if (level > 4) level = 4;
+					if (level > 7) level = 7;
 					game->stop();
 					break;
 				case SDLK_PAGEDOWN:
