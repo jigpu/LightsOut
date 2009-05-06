@@ -33,25 +33,29 @@
 #include "LightsOutGame.hpp"
 
 
-TTF_Font* LightsOutGame::font;
+TTF_Font* LightsOutGame::font = NULL;
 
 
-SDL_Surface* LightsOutGame::cursorTexture;
+SDL_Surface* LightsOutGame::cursorTexture = NULL;
 
 
 LightsOutGame::LightsOutGame(int width, int height, int states) {
 	std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGame." << std::endl;
 	
-	font = TTF_OpenFont("Go Boom!.ttf", 36);
 	if (font == NULL) {
-		std::cerr << "Error loading Go Boom!.ttf: " << SDL_GetError() << std::endl;
-		throw 1;
+		font = TTF_OpenFont("Go Boom!.ttf", 36);
+		if (font == NULL) {
+			std::cerr << "Error loading Go Boom!.ttf: " << SDL_GetError() << std::endl;
+			throw 1;
+		}
 	}
 	
-	cursorTexture = IMG_Load("cursor.png");
 	if (cursorTexture == NULL) {
-		std::cerr << "Error loading cursor.png: " << SDL_GetError() << std::endl;
-		throw 1;
+		cursorTexture = IMG_Load("cursor.png");
+		if (cursorTexture == NULL) {
+			std::cerr << "Error loading cursor.png: " << SDL_GetError() << std::endl;
+			throw 1;
+		}
 	}
 	
 	x = 0;

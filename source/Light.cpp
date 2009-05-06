@@ -28,16 +28,18 @@
 #include "Light.hpp"
 
 
-SDL_Surface* Light::glassTexture;
+SDL_Surface* Light::glassTexture = NULL;
 
 
 Light::Light(int states) {
 	std::clog << SDL_GetTicks() << " (" << this << "): new Light." << std::endl;
 	
-	glassTexture = IMG_Load("glass.png");
 	if (glassTexture == NULL) {
-		std::cerr << "Error loading glass.png: " << SDL_GetError() << std::endl;
-		throw 1;
+		glassTexture = IMG_Load("glass.png");
+		if (glassTexture == NULL) {
+			std::cerr << "Error loading glass.png: " << SDL_GetError() << std::endl;
+			throw 1;
+		}
 	}
 	
 	this->states = states;
