@@ -37,7 +37,7 @@ EventPublisher::~EventPublisher() {
 
 
 void EventPublisher::addEventObserver(EventObserver* observer) {
-	std::clog << "Adding new event observer (" << observer << ")" << std::endl;
+	std::clog << SDL_GetTicks() << " (" << this << "): Adding new event observer (" << observer << ")" << std::endl;
 	
 	SDL_mutexP(listMutex);
 	observers.push_back(observer);
@@ -52,7 +52,7 @@ EventPublisher& EventPublisher::getInstance() {
 
 
 void EventPublisher::notifyEventObservers(SDL_Event* event) {
-	std::clog << "Notifying observers of new event." << std::endl;
+	std::clog << SDL_GetTicks() << " (" << this << "): Notifying observers of new event." << std::endl;
 	
 	SDL_mutexP(listMutex);
 	std::list<EventObserver*>::iterator iter = observers.begin();
@@ -65,7 +65,7 @@ void EventPublisher::notifyEventObservers(SDL_Event* event) {
 
 
 void EventPublisher::removeEventObserver(EventObserver* observer) {
-	std::clog << "Removing event observer (" << observer << ")" << std::endl;
+	std::clog << SDL_GetTicks() << " (" << this << "): Removing event observer (" << observer << ")" << std::endl;
 	
 	SDL_mutexP(listMutex);
 	observers.remove(observer);

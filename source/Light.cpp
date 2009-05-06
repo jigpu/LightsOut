@@ -32,7 +32,7 @@ SDL_Surface* Light::glassTexture;
 
 
 Light::Light(int states) {
-	std::clog << "Creating new Light." << std::endl;
+	std::clog << SDL_GetTicks() << " (" << this << "): new Light." << std::endl;
 	
 	glassTexture = IMG_Load("glass.png");
 	if (glassTexture == NULL) {
@@ -50,7 +50,7 @@ Light::Light(int states) {
 
 
 Light::~Light() {
-	std::clog << "Deleting light." << std::endl;
+	std::clog << SDL_GetTicks() << " (" << this << "): delete light." << std::endl;
 	
 	SDL_DestroyMutex(paintMutex);
 	SDL_FreeSurface(surface);

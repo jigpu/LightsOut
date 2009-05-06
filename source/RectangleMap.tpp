@@ -53,8 +53,9 @@ public:
 	
 	~RectangleMap() {
 		for (int y=0; y<height; y++)
-			delete (this->tileRows[y])[width];
-		delete (this->tileRows)[height];
+			delete this->tileRows[y];
+		//delete (this->tileRows)[height];
+		delete this->tileRows;
 	}
 	
 	

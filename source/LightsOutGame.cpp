@@ -40,7 +40,7 @@ SDL_Surface* LightsOutGame::cursorTexture;
 
 
 LightsOutGame::LightsOutGame(int width, int height, int states) {
-	std::clog << "Creating new LightsOutGame." << std::endl;
+	std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGame." << std::endl;
 	
 	font = TTF_OpenFont("Go Boom!.ttf", 36);
 	if (font == NULL) {
@@ -89,7 +89,7 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 
 
 LightsOutGame::~LightsOutGame() {
-	std::clog << "Deleting LightsOutGame." << std::endl;
+	std::clog << SDL_GetTicks() << " (" << this << "): delete LightsOutGame." << std::endl;
 	
 	SDL_DestroyMutex(paintMutex);
 	SDL_FreeSurface(surface);
@@ -98,7 +98,9 @@ LightsOutGame::~LightsOutGame() {
 	
 	for (int x=0; x<lights->getWidth(); x++) {
 		for (int y=0; y<lights->getHeight(); y++) {
-			delete lights->getTile(x, y);
+			Tile<Light*>* tile = lights->getTile(x, y);
+			delete tile->object;
+			delete tile;
 		}
 	}
 	
@@ -158,7 +160,7 @@ void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
 	
 	//There's no reasonable "hint" for a board that has already won ;)
 	if (winningState()) {
-		std::clog << "Game has already been won, providing bogus hint of (0,0)." << std::endl;
+		std::clog << SDL_GetTicks() << " (" << this << "): Game has already been won, providing bogus hint of (0,0)." << std::endl;
 		*suggestedX = 0;
 		*suggestedY = 0;
 		return;
