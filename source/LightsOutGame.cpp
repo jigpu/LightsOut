@@ -67,6 +67,10 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 		}
 	}
 	
+	//MUST create the mutex	prior to initialization, since pressButton
+	//acquires it.
+	paintMutex = SDL_CreateMutex();
+	
 	//Initialize the board to some solvable state.
 	for (int x=0; x<width; x++) {
 		for (int y=0; y<height; y++) {
@@ -79,7 +83,6 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 		
 	moves = 0; //Moves is modified by the initialization above, so we reset it here
 	
-	paintMutex = SDL_CreateMutex();
 	surface = NULL;
 	dirty = true;
 }
@@ -318,7 +321,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 
 void LightsOutGame::pressButton(int x, int y) {
 	if (x >= lights->getWidth() || x < 0 || y >= lights->getHeight() || y < 0)
-		return; //Should throw an invalid move exception...
+		throw 11;
 	
 	SDL_mutexP(paintMutex);
 	moves++;
