@@ -32,7 +32,7 @@ SDL_Surface* Light::glassTexture;
 
 
 Light::Light(int states) {
-	std::clog << "Creating new light." << std::endl;
+	std::clog << "Creating new Light." << std::endl;
 	
 	glassTexture = IMG_Load("glass.png");
 	if (glassTexture == NULL) {
