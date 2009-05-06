@@ -45,7 +45,7 @@ SDL_Surface* screen; //This pointer will reference the backbuffer
 
 
 int initVideo(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
 		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
 		return false;
 	}
@@ -71,8 +71,20 @@ int main(int argc, char** argv) {
 	
 	#ifndef PC
 	fatInitDefault();
-	Wiimote* wiimote = new Wiimote();
-	wiimote->start();
+	
+	//Wiimote* wiimote = new Wiimote();
+	//wiimote->start();
+	printf("%i joysticks were found.\n\n", SDL_NumJoysticks() );
+	printf("The names of the joysticks are:\n");	
+	
+	for( i=0; i < SDL_NumJoysticks(); i++ ) 
+	{
+        	printf("    %s\n", SDL_JoystickName(i));
+	}
+	
+	SDL_JoystickEventState(SDL_ENABLE);
+	SDL_Delay(5000);
+	SDL_JoystickOpen(0);
 	#endif
 	
 	LightsOutGameManager* game = new LightsOutGameManager();

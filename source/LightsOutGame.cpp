@@ -113,12 +113,14 @@ void LightsOutGame::eventOccured(SDL_Event* event) {
 		case SDL_KEYDOWN: {
 			switch(event->key.keysym.sym) {
 				case SDLK_TAB:
-				case SDLK_b:
+				//case SDLK_b:
 					int newX, newY;
 					getMoveHint(&newX, &newY);
 					moveAbsolute(newX,newY);
 				case SDLK_RETURN:
-				case SDLK_a:      select();    break;
+				//case SDLK_a:
+					select();
+					break;
 				case SDLK_UP:     move( 0,-1); break;
 				case SDLK_DOWN:   move( 0, 1); break;
 				case SDLK_LEFT:   move(-1, 0); break;
@@ -126,7 +128,21 @@ void LightsOutGame::eventOccured(SDL_Event* event) {
 			}
 			break;
 		}
-		
+		#ifndef PC
+		case SDL_JOYBUTTONDOWN: {
+			switch (event.jbutton.button) {
+				case WPAD_BUTTON_B:
+					int newX, newY;
+					getMoveHint(&newX, &newY);
+					moveAbsolute(newX,newY);
+					break;
+				case WPAD_BUTTON_A:
+					select();
+					break;
+			}
+			break;
+		}
+		#endif
 		case SDL_QUIT: {
 			stop();
 			break;
