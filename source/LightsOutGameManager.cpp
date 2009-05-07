@@ -26,9 +26,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <SDL/SDL_keysym.h>
 #include "EventPublisher.hpp"
 #include "LightsOutGameManager.hpp"
-#include <SDL/SDL_keysym.h>
 
 
 LightsOutGameManager::LightsOutGameManager() {
@@ -41,6 +41,12 @@ LightsOutGameManager::LightsOutGameManager() {
 	paintMutex = SDL_CreateMutex();
 	surface = NULL;
 	dirty = true;
+	
+	if (Mix_OpenAudio(22050, AUDIO_S16, 2, 4096) != 0) {
+		std::cerr << "Unable to open audio: " << Mix_GetError() << std::endl;
+		throw 1;
+	}
+	music = Mix_LoadMUS("track.mp3");
 }
 
 
@@ -49,6 +55,7 @@ LightsOutGameManager::~LightsOutGameManager() {
 	
 	SDL_FreeSurface(surface);
 	SDL_DestroyMutex(paintMutex);
+	Mix_CloseAudio();
 }
 
 
@@ -88,7 +95,7 @@ void LightsOutGameManager::eventOccured(SDL_Event* event) {
 
 void LightsOutGameManager::run() {
 	EventPublisher::getInstance().addEventObserver(this);
-	
+	bool playing = false;
 	while (runThread) {
 		SDL_mutexP(paintMutex);
 		dirty = true;
@@ -97,6 +104,11 @@ void LightsOutGameManager::run() {
 		
 		this->game = new LightsOutGame(5,5,level);
 		SDL_mutexV(paintMutex);
+		
+		if (!playing) {
+			Mix_PlayMusic(music, -1);
+			playing = true;
+		}
 		
 		this->game->start();
 		this->game->join();
