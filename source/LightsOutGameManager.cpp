@@ -41,7 +41,7 @@ LightsOutGameManager::LightsOutGameManager() {
 	
 	srand ( time(NULL) );
 	level = 2;
-	gamesPlayed = 0;
+	gamesCompleted = 0;
 	managerStartTime = 0;
 	this->game = NULL;
 	
@@ -88,13 +88,13 @@ void LightsOutGameManager::eventOccured(SDL_Event* event) {
 				case SDLK_PLUS:
 					level++;
 					if (level > 7) level = 7;
-					game->stop();
+					newGame = true;
 					break;
 				case SDLK_PAGEDOWN:
 				case SDLK_MINUS:
 					level--;
 					if (level < 2) level = 2;
-					game->stop();
+					newGame = true;
 					break;
 			}
 			break;
@@ -128,13 +128,16 @@ void LightsOutGameManager::run() {
 		//Start the game and wait for it to get over
 		//I don't just join() the thread though since I still
 		//want to make myself dirty every once in a while :)
+		newGame = false;
 		this->game->start();
-		while (runThread && !this->game->winningState()) {
+		while (runThread && !newGame && !this->game->winningState()) {
 			dirty = true;
 			yield(250);
 		}
+		this->game->stop();
 		
-		gamesPlayed++;
+		if (!newGame)
+			gamesCompleted++;
 	};
 	
 	std::cout << "Thanks for playing!" << std::endl;
@@ -189,7 +192,7 @@ int LightsOutGameManager::paint(SDL_Surface* surface) {
 		dest.h = 0;
 		
 		std::stringstream gamesString;
-		gamesString << "Games Played: " << gamesPlayed;
+		gamesString << "Games Completed: " << gamesCompleted;
 		SDL_Surface* gamesLS = TTF_RenderText_Blended(font, gamesString.str().c_str(), clrFg);
 		SDL_BlitSurface(gamesLS, NULL, this->surface, &dest);
 		SDL_FreeSurface(gamesLS);

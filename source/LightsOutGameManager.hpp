@@ -65,10 +65,17 @@ protected:
 	
 	/**
 	 * The level of play that new games should be created at,
-	 * number of games that have been played, and time that the
-	 * manager was started (for an idea of overall play time)
+	 * number of games that have been completed, and time that
+	 * the manager was started (for an idea of overall play time)
 	 */
-	int level, gamesPlayed, managerStartTime;
+	int level, gamesCompleted, managerStartTime;
+	
+	/**
+	 * newGame should be set to true when the manager should stop
+	 * the game in progress and create a new game. This can be
+	 * due to a reset request, a level change, etc.
+	 */
+	bool newGame;
 	
 public:
 	LightsOutGameManager();
