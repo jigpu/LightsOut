@@ -52,7 +52,6 @@ void Renderer::run() {
 	
 	//Frame-rate independent code based on
 	//http://hdrlab.org.nz/frame-rate-independent-animation-using-sdl-and-opengl-with-frame-rate-limiting/
-	//yield(500);
 	while (runThread) {
 		currTime = SDL_GetTicks();
 		timeElapsed = currTime - prevTime;
@@ -62,7 +61,11 @@ void Renderer::run() {
 			timeElapsed = currTime - prevTime;
 		}
 		prevTime = currTime;
-		if (child->paint(surface) == 0) {
+		SDL_Surface buffer;
+		bool dirtyPaint = child->paint(buffer, surface->w, surface->h);
+		if (dirtyPaint) {
+			//std::cout << "FLIP!" << std::endl;
+			SDL_BlitSurface(&buffer, NULL, surface, NULL);
 			SDL_Flip(surface);
 		}
 	}

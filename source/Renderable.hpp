@@ -53,25 +53,24 @@ protected:
 	
 	/**
 	 * When painting a dirty object, paint operations should be
-	 * sent to this object. This surface can then be blitted onto
-	 * the surface that is given in the paint method.
-	 *
-	 * If an object and all sub-objects are clean, this surface
-	 * can be blitted onto the surface given in the paint method
-	 * without needing to perform any other drawing operations.
+	 * sent to this object. This surface can be passed back to
+	 * the caller of the paint method if not dirty, or re-created
+	 * and painted again before passing back.
 	 */
 	SDL_Surface* surface;
 	
 public:
 	/**
 	 * The paint method will be called any time that the screen
-	 * needs to be updated. The given surface should be painted
-	 * to any time this method is called. Given this fact, it
-	 * will be faster to use the surface above as a "clean"
-	 * reference and blit it onto the given surface if this
-	 * object and all sub-objects are clean.
+	 * needs to be updated. The caller should pass in a NULL
+	 * surface, allowing the child to create and pass back its
+	 * own surface.
+	 *
+	 * Paint operations that were "dirty" should return true
+	 * to let the caller know that it may want to update its
+	 * own surface as well.
 	 */
-	virtual int paint(SDL_Surface* surface) = 0;
+	virtual bool paint(SDL_Surface& surface, int width, int height) = 0;
 	
 };
 

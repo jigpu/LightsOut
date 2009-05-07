@@ -120,8 +120,8 @@ void LightsOutGame::eventOccured(SDL_Event* event) {
 				case SDLK_TAB:
 				case SDLK_b:
 					int newX, newY;
-					getMoveHint(&newX, &newY);
-					moveAbsolute(newX,newY);
+					getMoveHint(newX, newY);
+					moveAbsolute(newX, newY);
 					//break if you don't want auto-select.
 				case SDLK_RETURN:
 				case SDLK_a:
@@ -143,23 +143,23 @@ void LightsOutGame::eventOccured(SDL_Event* event) {
 }
 
 
-void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
+void LightsOutGame::getMoveHint(int& suggestedX, int& suggestedY) {
 	for (int y=0; y<lights->getHeight(); y++) {
 		for (int x=0; x<lights->getWidth(); x++) {
 			if (lights->getTile(x,y)->object->isLightOn()) {
 				if (y+1 != lights->getHeight()) {
 					//"Chase the lights"
-					*suggestedX = x;
-					*suggestedY = y+1;
+					suggestedX = x;
+					suggestedY = y+1;
 					return;
 				}
 				else {
 					//Fixing the top
-					*suggestedY = 0;
+					suggestedY = 0;
 					switch (x) {
-						case 0: *suggestedX = 1; return;
-						case 1: *suggestedX = 0; return;
-						case 2: *suggestedX = 3; return;	
+						case 0: suggestedX = 1; return;
+						case 1: suggestedX = 0; return;
+						case 2: suggestedX = 3; return;	
 					}
 				}
 			}
@@ -169,8 +169,8 @@ void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
 	//There's no reasonable "hint" for a board that has already won ;)
 	if (winningState()) {
 		std::clog << SDL_GetTicks() << " (" << this << "): Game has already been won, providing bogus hint of (0,0)." << std::endl;
-		*suggestedX = 0;
-		*suggestedY = 0;
+		suggestedX = 0;
+		suggestedY = 0;
 		return;
 	}
 	
@@ -207,13 +207,15 @@ void LightsOutGame::moveAbsolute(int x, int y) {
 }
 
 
-int LightsOutGame::paint(SDL_Surface* surface) {
+bool LightsOutGame::paint(SDL_Surface& surface, int width, int height) {
 	SDL_mutexP(paintMutex);
 	
-	if (this->surface == NULL ||
-	    this->surface->w != surface->w ||
-	    this->surface->h != surface->h) {
-		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
+	if (dirty ||
+	    this->surface == NULL ||
+	    this->surface->w != width ||
+	    this->surface->h != height) {
+		SDL_FreeSurface(this->surface);
+		this->surface = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,16,0,0,0,0);
 		dirty = true;
 	}
 	
@@ -222,7 +224,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 	
 	//Create & paint gameboard subsurface
 	///////////////////////////////////////////////////
-	SDL_Surface* gameboard = SDL_CreateRGBSurface(surface->flags,surface->h,surface->h,16,0,0,0,0);
+	SDL_Surface* gameboard = SDL_CreateRGBSurface(SDL_HWSURFACE,this->surface->h,this->surface->h,16,0,0,0,0);
 	double tileWidth  = (double)gameboard->w/(double)lights->getWidth();
 	double tileHeight = (double)gameboard->h/(double)lights->getHeight();
 	
@@ -234,39 +236,43 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 			dest.y = (int)(tileHeight*y);
 			dest.h = (int)(tileHeight*(y+1)) - dest.y;
 			
-			SDL_Surface* subsurface = SDL_CreateRGBSurface(surface->flags,dest.w,dest.h,16,0,0,0,0);
-			if (lights->getTile(x,y)->object->paint(subsurface) == 0)
-				dirtysub = true;
+			SDL_Surface subsurface;
 			
-			SDL_BlitSurface(subsurface, NULL, gameboard, &dest);
-			SDL_FreeSurface(subsurface);
+			bool dirtyPaint = lights->getTile(x,y)->object->paint(subsurface, dest.w, dest.h);
+			dirtysub |= dirtyPaint;
+			
+			//If we're dirty [moved cursor], we need to blit all
+			//lights back onto the screen to "undraw" the cursor
+			if (dirty || dirtyPaint)
+				SDL_BlitSurface(&subsurface, NULL, gameboard, &dest);
 		}
 	}
 	
-	//Paint cursor onto gameboard
-	dest.x = (int)(tileWidth*(this->x-1));
-	dest.y = (int)(tileHeight*(this->y-1));
-	dest.w = (int)(tileWidth*3);
-	dest.h = (int)(tileHeight*3);
+	//Paint cursor onto gameboard, and blit gameboard onto surface
+	if (dirty || dirtysub) {
+		dest.x = (int)(tileWidth*(this->x-1));
+		dest.y = (int)(tileHeight*(this->y-1));
+		dest.w = (int)(tileWidth*3);
+		dest.h = (int)(tileHeight*3);
+		
+		double widthPercent  = ((double)(dest.w))/((double)(cursorTexture->w));
+		double heightPercent = ((double)(dest.h))/((double)(cursorTexture->h));
+		SDL_Surface* zoom = rotozoomSurfaceXY(cursorTexture, 0.0, widthPercent, heightPercent, 1);
+		SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
+		SDL_BlitSurface(zoom, NULL, gameboard, &dest);
+		SDL_FreeSurface(zoom);
+		
+		SDL_BlitSurface(gameboard, NULL, this->surface, NULL);
+	}
+	SDL_FreeSurface(gameboard);
 	
-	double widthPercent  = ((double)(dest.w))/((double)(cursorTexture->w));
-	double heightPercent = ((double)(dest.h))/((double)(cursorTexture->h));
-	SDL_Surface* zoom = rotozoomSurfaceXY(cursorTexture, 0.0, widthPercent, heightPercent, 1);
-	SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
-	SDL_BlitSurface(zoom, NULL, gameboard, &dest);
-	SDL_FreeSurface(zoom);
-	
-	//Paint stats onto surface if dirty
+	//Paint stats onto surface
 	///////////////////////////////////////////////////
 	if (dirty) {
-		//Recreate our surface so we have a clean slate
-		SDL_FreeSurface(this->surface);
-		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
-		
 		//Paint game text
 		SDL_Color clrFg = {255,255,255,0};
 		
-		dest.x = gameboard->h + 8;
+		dest.x = this->surface->h + 8;
 		dest.y = 16;
 		dest.w = 0;
 		dest.h = 0;
@@ -296,7 +302,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 		SDL_BlitSurface(timeS, NULL, this->surface, &dest);
 		SDL_FreeSurface(timeS);
 				
-		dest.y = surface->h - 64;
+		dest.y = this->surface->h - 64;
 		SDL_Surface* diffLS = TTF_RenderText_Blended(font, "Difficulty:", clrFg);
 		SDL_BlitSurface(diffLS, NULL, this->surface, &dest);
 		SDL_FreeSurface(diffLS);
@@ -309,23 +315,21 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 		SDL_FreeSurface(diffS);
 	}
 	
-	//Blit gameboard surface if anything dirty
+	//Set surface and return
 	///////////////////////////////////////////////////
-	if (dirty || dirtysub) {
-		SDL_BlitSurface(gameboard, NULL, this->surface, NULL);
-		SDL_FreeSurface(gameboard);
-	}
-	
-	SDL_BlitSurface(this->surface, NULL, surface, NULL);
+	surface = *(this->surface);
 	
 	if (dirty || dirtysub) {
 		dirty = false;
 		SDL_mutexV(paintMutex);
-		return 0;
+		
+		return true;
 	}
 	else {
+		dirty = false;
 		SDL_mutexV(paintMutex);
-		return 1;
+		
+		return false;
 	}
 }
 
@@ -352,7 +356,7 @@ void LightsOutGame::run() {
 	gameStartTime = SDL_GetTicks();
 	while (runThread && !winningState()) {
 		dirty = true;
-		yield(250);
+		yield(50);
 	};
 	
 	EventPublisher::getInstance().removeEventObserver(this);

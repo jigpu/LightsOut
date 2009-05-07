@@ -116,7 +116,7 @@ public:
 	 * game. The values of suggestedX and suggestedY will contain
 	 * the location after the call completes.
 	 */
-	void getMoveHint(int* suggestedX, int* suggestedY);
+	void getMoveHint(int& suggestedX, int& suggestedY);
 	
 	/**
 	 * Move the cursor a specified ammount.
@@ -129,7 +129,7 @@ public:
 	 */
 	void moveAbsolute(int x, int y);
 	
-	int paint(SDL_Surface* surface);
+	bool paint(SDL_Surface& surface, int width, int height);
 	
 	/**
 	 * Press the button at the given cursor location. This causes

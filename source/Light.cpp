@@ -76,18 +76,21 @@ void Light::nextState() {
 }
 
 
-int Light::paint(SDL_Surface* surface) {
+bool Light::paint(SDL_Surface& surface, int width, int height) {
 	SDL_mutexP(paintMutex);
-	if (this->surface == NULL ||
-	    this->surface->w != surface->w ||
-	    this->surface->h != surface->h) {
-		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
+	
+	if (dirty ||
+	    this->surface == NULL ||
+	    this->surface->w != width ||
+	    this->surface->h != height) {
+		SDL_FreeSurface(this->surface);
+		this->surface = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,16,0,0,0,0);
 		dirty = true;
-	}
+	}	
 	
 	//Draw light onto surface
 	///////////////////////////////////////////////////
-	if (dirty) {
+	if (dirty) {		
 		switch (state) {
 			case 0:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_0));   break;
 			case 1:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_1));   break;
@@ -107,18 +110,21 @@ int Light::paint(SDL_Surface* surface) {
 		SDL_FreeSurface(zoom);
 	}
 	
-	//Blit surface and return
+	//Set surface and return
 	///////////////////////////////////////////////////
-	SDL_BlitSurface(this->surface, NULL, surface, NULL);
+	surface = *(this->surface);
 	
 	if (dirty) {
 		dirty = false;
 		SDL_mutexV(paintMutex);
-		return 0;
+		
+		return true;
 	}
 	else {
+		dirty = false;
 		SDL_mutexV(paintMutex);
-		return 1;
+		
+		return false;
 	}
 }
 

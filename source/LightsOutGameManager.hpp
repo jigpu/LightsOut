@@ -84,7 +84,7 @@ public:
 	
 	void eventOccured(SDL_Event* event);
 	
-	int paint(SDL_Surface* surface);
+	bool paint(SDL_Surface& surface, int width, int height);
 	
 	/**
 	 * Runs the manager, which creates new games for the player

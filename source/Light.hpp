@@ -90,7 +90,7 @@ public:
 	 */
 	void nextState();
 	
-	int paint(SDL_Surface* surface);
+	bool paint(SDL_Surface& surface, int width, int height);
 	
 };
 
