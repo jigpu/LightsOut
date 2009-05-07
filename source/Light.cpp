@@ -85,7 +85,8 @@ int Light::paint(SDL_Surface* surface) {
 		dirty = true;
 	}
 	
-	//If we're dirty, draw onto our own surface
+	//Draw light onto surface
+	///////////////////////////////////////////////////
 	if (dirty) {
 		switch (state) {
 			case 0:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_0));   break;
@@ -106,8 +107,10 @@ int Light::paint(SDL_Surface* surface) {
 		SDL_FreeSurface(zoom);
 	}
 	
-	//Blit our own surface onto the target surface and return
+	//Blit surface and return
+	///////////////////////////////////////////////////
 	SDL_BlitSurface(this->surface, NULL, surface, NULL);
+	
 	if (dirty) {
 		dirty = false;
 		SDL_mutexV(paintMutex);

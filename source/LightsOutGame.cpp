@@ -217,14 +217,16 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 		dirty = true;
 	}
 	
-	
-	//Paint the gameboard
-	SDL_Surface* board = SDL_CreateRGBSurface(surface->flags,surface->h,surface->h,16,0,0,0,0);
-	double tileWidth  = (double)board->w/(double)lights->getWidth();
-	double tileHeight = (double)board->h/(double)lights->getHeight();
-	
 	SDL_Rect dest;
 	bool dirtysub = false;
+	
+	//Create & paint gameboard subsurface
+	///////////////////////////////////////////////////
+	SDL_Surface* gameboard = SDL_CreateRGBSurface(surface->flags,surface->h,surface->h,16,0,0,0,0);
+	double tileWidth  = (double)gameboard->w/(double)lights->getWidth();
+	double tileHeight = (double)gameboard->h/(double)lights->getHeight();
+	
+	//Paint lights onto gameboard
 	for (int x=0; x<lights->getWidth(); x++) {
 		dest.x = (int)(tileWidth*x);
 		dest.w = (int)(tileWidth*(x+1)) - dest.x;
@@ -236,29 +238,26 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 			if (lights->getTile(x,y)->object->paint(subsurface) == 0)
 				dirtysub = true;
 			
-			SDL_BlitSurface(subsurface, NULL, board, &dest);
+			SDL_BlitSurface(subsurface, NULL, gameboard, &dest);
 			SDL_FreeSurface(subsurface);
 		}
 	}
 	
-	
-	//Paint the cursor over the gameboard regardless of dirt
-	//If not painted when us and lights are clean, the lights will
-	//still be blitted to board, making the cursor "disappear".
+	//Paint cursor onto gameboard
 	dest.x = (int)(tileWidth*(this->x-1));
-	dest.w = (int)(tileWidth*3);
-	
 	dest.y = (int)(tileHeight*(this->y-1));
+	dest.w = (int)(tileWidth*3);
 	dest.h = (int)(tileHeight*3);
 	
 	double widthPercent  = ((double)(dest.w))/((double)(cursorTexture->w));
 	double heightPercent = ((double)(dest.h))/((double)(cursorTexture->h));
 	SDL_Surface* zoom = rotozoomSurfaceXY(cursorTexture, 0.0, widthPercent, heightPercent, 1);
 	SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
-	SDL_BlitSurface(zoom, NULL, board, &dest);
+	SDL_BlitSurface(zoom, NULL, gameboard, &dest);
 	SDL_FreeSurface(zoom);
 	
-	
+	//Paint stats onto surface if dirty
+	///////////////////////////////////////////////////
 	if (dirty) {
 		//Recreate our surface so we have a clean slate
 		SDL_FreeSurface(this->surface);
@@ -267,7 +266,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 		//Paint game text
 		SDL_Color clrFg = {255,255,255,0};
 		
-		dest.x = board->h + 8;
+		dest.x = gameboard->h + 8;
 		dest.y = 16;
 		dest.w = 0;
 		dest.h = 0;
@@ -275,7 +274,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 		SDL_BlitSurface(movesLS, NULL, this->surface, &dest);
 		SDL_FreeSurface(movesLS);
 		
-		dest.y = 48;
+		dest.y += 32;
 		std::stringstream movesString;
 		movesString << moves << "/" << minMoves;
 		SDL_Surface* movesS = TTF_RenderText_Blended(font, movesString.str().c_str(), clrFg );
@@ -287,7 +286,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 		SDL_BlitSurface(timeLS, NULL, this->surface, &dest);
 		SDL_FreeSurface(timeLS);
 		
-		dest.y = 144;
+		dest.y += 32;
 		int elapsed = SDL_GetTicks() - gameStartTime;
 		std::stringstream timeString;
 		timeString << std::setw(2) << std::setfill('0') << elapsed/36000000 << ":"
@@ -302,7 +301,7 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 		SDL_BlitSurface(diffLS, NULL, this->surface, &dest);
 		SDL_FreeSurface(diffLS);
 		
-		dest.y = dest.y + 32;
+		dest.y += 32;
 		std::stringstream difficultyText;
 		difficultyText << states << " States";
 		SDL_Surface* diffS = TTF_RenderText_Blended(font, difficultyText.str().c_str(), clrFg);
@@ -310,13 +309,15 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 		SDL_FreeSurface(diffS);
 	}
 	
+	//Blit gameboard surface if anything dirty
+	///////////////////////////////////////////////////
+	if (dirty || dirtysub) {
+		SDL_BlitSurface(gameboard, NULL, this->surface, NULL);
+		SDL_FreeSurface(gameboard);
+	}
 	
-	//Copy the gameboard to the game's surface
-	SDL_BlitSurface(board, NULL, this->surface, NULL);
-	SDL_FreeSurface(board);
-	
-	//Blit onto the target surface and return
 	SDL_BlitSurface(this->surface, NULL, surface, NULL);
+	
 	if (dirty || dirtysub) {
 		dirty = false;
 		SDL_mutexV(paintMutex);

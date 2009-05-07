@@ -49,11 +49,10 @@ LightsOutGameManager::LightsOutGameManager() {
 	surface = NULL;
 	dirty = true;
 	
-	if (Mix_OpenAudio(22050, AUDIO_S16, 2, 4096) != 0) {
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512) != 0) {
 		std::cerr << "Unable to open audio: " << Mix_GetError() << std::endl;
 		throw 1;
 	}
-	music = Mix_LoadMUS("bgm.mp3");
 	
 	if (font == NULL) {
 		font = TTF_OpenFont("yukari.ttf", 24);
@@ -70,6 +69,7 @@ LightsOutGameManager::~LightsOutGameManager() {
 	
 	SDL_FreeSurface(surface);
 	SDL_DestroyMutex(paintMutex);
+	Mix_HaltMusic();
 	Mix_CloseAudio();
 }
 
@@ -113,7 +113,9 @@ void LightsOutGameManager::run() {
 	
 	managerStartTime = SDL_GetTicks();
 	
-	bool playing = false;
+	music = Mix_LoadMUS("bgm.mp3");
+	Mix_PlayMusic(music, -1);
+	
 	while (runThread) {
 		SDL_mutexP(paintMutex);
 		dirty = true;
@@ -123,13 +125,14 @@ void LightsOutGameManager::run() {
 		this->game = new LightsOutGame(5,5,level);
 		SDL_mutexV(paintMutex);
 		
-		if (!playing) {
-			Mix_PlayMusic(music, -1);
-			playing = true;
-		}
-		
+		//Start the game and wait for it to get over
+		//I don't just join() the thread though since I still
+		//want to make myself dirty every once in a while :)
 		this->game->start();
-		this->game->join();
+		while (!this->game->winningState()) {
+			dirty = true;
+			yield(250);
+		}
 		
 		gamesPlayed++;
 	};
@@ -141,11 +144,16 @@ void LightsOutGameManager::run() {
 
 
 int LightsOutGameManager::paint(SDL_Surface* surface) {
-	SDL_mutexP(paintMutex);
-	if (this->game == NULL) {
+	while (this->game == NULL) {
 		std::clog << SDL_GetTicks() << " (" << this << "): No game yet..." << std::endl;
-		return 1;
+		yield(100);
 	}
+	//if (this->game == NULL) {
+	//	std::clog << SDL_GetTicks() << " (" << this << "): No game yet..." << std::endl;
+	//	return 1;
+	//}
+	
+	SDL_mutexP(paintMutex);
 	
 	if (this->surface == NULL ||
 	    this->surface->w != surface->w ||
@@ -154,29 +162,29 @@ int LightsOutGameManager::paint(SDL_Surface* surface) {
 		dirty = true;
 	}
 	
-	
-	//Create subsurfaces and paint them
-	bool dirtysub = false;
 	SDL_Rect dest;
+	bool dirtysub = false;
 	
-	dest.x = 4;
-	dest.y = 12;
+	//Create & paint game surface
+	///////////////////////////////////////////////////	
+	dest.x = 8;
+	dest.y = 8;
 	dest.w = surface->w - 2*dest.x;
-	dest.h = surface->h - dest.y - 48;
+	dest.h = surface->h - dest.y - 42;
 	SDL_Surface* gameSurface = SDL_CreateRGBSurface(surface->flags,dest.w,dest.h,16,0,0,0,0);
 	if (game->paint(gameSurface) == 0) dirtysub = true;
 	
 	
-	//Paint overall stats
-	//For now, say that we're always dirty :)
-	if (dirtysub || true) {
+	//Paint stats onto surface if dirty
+	///////////////////////////////////////////////////
+	if (dirty) {
 		//Recreate our surface so we have a clean slate
 		SDL_FreeSurface(this->surface);
 		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
 		
 		SDL_Color clrFg = {255,255,255,0};
 		dest.x = 4;
-		dest.y = surface->h - 36;
+		dest.y = surface->h - 32;
 		dest.w = 0;
 		dest.h = 0;
 		
@@ -186,7 +194,7 @@ int LightsOutGameManager::paint(SDL_Surface* surface) {
 		SDL_BlitSurface(gamesLS, NULL, this->surface, &dest);
 		SDL_FreeSurface(gamesLS);
 		
-		dest.x = surface->w - 250;
+		dest.x = surface->w - 230;
 		int elapsed = SDL_GetTicks() - managerStartTime;
 		std::stringstream timeString;
 		timeString << "Total Time: " << std::setw(2) << std::setfill('0') << elapsed/36000000 << ":"
@@ -197,15 +205,19 @@ int LightsOutGameManager::paint(SDL_Surface* surface) {
 		SDL_FreeSurface(timeLS);
 	}
 	
-	dest.x = 4;
-	dest.y = 12;
-	dest.w = surface->w - 2*dest.x;
-	dest.h = surface->h - dest.y - 48;
-	SDL_BlitSurface(gameSurface, NULL, this->surface, &dest);
-	SDL_FreeSurface(gameSurface);
-		
-	//Blit onto the target surface and return
+	//Blit game surface if anything dirty
+	///////////////////////////////////////////////////
+	if (dirtysub || dirty) {
+		dest.x = 4;
+		dest.y = 12;
+		dest.w = surface->w - 2*dest.x;
+		dest.h = surface->h - dest.y - 48;
+		SDL_BlitSurface(gameSurface, NULL, this->surface, &dest);
+		SDL_FreeSurface(gameSurface);
+	}
+	
 	SDL_BlitSurface(this->surface, NULL, surface, NULL);
+	
 	if (dirty || dirtysub) {
 		dirty = false;
 		SDL_mutexV(paintMutex);

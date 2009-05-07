@@ -76,13 +76,13 @@ int main(int argc, char** argv) {
 	wiimote->start();
 	#endif
 	
-	LightsOutGameManager* game = new LightsOutGameManager();
-	game->start();
+	LightsOutGameManager* manager = new LightsOutGameManager();
+	manager->start();
 	
-	Renderer* renderer = new Renderer(screen, game);	
+	Renderer* renderer = new Renderer(screen, manager);
 	renderer->start();
 	
-	game->join();
+	manager->join();
 	
 	return 0;
 }
