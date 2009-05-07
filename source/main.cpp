@@ -46,7 +46,7 @@ SDL_Surface* screen; //This pointer will reference the backbuffer
 
 
 int initVideo(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
 		std::cerr << "Unable to initialize SDL: " << SDL_GetError() << std::endl;
 		return false;
 	}

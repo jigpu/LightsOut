@@ -40,7 +40,7 @@ SDL_Surface* LightsOutGame::cursorTexture = NULL;
 
 
 LightsOutGame::LightsOutGame(int width, int height, int states) {
-	//std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGame." << std::endl;
+	std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGame." << std::endl;
 	
 	if (font == NULL) {
 		font = TTF_OpenFont("yukari.ttf", 36);
@@ -94,7 +94,7 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 
 
 LightsOutGame::~LightsOutGame() {
-	//std::clog << SDL_GetTicks() << " (" << this << "): delete LightsOutGame." << std::endl;
+	std::clog << SDL_GetTicks() << " (" << this << "): delete LightsOutGame." << std::endl;
 	
 	SDL_DestroyMutex(paintMutex);
 	SDL_FreeSurface(surface);
@@ -168,7 +168,7 @@ void LightsOutGame::getMoveHint(int* suggestedX, int* suggestedY) {
 	
 	//There's no reasonable "hint" for a board that has already won ;)
 	if (winningState()) {
-		//std::clog << SDL_GetTicks() << " (" << this << "): Game has already been won, providing bogus hint of (0,0)." << std::endl;
+		std::clog << SDL_GetTicks() << " (" << this << "): Game has already been won, providing bogus hint of (0,0)." << std::endl;
 		*suggestedX = 0;
 		*suggestedY = 0;
 		return;
@@ -297,12 +297,12 @@ int LightsOutGame::paint(SDL_Surface* surface) {
 		SDL_BlitSurface(timeS, NULL, this->surface, &dest);
 		SDL_FreeSurface(timeS);
 				
-		dest.y = 374;
+		dest.y = surface->h - 64;
 		SDL_Surface* diffLS = TTF_RenderText_Blended(font, "Difficulty:", clrFg);
 		SDL_BlitSurface(diffLS, NULL, this->surface, &dest);
 		SDL_FreeSurface(diffLS);
-				
-		dest.y = 406;
+		
+		dest.y = dest.y + 32;
 		std::stringstream difficultyText;
 		difficultyText << states << " States";
 		SDL_Surface* diffS = TTF_RenderText_Blended(font, difficultyText.str().c_str(), clrFg);

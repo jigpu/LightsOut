@@ -26,6 +26,7 @@
 #define __LightsOutGameManager_hpp__
 
 
+#include <SDL/SDL_ttf.h>
 #include <SDL/SDL_mixer.h>
 #include "EventObserver.hpp"
 #include "Thread.hpp"
@@ -43,6 +44,13 @@ class LightsOutGameManager : public EventObserver, public Thread, public Rendera
 
 protected:
 	/**
+	 * A static font used for display of game statistics on the
+	 * screen. DO NOT CLOSE THIS FONT! AFTER CREATION IT SHOULD
+	 * REMAIN IN MEMORY FOR OTHER LIGHTSOUTGAMES.
+	 */
+	static TTF_Font* font;
+	
+	/**
 	 * Mutex to prevent the modification of internal state
 	 * durring a paint operation (or vice-versa).
 	 */
@@ -56,9 +64,11 @@ protected:
 	LightsOutGame* game;
 	
 	/**
-	 * The level of play that new games should be created at.
+	 * The level of play that new games should be created at,
+	 * number of games that have been played, and time that the
+	 * manager was started (for an idea of overall play time)
 	 */
-	int level;
+	int level, gamesPlayed, managerStartTime;
 	
 public:
 	LightsOutGameManager();

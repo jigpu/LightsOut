@@ -22,7 +22,9 @@
  */
 
 
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -31,11 +33,16 @@
 #include "LightsOutGameManager.hpp"
 
 
+TTF_Font* LightsOutGameManager::font = NULL;
+
+
 LightsOutGameManager::LightsOutGameManager() {
 	std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGameManager." << std::endl;
 	
 	srand ( time(NULL) );
 	level = 2;
+	gamesPlayed = 0;
+	managerStartTime = 0;
 	this->game = NULL;
 	
 	paintMutex = SDL_CreateMutex();
@@ -47,6 +54,14 @@ LightsOutGameManager::LightsOutGameManager() {
 		throw 1;
 	}
 	music = Mix_LoadMUS("bgm.mp3");
+	
+	if (font == NULL) {
+		font = TTF_OpenFont("yukari.ttf", 24);
+		if (font == NULL) {
+			std::cerr << "Error loading fawn.ttf: " << SDL_GetError() << std::endl;
+			throw 1;
+		}
+	}
 }
 
 
@@ -95,6 +110,9 @@ void LightsOutGameManager::eventOccured(SDL_Event* event) {
 
 void LightsOutGameManager::run() {
 	EventPublisher::getInstance().addEventObserver(this);
+	
+	managerStartTime = SDL_GetTicks();
+	
 	bool playing = false;
 	while (runThread) {
 		SDL_mutexP(paintMutex);
@@ -112,6 +130,8 @@ void LightsOutGameManager::run() {
 		
 		this->game->start();
 		this->game->join();
+		
+		gamesPlayed++;
 	};
 	
 	std::cout << "Thanks for playing!" << std::endl;
@@ -139,16 +159,51 @@ int LightsOutGameManager::paint(SDL_Surface* surface) {
 	bool dirtysub = false;
 	SDL_Rect dest;
 	
-	dest.x = 8;
-	dest.y = 8;
-	dest.w  = 624;
-	dest.h = 464;
-	SDL_Surface* subsurface = SDL_CreateRGBSurface(surface->flags,dest.w,dest.h,16,0,0,0,0);
-	if (game->paint(subsurface) == 0) dirtysub = true;
-	SDL_BlitSurface(subsurface, NULL, this->surface, &dest);
-	SDL_FreeSurface(subsurface);
+	dest.x = 4;
+	dest.y = 12;
+	dest.w = surface->w - 2*dest.x;
+	dest.h = surface->h - dest.y - 48;
+	SDL_Surface* gameSurface = SDL_CreateRGBSurface(surface->flags,dest.w,dest.h,16,0,0,0,0);
+	if (game->paint(gameSurface) == 0) dirtysub = true;
 	
 	
+	//Paint overall stats
+	//For now, say that we're always dirty :)
+	if (dirtysub || true) {
+		//Recreate our surface so we have a clean slate
+		SDL_FreeSurface(this->surface);
+		this->surface = SDL_CreateRGBSurface(surface->flags,surface->w,surface->h,16,0,0,0,0);
+		
+		SDL_Color clrFg = {255,255,255,0};
+		dest.x = 4;
+		dest.y = surface->h - 36;
+		dest.w = 0;
+		dest.h = 0;
+		
+		std::stringstream gamesString;
+		gamesString << "Games Played: " << gamesPlayed;
+		SDL_Surface* gamesLS = TTF_RenderText_Blended(font, gamesString.str().c_str(), clrFg);
+		SDL_BlitSurface(gamesLS, NULL, this->surface, &dest);
+		SDL_FreeSurface(gamesLS);
+		
+		dest.x = surface->w - 250;
+		int elapsed = SDL_GetTicks() - managerStartTime;
+		std::stringstream timeString;
+		timeString << "Total Time: " << std::setw(2) << std::setfill('0') << elapsed/36000000 << ":"
+		           << std::setw(2) << std::setfill('0') << elapsed/60000 % 60 << ":"
+		           << std::setw(2) << std::setfill('0') << elapsed/1000 % 60;
+		SDL_Surface* timeLS = TTF_RenderText_Blended(font, timeString.str().c_str(), clrFg);
+		SDL_BlitSurface(timeLS, NULL, this->surface, &dest);
+		SDL_FreeSurface(timeLS);
+	}
+	
+	dest.x = 4;
+	dest.y = 12;
+	dest.w = surface->w - 2*dest.x;
+	dest.h = surface->h - dest.y - 48;
+	SDL_BlitSurface(gameSurface, NULL, this->surface, &dest);
+	SDL_FreeSurface(gameSurface);
+		
 	//Blit onto the target surface and return
 	SDL_BlitSurface(this->surface, NULL, surface, NULL);
 	if (dirty || dirtysub) {

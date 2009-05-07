@@ -1,11 +1,12 @@
+Credits
+==========
 
+## Graphics:
+"Cusor" & "Glass" by Jason Gerecke (http://localhostlabs.no-ip.org/)
 
-Font by: mgl23 (miguel rios)
+## Fonts
+"YUKARIMOBILE" by Vic Fieger (http://www.vicfieger.com/)
 
-www.mgl23.mx.gs
-
-
-Free for the presonal use! 
-
-CC
+## Sound/Music
+"Youth Is Young by Leza2unes" by mykleanthony (http://ccmixter.org/files/mykleanthony/)
 
