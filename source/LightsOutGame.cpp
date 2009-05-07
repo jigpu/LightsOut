@@ -356,7 +356,7 @@ void LightsOutGame::run() {
 	gameStartTime = SDL_GetTicks();
 	while (runThread && !winningState()) {
 		dirty = true;
-		yield(50);
+		yield(250);
 	};
 	
 	EventPublisher::getInstance().removeEventObserver(this);
