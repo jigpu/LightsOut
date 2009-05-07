@@ -46,7 +46,7 @@ LightsOutGameManager::LightsOutGameManager() {
 		std::cerr << "Unable to open audio: " << Mix_GetError() << std::endl;
 		throw 1;
 	}
-	music = Mix_LoadMUS("track.mp3");
+	music = Mix_LoadMUS("bgm.mp3");
 }
 
 
