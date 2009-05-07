@@ -129,7 +129,7 @@ void LightsOutGameManager::run() {
 		//I don't just join() the thread though since I still
 		//want to make myself dirty every once in a while :)
 		this->game->start();
-		while (!this->game->winningState()) {
+		while (runThread && !this->game->winningState()) {
 			dirty = true;
 			yield(250);
 		}
@@ -213,9 +213,9 @@ int LightsOutGameManager::paint(SDL_Surface* surface) {
 		dest.w = surface->w - 2*dest.x;
 		dest.h = surface->h - dest.y - 48;
 		SDL_BlitSurface(gameSurface, NULL, this->surface, &dest);
-		SDL_FreeSurface(gameSurface);
 	}
 	
+	SDL_FreeSurface(gameSurface);
 	SDL_BlitSurface(this->surface, NULL, surface, NULL);
 	
 	if (dirty || dirtysub) {
