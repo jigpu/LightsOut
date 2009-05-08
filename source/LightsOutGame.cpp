@@ -295,7 +295,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, int width, int height) {
 		dest.y += 32;
 		int elapsed = SDL_GetTicks() - gameStartTime;
 		std::stringstream timeString;
-		timeString << std::setw(2) << std::setfill('0') << elapsed/36000000 << ":"
+		timeString << std::setw(2) << std::setfill('0') << elapsed/3600000 << ":"
 		           << std::setw(2) << std::setfill('0') << elapsed/60000 % 60 << ":"
 		           << std::setw(2) << std::setfill('0') << elapsed/1000 % 60;
 		SDL_Surface* timeS = TTF_RenderText_Blended(font, timeString.str().c_str(), clrFg);
