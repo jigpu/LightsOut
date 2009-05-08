@@ -101,6 +101,9 @@ LightsOutGame::~LightsOutGame() {
 	//Do not free cursorTexture on destruction since its static
 	//Do not close font on destruction since its static
 	
+	//Ensure the publisher doesn't have any soon-to-be stale reference
+	EventPublisher::getInstance().removeEventObserver(this);
+	
 	for (int x=0; x<lights->getWidth(); x++) {
 		for (int y=0; y<lights->getHeight(); y++) {
 			Tile<Light*>* tile = lights->getTile(x, y);
