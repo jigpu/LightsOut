@@ -197,8 +197,10 @@ void LightsOutGameManager::run() {
 	while (runThread) {
 		SDL_mutexP(paintMutex);
 		dirty = true;
-		if (this->game != NULL)
+		if (this->game != NULL) {
+			this->game->kill();
 			delete this->game;
+		}
 		
 		this->game = new LightsOutGame(5,5,level);
 		SDL_mutexV(paintMutex);
