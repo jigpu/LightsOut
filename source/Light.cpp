@@ -47,6 +47,7 @@ Light::Light(int states) {
 	
 	paintMutex = SDL_CreateMutex();
 	
+	dirty = true;
 	surface = NULL;
 }
 
