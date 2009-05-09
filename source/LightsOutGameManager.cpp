@@ -70,12 +70,12 @@ LightsOutGameManager::~LightsOutGameManager() {
 
 void LightsOutGameManager::eventOccured(SDL_Event* event) {
 	switch (event->type) {
-		case SDL_KEYDOWN: {
+		case SDL_KEYDOWN:
 			switch(event->key.keysym.sym) {
 				case SDLK_ESCAPE:
 				case SDLK_HOME:
 					SDL_Event die;
-					die.quit.type = SDL_QUIT;
+					die.user.type = SDL_USEREVENT;
 					SDL_PushEvent(&die);
 					break;
 				case SDLK_PAGEUP:
@@ -92,12 +92,18 @@ void LightsOutGameManager::eventOccured(SDL_Event* event) {
 					break;
 			}
 			break;
-		}
 		
-		case SDL_QUIT: {
+		case SDL_USEREVENT:
+			//This event is fired when the program needs to
+			//end. Unlike SDL_QUIT, threads can take their
+			//time to clean up after themselves nicely :)
 			stop();
 			break;
-		} 
+		
+		case SDL_QUIT:
+			//Everybody, out of the pool!
+			kill();
+			break;
 	}
 }
 

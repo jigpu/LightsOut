@@ -118,7 +118,7 @@ LightsOutGame::~LightsOutGame() {
 
 void LightsOutGame::eventOccured(SDL_Event* event) {	
 	switch (event->type) {
-		case SDL_KEYDOWN: {
+		case SDL_KEYDOWN:
 			switch(event->key.keysym.sym) {
 				case SDLK_TAB:
 				case SDLK_b:
@@ -136,12 +136,18 @@ void LightsOutGame::eventOccured(SDL_Event* event) {
 				case SDLK_RIGHT:  move( 1, 0); break;
 			}
 			break;
-		}
 		
-		case SDL_QUIT: {
+		case SDL_USEREVENT:
+			//This event is fired when the program needs to
+			//end. Unlike SDL_QUIT, threads can take their
+			//time to clean up after themselves nicely :)
 			stop();
 			break;
-		}
+		
+		case SDL_QUIT:
+			//Everybody, out of the pool!
+			kill();
+			break;
 	}
 }
 

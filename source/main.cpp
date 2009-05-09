@@ -89,6 +89,18 @@ int main(int argc, char** argv) {
 	
 	manager->join();
 	
+	//For a clean shutdown, we need to ensure a few things:
+	//
+	//  * The renderer stops before SDL quits
+	//  * All event observers have been unregistered before the
+	//    publisher itself is destroyed
+	SDL_Event die;
+	die.user.type = SDL_USEREVENT;
+	SDL_PushEvent(&die);
+	
+	renderer->join();
+	EventPublisher::getInstance().join();
+	
 	return 0;
 }
 

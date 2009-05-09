@@ -80,10 +80,18 @@ void EventPublisher::run() {
 		while(SDL_PollEvent(&event)) {
 			notifyEventObservers(&event);
 			
-			//As a thread making use of SDL, we need to be
-			//sure to stop when SDL quits ;)
-			if (event.type == SDL_QUIT)
-				stop();
+			if (event.type == SDL_USEREVENT) {
+				//This event is fired when the program needs to
+				//end. Unlike SDL_QUIT, threads can take their
+				//time to clean up after themselves nicely :)
+				while (observers.size() > 0)
+					yield(100);
+				return;
+			}
+			else if (event.type == SDL_QUIT) {
+				//Everybody, out of the pool!
+				return;
+			}
 		}
 		
 		yield(25);
