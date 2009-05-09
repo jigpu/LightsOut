@@ -37,7 +37,7 @@ EventPublisher::~EventPublisher() {
 
 
 void EventPublisher::addEventObserver(EventObserver* observer) {
-	std::clog << SDL_GetTicks() << " (" << this << "): Adding new event observer (" << observer << ")" << std::endl;
+	//std::clog << SDL_GetTicks() << " (" << this << "): Adding new event observer (" << observer << ")" << std::endl;
 	
 	SDL_mutexP(listMutex);
 	observers.push_back(observer);
@@ -52,7 +52,7 @@ EventPublisher& EventPublisher::getInstance() {
 
 
 void EventPublisher::notifyEventObservers(SDL_Event* event) {
-	std::clog << SDL_GetTicks() << " (" << this << "): Notifying observers of new event." << std::endl;
+	//std::clog << SDL_GetTicks() << " (" << this << "): Notifying observers of new event." << std::endl;
 	
 	SDL_mutexP(listMutex);
 	std::list<EventObserver*>::iterator iter = observers.begin();
@@ -65,7 +65,7 @@ void EventPublisher::notifyEventObservers(SDL_Event* event) {
 
 
 void EventPublisher::removeEventObserver(EventObserver* observer) {
-	std::clog << SDL_GetTicks() << " (" << this << "): Removing event observer (" << observer << ")" << std::endl;
+	//std::clog << SDL_GetTicks() << " (" << this << "): Removing event observer (" << observer << ")" << std::endl;
 	
 	SDL_mutexP(listMutex);
 	observers.remove(observer);
@@ -81,15 +81,14 @@ void EventPublisher::run() {
 			notifyEventObservers(&event);
 			
 			if (event.type == SDL_USEREVENT) {
-				//This event is fired when the program needs to
-				//end. Unlike SDL_QUIT, threads can take their
-				//time to clean up after themselves nicely :)
+				//std::clog << SDL_GetTicks() << " (" << this << "): EventPublisher gracefully stopping." << std::endl;
+				//std::clog << SDL_GetTicks() << " (" << this << "): Waiting for all observers to unregister..." << std::endl;
 				while (observers.size() > 0)
 					yield(100);
 				return;
 			}
 			else if (event.type == SDL_QUIT) {
-				//Everybody, out of the pool!
+				//std::clog << SDL_GetTicks() << " (" << this << "): EventPublisher quitting NOW." << std::endl;
 				return;
 			}
 		}

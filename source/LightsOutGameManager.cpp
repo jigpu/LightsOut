@@ -37,7 +37,7 @@ TTF_Font* LightsOutGameManager::font = NULL;
 
 
 LightsOutGameManager::LightsOutGameManager() {
-	std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGameManager." << std::endl;
+	//std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGameManager." << std::endl;
 	
 	srand ( time(NULL) );
 	level = 2;
@@ -52,7 +52,7 @@ LightsOutGameManager::LightsOutGameManager() {
 	if (font == NULL) {
 		font = TTF_OpenFont("yukari.ttf", 24);
 		if (font == NULL) {
-			std::cerr << "Error loading fawn.ttf: " << SDL_GetError() << std::endl;
+			std::cerr << "Error loading yukari.ttf: " << SDL_GetError() << std::endl;
 			throw 1;
 		}
 	}
@@ -60,7 +60,7 @@ LightsOutGameManager::LightsOutGameManager() {
 
 
 LightsOutGameManager::~LightsOutGameManager() {
-	std::clog << SDL_GetTicks() << " (" << this << "): delete LightsOutGameManager." << std::endl;
+	//std::clog << SDL_GetTicks() << " (" << this << "): delete LightsOutGameManager." << std::endl;
 	
 	SDL_FreeSurface(surface);
 	SDL_DestroyMutex(paintMutex);
@@ -94,14 +94,12 @@ void LightsOutGameManager::eventOccured(SDL_Event* event) {
 			break;
 		
 		case SDL_USEREVENT:
-			//This event is fired when the program needs to
-			//end. Unlike SDL_QUIT, threads can take their
-			//time to clean up after themselves nicely :)
+			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGameManager gracefully stopping." << std::endl;
 			stop();
 			break;
 		
 		case SDL_QUIT:
-			//Everybody, out of the pool!
+			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGameManager quitting NOW." << std::endl;
 			kill();
 			break;
 	}
@@ -110,7 +108,7 @@ void LightsOutGameManager::eventOccured(SDL_Event* event) {
 
 bool LightsOutGameManager::paint(SDL_Surface& surface, int width, int height) {
 	while (this->game == NULL) {
-		std::clog << SDL_GetTicks() << " (" << this << "): No game yet..." << std::endl;
+		//std::clog << SDL_GetTicks() << " (" << this << "): No game yet..." << std::endl;
 		yield(100);
 	}
 	

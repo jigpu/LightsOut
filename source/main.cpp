@@ -45,26 +45,26 @@
 SDL_Surface* screen; //This pointer will reference the backbuffer 
 
 
-int initVideo(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
+void initSDL(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
 		std::cerr << "Unable to initialize SDL: " << SDL_GetError() << std::endl;
-		return false;
+		throw 1;
 	}
 	atexit(SDL_Quit);
-	
-	TTF_Init();
-	atexit(TTF_Quit);
 	
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512) != 0) {
 		std::cerr << "Unable to open audio: " << Mix_GetError() << std::endl;
 		throw 1;
 	}
 	atexit(Mix_CloseAudio);
+	
+	TTF_Init();
+	atexit(TTF_Quit);
  	
 	screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 16, flags);
 	if (screen == NULL) {
 		std::cerr << "Unable to set video mode: " << SDL_GetError() << std::endl;
-		return false;
+		throw 1;
 	}
 	
 	return true;
@@ -72,7 +72,7 @@ int initVideo(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
 
 
 int main(int argc, char** argv) {
-	initVideo();
+	initSDL();
 	EventPublisher::getInstance().start();
 	
 	#ifndef PC

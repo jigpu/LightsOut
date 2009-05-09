@@ -36,14 +36,12 @@ Renderer::Renderer(SDL_Surface* surface, Renderable* child) {
 void Renderer::eventOccured(SDL_Event* event) {
 	switch (event->type) {
 		case SDL_USEREVENT:
-			//This event is fired when the program needs to
-			//end. Unlike SDL_QUIT, threads can take their
-			//time to clean up after themselves nicely :)
+			//std::clog << SDL_GetTicks() << " (" << this << "): Renderer gracefully stopping." << std::endl;
 			stop();
 			break;
 		
 		case SDL_QUIT:
-			//Everybody, out of the pool!
+			//std::clog << SDL_GetTicks() << " (" << this << "): Renderer quitting NOW." << std::endl;
 			kill();
 			break;
 	}
@@ -71,7 +69,7 @@ void Renderer::run() {
 		SDL_Surface buffer;
 		bool dirtyPaint = child->paint(buffer, surface->w, surface->h);
 		if (dirtyPaint) {
-			//std::cout << "FLIP!" << std::endl;
+			//std::clog << "Blitting buffer to surface and flipping." << std::endl;
 			SDL_BlitSurface(&buffer, NULL, surface, NULL);
 			SDL_Flip(surface);
 		}

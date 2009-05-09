@@ -40,7 +40,7 @@ SDL_Surface* LightsOutGame::cursorTexture = NULL;
 
 
 LightsOutGame::LightsOutGame(int width, int height, int states) {
-	std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGame." << std::endl;
+	//std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGame." << std::endl;
 	
 	if (font == NULL) {
 		font = TTF_OpenFont("yukari.ttf", 36);
@@ -94,7 +94,7 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 
 
 LightsOutGame::~LightsOutGame() {
-	std::clog << SDL_GetTicks() << " (" << this << "): delete LightsOutGame." << std::endl;
+	//std::clog << SDL_GetTicks() << " (" << this << "): delete LightsOutGame." << std::endl;
 	
 	SDL_DestroyMutex(paintMutex);
 	SDL_FreeSurface(surface);
@@ -138,14 +138,12 @@ void LightsOutGame::eventOccured(SDL_Event* event) {
 			break;
 		
 		case SDL_USEREVENT:
-			//This event is fired when the program needs to
-			//end. Unlike SDL_QUIT, threads can take their
-			//time to clean up after themselves nicely :)
+			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGame gracefully stopping." << std::endl;
 			stop();
 			break;
 		
 		case SDL_QUIT:
-			//Everybody, out of the pool!
+			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGame quitting NOW." << std::endl;
 			kill();
 			break;
 	}
