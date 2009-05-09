@@ -116,7 +116,7 @@ LightsOutGame::~LightsOutGame() {
 }
 
 
-void LightsOutGame::eventOccured(const SDL_Event* const event) {	
+void LightsOutGame::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
 		case SDL_KEYDOWN:
 			switch(event->key.keysym.sym) {
@@ -169,7 +169,7 @@ void LightsOutGame::getMoveHint(unsigned int& suggestedX, unsigned int& suggeste
 					switch (x) {
 						case 0: suggestedX = 1; return;
 						case 1: suggestedX = 0; return;
-						case 2: suggestedX = 3; return;	
+						case 2: suggestedX = 3; return;
 					}
 				}
 			}

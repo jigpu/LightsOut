@@ -117,7 +117,7 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 		yield(100);
 	}
 	
-	SDL_mutexP(paintMutex);	
+	SDL_mutexP(paintMutex);
 	
 	if (dirty ||
 	    this->surface == NULL ||
@@ -132,7 +132,7 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 	bool dirtysub = false;
 	
 	//Create & paint game surface
-	///////////////////////////////////////////////////	
+	///////////////////////////////////////////////////
 	dest.x = 8;
 	dest.y = 8;
 	dest.w = this->surface->w - 2*dest.x;
@@ -146,7 +146,7 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 	
 	//Paint stats onto surface
 	///////////////////////////////////////////////////
-	if (dirty) {		
+	if (dirty) {
 		SDL_Color clrFg = {255,255,255,0};
 		dest.x = 4;
 		dest.y = this->surface->h - 32;

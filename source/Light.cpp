@@ -87,11 +87,11 @@ bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height)
 		SDL_FreeSurface(this->surface);
 		this->surface = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,16,0,0,0,0);
 		dirty = true;
-	}	
+	}
 	
 	//Draw light onto surface
 	///////////////////////////////////////////////////
-	if (dirty) {		
+	if (dirty) {
 		switch (state) {
 			case 0:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_0));   break;
 			case 1:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_1));   break;

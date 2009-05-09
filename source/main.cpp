@@ -41,8 +41,8 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
- 
-SDL_Surface* screen; //This pointer will reference the backbuffer 
+
+SDL_Surface* screen; //This pointer will reference the backbuffer
 
 
 void initSDL(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
