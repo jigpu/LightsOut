@@ -76,14 +76,14 @@ protected:
 	/**
 	 * Notify all registered observers of the given SDL event.
 	 */
-	void notifyEventObservers(SDL_Event* event);
+	void notifyEventObservers(const SDL_Event* const event) const;
 	
 public:
 	/**
 	 * Register a new observer to recieve SDL events off the
 	 * event queue.
 	 */
-	void addEventObserver(EventObserver* observer);
+	void addEventObserver(EventObserver* const observer);
 	
 	/**
 	 * Provides access to the EventPublisher's single instance by
@@ -95,7 +95,7 @@ public:
 	 * Unregister an observer from the list of objects to recieve
 	 * SDL events.
 	 */
-	void removeEventObserver(EventObserver* observer);
+	void removeEventObserver(EventObserver* const observer);
 	
 	/**
 	 * Periodically poll the SDL event queue for new events that

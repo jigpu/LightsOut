@@ -27,13 +27,13 @@
 #include "Renderer.hpp"
 
 
-Renderer::Renderer(SDL_Surface* surface, Renderable* child) {
+Renderer::Renderer(SDL_Surface* surface, const Renderable* child) {
 	this->surface = surface;
 	this->child = child;
 }
 
 
-void Renderer::eventOccured(SDL_Event* event) {
+void Renderer::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
 		case SDL_USEREVENT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): Renderer gracefully stopping." << std::endl;
@@ -49,9 +49,9 @@ void Renderer::eventOccured(SDL_Event* event) {
 
 
 void Renderer::run() {
-	int currTime    = 0;
-	int prevTime    = 0;
-	int timeElapsed = 0;
+	unsigned int currTime    = 0;
+	unsigned int prevTime    = 0;
+	unsigned int timeElapsed = 0;
 	
 	EventPublisher::getInstance().addEventObserver(this);
 	
@@ -66,6 +66,7 @@ void Renderer::run() {
 			timeElapsed = currTime - prevTime;
 		}
 		prevTime = currTime;
+		
 		SDL_Surface buffer;
 		bool dirtyPaint = child->paint(buffer, surface->w, surface->h);
 		if (dirtyPaint) {

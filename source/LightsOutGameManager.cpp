@@ -64,10 +64,11 @@ LightsOutGameManager::~LightsOutGameManager() {
 	
 	SDL_FreeSurface(surface);
 	SDL_DestroyMutex(paintMutex);
+	//Do not close font on destruction since its static
 }
 
 
-void LightsOutGameManager::eventOccured(SDL_Event* event) {
+void LightsOutGameManager::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
 		case SDL_KEYDOWN:
 			switch(event->key.keysym.sym) {
@@ -89,6 +90,8 @@ void LightsOutGameManager::eventOccured(SDL_Event* event) {
 					if (level < 2) level = 2;
 					newGame = true;
 					break;
+				default:
+					break;
 			}
 			break;
 		
@@ -101,11 +104,14 @@ void LightsOutGameManager::eventOccured(SDL_Event* event) {
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGameManager quitting NOW." << std::endl;
 			kill();
 			break;
+		
+		default:
+			break;
 	}
 }
 
 
-bool LightsOutGameManager::paint(SDL_Surface& surface, int width, int height) {
+bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsigned int height) const {
 	while (this->game == NULL) {
 		//std::clog << SDL_GetTicks() << " (" << this << "): No game yet..." << std::endl;
 		yield(100);
@@ -154,7 +160,7 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, int width, int height) {
 		SDL_FreeSurface(gamesLS);
 		
 		dest.x = this->surface->w - 230;
-		int elapsed = SDL_GetTicks() - managerStartTime;
+		Uint32 elapsed = SDL_GetTicks() - managerStartTime;
 		std::stringstream timeString;
 		timeString << "Total Time: " << std::setw(2) << std::setfill('0') << elapsed/3600000 << ":"
 		           << std::setw(2) << std::setfill('0') << elapsed/60000 % 60 << ":"

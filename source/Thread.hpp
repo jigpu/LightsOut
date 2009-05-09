@@ -48,7 +48,7 @@ protected:
 	 * value often since they should stop soon after the original
 	 * call.
 	 */
-	bool runThread;
+	mutable bool runThread;
 	
 	/**
 	 * A reference to the system's thread object
@@ -61,14 +61,14 @@ public:
 	 * Join the thread. This call will not return until the
 	 * thread has stopped running.
 	 */
-	void join();
+	void join() const;
 	
 	/**
 	 * Kill the thread. This forcefully causes the thread to
 	 * end. This should be used with great care -- the stop
 	 * method should be prefered in almost all cases.
 	 */
-	void kill();
+	void kill() const;
 	
 	/**
 	 * Threads must override this method with their own
@@ -92,13 +92,13 @@ public:
 	 * may need to be forcibly killed, but note that using kill
 	 * may have unwanted reprocussions.
 	 */
-	void stop();
+	void stop() const;
 	
 	/**
 	 * Cause the thread to pause execution for the specified
 	 * number of milliseconds.
 	 */
-	void yield(int milliseconds);
+	void yield(const unsigned int milliseconds) const;
 	
 };
 

@@ -65,7 +65,7 @@ protected:
 	 * number of games that have been completed, and time that
 	 * the manager was started (for an idea of overall play time)
 	 */
-	int level, gamesCompleted, managerStartTime;
+	unsigned int level, gamesCompleted, managerStartTime;
 	
 	/**
 	 * newGame should be set to true when the manager should stop
@@ -79,9 +79,9 @@ public:
 	
 	~LightsOutGameManager();
 	
-	void eventOccured(SDL_Event* event);
+	void eventOccured(const SDL_Event* const event);
 	
-	bool paint(SDL_Surface& surface, int width, int height);
+	bool paint(SDL_Surface& surface, unsigned int width, unsigned int height) const;
 	
 	/**
 	 * Runs the manager, which creates new games for the player

@@ -55,12 +55,12 @@ protected:
 	 * The primary object to be rendered. All paint operations
 	 * will trickle through this Renderable.
 	 */
-	Renderable* child;
+	const Renderable* child;
 	
 public:
-	Renderer(SDL_Surface* surface, Renderable* child);
+	Renderer(SDL_Surface* surface, const Renderable* child);
 	
-	void eventOccured(SDL_Event* event);
+	void eventOccured(const SDL_Event* const event);
 	
 	/**
 	 * Runs the renderer, periodically calling the paint method

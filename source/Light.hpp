@@ -61,7 +61,7 @@ protected:
 	 * Light may take on. State 0 has special meaning as the
 	 * "off" state.
 	 */
-	int state, states;
+	unsigned int state, states;
 	
 	/**
 	 * A mutex to prevent the change of internal object state
@@ -74,14 +74,14 @@ public:
 	 * Create a new Light. By default the light will have two
 	 * states (off and on) if no maximum is specified.
 	 */
-	Light(int states=2);
+	Light(unsigned int states=2);
 	
 	~Light();
 	
 	/**
 	 * Returns true if the light is on.
 	 */
-	bool isLightOn();
+	bool isLightOn() const;
 	
 	/**
 	 * Cycles the light to the next available state. Lights at
@@ -90,7 +90,7 @@ public:
 	 */
 	void nextState();
 	
-	bool paint(SDL_Surface& surface, int width, int height);
+	bool paint(SDL_Surface& surface, unsigned int width, unsigned int height) const;
 	
 };
 

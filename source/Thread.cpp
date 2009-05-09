@@ -33,7 +33,7 @@ int executor(void* val) {
 }
 
 
-void Thread::join() {
+void Thread::join() const {
 	//pthreads:
 	//pthread_join(thread, NULL);
 	
@@ -42,7 +42,7 @@ void Thread::join() {
 }
 
 
-void Thread::kill() {
+void Thread::kill() const {
 	//SDL:
 	runThread = false;
 	SDL_KillThread(thread);
@@ -60,12 +60,12 @@ void Thread::start() {
 }
 
 
-void Thread::stop() {
+void Thread::stop() const {
 	runThread = false;
 }
 
 
-void Thread::yield(int milliseconds = 1) {
+void Thread::yield(const unsigned int milliseconds = 1) const {
 	//pthreads:
 	//usleep(100*milliseconds);
 	

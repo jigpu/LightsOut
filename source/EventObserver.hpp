@@ -45,7 +45,7 @@ public:
 	 * to all observers from the EventPublisher by calling this
 	 * method.
 	 */
-	virtual void eventOccured(SDL_Event* event) = 0;
+	virtual void eventOccured(const SDL_Event* const event) = 0;
 	
 };
 

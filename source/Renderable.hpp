@@ -49,7 +49,7 @@ protected:
 	 * sub-objects, though obviously something with dirty
 	 * sub-objects will need to be re-painted.
 	 */
-	bool dirty;
+	mutable bool dirty;
 	
 	/**
 	 * When painting a dirty object, paint operations should be
@@ -57,7 +57,7 @@ protected:
 	 * the caller of the paint method if not dirty, or re-created
 	 * and painted again before passing back.
 	 */
-	SDL_Surface* surface;
+	mutable SDL_Surface* surface;
 	
 public:
 	/**
@@ -70,7 +70,7 @@ public:
 	 * to let the caller know that it may want to update its
 	 * own surface as well.
 	 */
-	virtual bool paint(SDL_Surface& surface, int width, int height) = 0;
+	virtual bool paint(SDL_Surface& surface, unsigned int width, unsigned int height) const = 0;
 	
 };
 

@@ -39,7 +39,7 @@ TTF_Font* LightsOutGame::font = NULL;
 SDL_Surface* LightsOutGame::cursorTexture = NULL;
 
 
-LightsOutGame::LightsOutGame(int width, int height, int states) {
+LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned int states) {
 	//std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGame." << std::endl;
 	
 	if (font == NULL) {
@@ -65,8 +65,8 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 	lights = new RectangleMap<Light*>(width, height);
 	
 	//Create all gameboard lights
-	for (int x=0; x<width; x++) {
-		for (int y=0; y<height; y++) {
+	for (unsigned int x=0; x<width; x++) {
+		for (unsigned int y=0; y<height; y++) {
 			lights->setTile(x, y, new Tile<Light*>(new Light(states)));
 		}
 	}
@@ -77,9 +77,9 @@ LightsOutGame::LightsOutGame(int width, int height, int states) {
 	
 	//Initialize the board to some solvable state.
 	minMoves = 0;
-	for (int x=0; x<width; x++) {
-		for (int y=0; y<height; y++) {
-			for (int i=0; i<rand()%states; i++) {
+	for (unsigned int x=0; x<width; x++) {
+		for (unsigned int y=0; y<height; y++) {
+			for (unsigned int i=0; i<rand()%states; i++) {
 				minMoves++;
 				pressButton(x,y);
 			}
@@ -104,8 +104,8 @@ LightsOutGame::~LightsOutGame() {
 	//Ensure the publisher doesn't have any soon-to-be stale reference
 	EventPublisher::getInstance().removeEventObserver(this);
 	
-	for (int x=0; x<lights->getWidth(); x++) {
-		for (int y=0; y<lights->getHeight(); y++) {
+	for (unsigned int x=0; x<lights->getWidth(); x++) {
+		for (unsigned int y=0; y<lights->getHeight(); y++) {
 			Tile<Light*>* tile = lights->getTile(x, y);
 			delete tile->object;
 			delete tile;
@@ -116,13 +116,13 @@ LightsOutGame::~LightsOutGame() {
 }
 
 
-void LightsOutGame::eventOccured(SDL_Event* event) {	
+void LightsOutGame::eventOccured(const SDL_Event* const event) {	
 	switch (event->type) {
 		case SDL_KEYDOWN:
 			switch(event->key.keysym.sym) {
 				case SDLK_TAB:
 				case SDLK_b:
-					int newX, newY;
+					unsigned int newX, newY;
 					getMoveHint(newX, newY);
 					moveAbsolute(newX, newY);
 					//break if you don't want auto-select.
@@ -134,6 +134,7 @@ void LightsOutGame::eventOccured(SDL_Event* event) {
 				case SDLK_DOWN:   move( 0, 1); break;
 				case SDLK_LEFT:   move(-1, 0); break;
 				case SDLK_RIGHT:  move( 1, 0); break;
+				default: break;
 			}
 			break;
 		
@@ -146,13 +147,15 @@ void LightsOutGame::eventOccured(SDL_Event* event) {
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGame quitting NOW." << std::endl;
 			kill();
 			break;
+		
+		default: break;
 	}
 }
 
 
-void LightsOutGame::getMoveHint(int& suggestedX, int& suggestedY) {
-	for (int y=0; y<lights->getHeight(); y++) {
-		for (int x=0; x<lights->getWidth(); x++) {
+void LightsOutGame::getMoveHint(unsigned int& suggestedX, unsigned int& suggestedY) const {
+	for (unsigned int y=0; y<lights->getHeight(); y++) {
+		for (unsigned int x=0; x<lights->getWidth(); x++) {
 			if (lights->getTile(x,y)->object->isLightOn()) {
 				if (y+1 != lights->getHeight()) {
 					//"Chase the lights"
@@ -191,20 +194,18 @@ void LightsOutGame::getMoveHint(int& suggestedX, int& suggestedY) {
 
 void LightsOutGame::move(int deltaX, int deltaY) {
 	SDL_mutexP(paintMutex);
-	int newX = x+deltaX;
-	int newY = y+deltaY;
+	unsigned int newX = x+deltaX;
+	unsigned int newY = y+deltaY;
 	SDL_mutexV(paintMutex);
 	
-	if (newX < 0) newX = 0;
 	if (newX >= lights->getWidth()) newX = lights->getWidth()-1;
-	if (newY < 0) newY = 0;
 	if (newY >= lights->getHeight()) newY = lights->getHeight()-1;
 	
 	moveAbsolute(newX, newY);
 }
 
 
-void LightsOutGame::moveAbsolute(int x, int y) {
+void LightsOutGame::moveAbsolute(unsigned int x, unsigned int y) {
 	SDL_mutexP(paintMutex);
 	this->x = x;
 	this->y = y;
@@ -214,7 +215,7 @@ void LightsOutGame::moveAbsolute(int x, int y) {
 }
 
 
-bool LightsOutGame::paint(SDL_Surface& surface, int width, int height) {
+bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int height) const {
 	SDL_mutexP(paintMutex);
 	
 	if (dirty ||
@@ -231,7 +232,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, int width, int height) {
 	
 	//Create & paint gameboard subsurface
 	///////////////////////////////////////////////////
-	int rmask,gmask,bmask,amask;
+	Uint32 rmask,gmask,bmask,amask;
 	#if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	rmask = 0xff000000;
 	gmask = 0x00ff0000;
@@ -249,10 +250,10 @@ bool LightsOutGame::paint(SDL_Surface& surface, int width, int height) {
 	double tileHeight = (double)gameboard->h/(double)lights->getHeight();
 	
 	//Paint lights onto gameboard
-	for (int x=0; x<lights->getWidth(); x++) {
+	for (unsigned int x=0; x<lights->getWidth(); x++) {
 		dest.x = (int)(tileWidth*x);
 		dest.w = (int)(tileWidth*(x+1)) - dest.x;
-		for (int y=0; y<lights->getHeight(); y++) {
+		for (unsigned int y=0; y<lights->getHeight(); y++) {
 			dest.y = (int)(tileHeight*y);
 			dest.h = (int)(tileHeight*(y+1)) - dest.y;
 			
@@ -313,7 +314,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, int width, int height) {
 		SDL_FreeSurface(timeLS);
 		
 		dest.y += 32;
-		int elapsed = SDL_GetTicks() - gameStartTime;
+		Uint32 elapsed = SDL_GetTicks() - gameStartTime;
 		std::stringstream timeString;
 		timeString << std::setw(2) << std::setfill('0') << elapsed/3600000 << ":"
 		           << std::setw(2) << std::setfill('0') << elapsed/60000 % 60 << ":"
@@ -354,8 +355,8 @@ bool LightsOutGame::paint(SDL_Surface& surface, int width, int height) {
 }
 
 
-void LightsOutGame::pressButton(int x, int y) {
-	if (x >= lights->getWidth() || x < 0 || y >= lights->getHeight() || y < 0)
+void LightsOutGame::pressButton(unsigned int x, unsigned int y) {
+	if (x >= lights->getWidth() || y >= lights->getHeight())
 		throw 11;
 	
 	SDL_mutexP(paintMutex);
@@ -388,8 +389,8 @@ void LightsOutGame::select() {
 }
 
 
-void LightsOutGame::toggleLight(int x, int y) {
-	if (x >= lights->getWidth() || x < 0 || y >= lights->getHeight() || y < 0)
+void LightsOutGame::toggleLight(unsigned int x, unsigned int y) {
+	if (x >= lights->getWidth() || y >= lights->getHeight())
 		return; //Assume the caller was just lazy
 	
 	SDL_mutexP(paintMutex);
@@ -398,9 +399,9 @@ void LightsOutGame::toggleLight(int x, int y) {
 }
 
 
-bool LightsOutGame::winningState() {
-	for (int y=0; y<lights->getHeight(); y++) {
-		for (int x=0; x<lights->getWidth(); x++) {
+bool LightsOutGame::winningState() const {
+	for (unsigned int y=0; y<lights->getHeight(); y++) {
+		for (unsigned int x=0; x<lights->getWidth(); x++) {
 			if (lights->getTile(x,y)->object->isLightOn())
 				return false;
 			

@@ -38,10 +38,10 @@ template <typename T>
 class RectangleMap : public Map<T> {
 
 protected:
-	int width, height;
+	unsigned int width, height;
 	
 public:
-	RectangleMap(int width, int height) {
+	RectangleMap(unsigned int width, unsigned int height) {
 		this->width  = width;
 		this->height = height;
 		
@@ -58,12 +58,12 @@ public:
 	}
 	
 	
-	int getWidth() {
+	unsigned int getWidth() const {
 		return width;
 	}
 	
 	
-	int getHeight() {
+	unsigned int getHeight() const {
 		return height;
 	}
 	

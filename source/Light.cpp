@@ -31,7 +31,7 @@
 SDL_Surface* Light::glassTexture = NULL;
 
 
-Light::Light(int states) {
+Light::Light(unsigned int states) {
 	//std::clog << SDL_GetTicks() << " (" << this << "): new Light." << std::endl;
 	
 	if (glassTexture == NULL) {
@@ -61,7 +61,7 @@ Light::~Light() {
 }
 
 
-bool Light::isLightOn() {
+bool Light::isLightOn() const {
 	return state != 0;
 }
 
@@ -77,7 +77,7 @@ void Light::nextState() {
 }
 
 
-bool Light::paint(SDL_Surface& surface, int width, int height) {
+bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height) const {
 	SDL_mutexP(paintMutex);
 	
 	if (dirty ||

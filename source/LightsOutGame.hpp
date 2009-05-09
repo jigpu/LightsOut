@@ -62,25 +62,25 @@ protected:
 	/**
 	 * X and Y contain the location of the cursor.
 	 */
-	int x, y;
+	unsigned int x, y;
 	
 	/**
 	 * The time as returned by SDL_GetTicks when this game was
 	 * started. This is used for game statistics.
 	 */
-	int gameStartTime;
+	unsigned int gameStartTime;
 	
 	/**
 	 * The minimum number of moves required to solve the game,
 	 * and the total number of moves played so far.
 	 */
-	int minMoves, moves;
+	unsigned int minMoves, moves;
 	
 	/**
 	 * The number of states that the lights are allowed to take
 	 * on.
 	 */
-	int states;
+	unsigned int states;
 	
 	/**
 	 * A mutex to prevent the modification of internal state
@@ -97,7 +97,7 @@ protected:
 	 * Has the light at (X,Y) go to its next available state.
 	 * This operation marks the game as dirty.
 	 */
-	void toggleLight(int x, int y);
+	void toggleLight(unsigned int x, unsigned int y);
 	
 public:
 	/**
@@ -105,18 +105,18 @@ public:
 	 * traditional 5x5 board size, with 2-state lights. Board
 	 * size and number of states may be changed if desired.
 	 */
-	LightsOutGame(int width=5, int height=5, int states=2);
+	LightsOutGame(unsigned int width=5, unsigned int height=5, unsigned int states=2);
 	
 	~LightsOutGame();
 	
-	void eventOccured(SDL_Event* event);
+	void eventOccured(const SDL_Event* const event);
 	
 	/**
 	 * Suggests a move that will lead to the completion of the
 	 * game. The values of suggestedX and suggestedY will contain
 	 * the location after the call completes.
 	 */
-	void getMoveHint(int& suggestedX, int& suggestedY);
+	void getMoveHint(unsigned int& suggestedX, unsigned int& suggestedY) const;
 	
 	/**
 	 * Move the cursor a specified ammount.
@@ -127,16 +127,16 @@ public:
 	 * Moves the cursor to the absolute coordinate (X,Y). This
 	 * operation marks the game as dirty.
 	 */
-	void moveAbsolute(int x, int y);
+	void moveAbsolute(unsigned int x, unsigned int y);
 	
-	bool paint(SDL_Surface& surface, int width, int height);
+	bool paint(SDL_Surface& surface, unsigned int width, unsigned int height) const;
 	
 	/**
 	 * Press the button at the given cursor location. This causes
 	 * it and the four neighboring lights to advance to their
 	 * next state. This method DOES NOT move the cursor.
 	 */
-	void pressButton(int x, int y);
+	void pressButton(unsigned int x, unsigned int y);
 	
 	/**
 	 * Runs the game, which does nothing but wait for a winning
@@ -155,7 +155,7 @@ public:
 	 * Returns true if the board is in a winning state (that is,
 	 * all lights off).
 	 */
-	bool winningState();
+	bool winningState() const;
 	
 };
 

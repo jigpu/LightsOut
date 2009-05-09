@@ -64,11 +64,15 @@ void initSDL(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
 
 
 int main(int argc, char** argv) {
+	#ifndef PC
+	fatInitDefault();
+	#endif
+	
 	initSDL();
+	
 	EventPublisher::getInstance().start();
 	
 	#ifndef PC
-	fatInitDefault();
 	Wiimote* wiimote = new Wiimote();
 	wiimote->start();
 	#endif
