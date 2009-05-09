@@ -211,7 +211,9 @@ void LightsOutGameManager::run() {
 		newGame = false;
 		this->game->start();
 		while (runThread && !newGame && !this->game->winningState()) {
+			SDL_mutexP(paintMutex);
 			dirty = true;
+			SDL_mutexV(paintMutex);
 			yield(250);
 		}
 		this->game->stop();

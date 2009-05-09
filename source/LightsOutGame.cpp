@@ -154,6 +154,7 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 
 
 void LightsOutGame::getMoveHint(unsigned int& suggestedX, unsigned int& suggestedY) const {
+	SDL_mutexP(paintMutex);
 	for (unsigned int y=0; y<lights->getHeight(); y++) {
 		for (unsigned int x=0; x<lights->getWidth(); x++) {
 			if (lights->getTile(x,y)->object->isLightOn()) {
@@ -161,15 +162,16 @@ void LightsOutGame::getMoveHint(unsigned int& suggestedX, unsigned int& suggeste
 					//"Chase the lights"
 					suggestedX = x;
 					suggestedY = y+1;
+					SDL_mutexV(paintMutex);
 					return;
 				}
 				else {
 					//Fixing the top
 					suggestedY = 0;
 					switch (x) {
-						case 0: suggestedX = 1; return;
-						case 1: suggestedX = 0; return;
-						case 2: suggestedX = 3; return;
+						case 0: suggestedX = 1; SDL_mutexV(paintMutex); return;
+						case 1: suggestedX = 0; SDL_mutexV(paintMutex); return;
+						case 2: suggestedX = 3; SDL_mutexV(paintMutex); return;
 					}
 				}
 			}
@@ -181,6 +183,7 @@ void LightsOutGame::getMoveHint(unsigned int& suggestedX, unsigned int& suggeste
 		std::clog << SDL_GetTicks() << " (" << this << "): Game has already been won, providing bogus hint of (0,0)." << std::endl;
 		suggestedX = 0;
 		suggestedY = 0;
+		SDL_mutexV(paintMutex);
 		return;
 	}
 	
@@ -188,6 +191,7 @@ void LightsOutGame::getMoveHint(unsigned int& suggestedX, unsigned int& suggeste
 	//How on earth we got here after the constructor ensured
 	//the board was solvable is beyond me.
 	std::cerr << "Game is not solvable, cannot give move hint." << std::endl;
+	SDL_mutexV(paintMutex);
 	throw 10;
 }
 
@@ -359,9 +363,7 @@ void LightsOutGame::pressButton(unsigned int x, unsigned int y) {
 	if (x >= lights->getWidth() || y >= lights->getHeight())
 		throw 11;
 	
-	SDL_mutexP(paintMutex);
 	moves++;
-	SDL_mutexV(paintMutex);
 	
 	toggleLight(x,y);
 	toggleLight(x-1,y);
@@ -376,7 +378,9 @@ void LightsOutGame::run() {
 	
 	gameStartTime = SDL_GetTicks();
 	while (runThread && !winningState()) {
+		SDL_mutexP(paintMutex);
 		dirty = true;
+		SDL_mutexV(paintMutex);
 		yield(250);
 	};
 	
@@ -385,7 +389,9 @@ void LightsOutGame::run() {
 
 
 void LightsOutGame::select() {
+	SDL_mutexP(paintMutex);
 	pressButton(x,y);
+	SDL_mutexV(paintMutex);
 }
 
 
@@ -393,20 +399,22 @@ void LightsOutGame::toggleLight(unsigned int x, unsigned int y) {
 	if (x >= lights->getWidth() || y >= lights->getHeight())
 		return; //Assume the caller was just lazy
 	
-	SDL_mutexP(paintMutex);
 	lights->getTile(x,y)->object->nextState();
-	SDL_mutexV(paintMutex);
 }
 
 
 bool LightsOutGame::winningState() const {
+	SDL_mutexP(paintMutex);
 	for (unsigned int y=0; y<lights->getHeight(); y++) {
 		for (unsigned int x=0; x<lights->getWidth(); x++) {
-			if (lights->getTile(x,y)->object->isLightOn())
+			if (lights->getTile(x,y)->object->isLightOn()) {
+				SDL_mutexV(paintMutex);
 				return false;
+			}
 			
 		}
 	}
+	SDL_mutexV(paintMutex);
 	return true;
 }
 

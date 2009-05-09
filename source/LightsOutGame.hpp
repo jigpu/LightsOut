@@ -94,8 +94,19 @@ protected:
 	RectangleMap<Light*>* lights;
 	
 	/**
+	 * Press the button at the given cursor location. This causes
+	 * it and the four neighboring lights to advance to their
+	 * next state. This method DOES NOT move the cursor.
+	 *
+	 * This method assumes you've already locked paintMutex.
+	 */
+	void pressButton(unsigned int x, unsigned int y);
+	
+	/**
 	 * Has the light at (X,Y) go to its next available state.
 	 * This operation marks the game as dirty.
+	 *
+	 * This method assumes you've already locked paintMutex.
 	 */
 	void toggleLight(unsigned int x, unsigned int y);
 	
@@ -130,13 +141,6 @@ public:
 	void moveAbsolute(unsigned int x, unsigned int y);
 	
 	bool paint(SDL_Surface& surface, unsigned int width, unsigned int height) const;
-	
-	/**
-	 * Press the button at the given cursor location. This causes
-	 * it and the four neighboring lights to advance to their
-	 * next state. This method DOES NOT move the cursor.
-	 */
-	void pressButton(unsigned int x, unsigned int y);
 	
 	/**
 	 * Runs the game, which does nothing but wait for a winning
