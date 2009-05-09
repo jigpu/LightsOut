@@ -49,11 +49,6 @@ LightsOutGameManager::LightsOutGameManager() {
 	surface = NULL;
 	dirty = true;
 	
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512) != 0) {
-		std::cerr << "Unable to open audio: " << Mix_GetError() << std::endl;
-		throw 1;
-	}
-	
 	if (font == NULL) {
 		font = TTF_OpenFont("yukari.ttf", 24);
 		if (font == NULL) {
@@ -70,7 +65,6 @@ LightsOutGameManager::~LightsOutGameManager() {
 	SDL_FreeSurface(surface);
 	SDL_DestroyMutex(paintMutex);
 	Mix_HaltMusic();
-	Mix_CloseAudio();
 }
 
 

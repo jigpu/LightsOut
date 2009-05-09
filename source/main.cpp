@@ -50,11 +50,16 @@ int initVideo(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
 		std::cerr << "Unable to initialize SDL: " << SDL_GetError() << std::endl;
 		return false;
 	}
-	
 	atexit(SDL_Quit);
 	
 	TTF_Init();
 	atexit(TTF_Quit);
+	
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512) != 0) {
+		std::cerr << "Unable to open audio: " << Mix_GetError() << std::endl;
+		throw 1;
+	}
+	atexit(Mix_CloseAudio);
  	
 	screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 16, flags);
 	if (screen == NULL) {
