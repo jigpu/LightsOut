@@ -27,7 +27,6 @@
 
 
 #include <SDL/SDL_ttf.h>
-#include <SDL/SDL_mixer.h>
 #include "EventObserver.hpp"
 #include "Thread.hpp"
 #include "LightsOutGame.hpp"
@@ -55,8 +54,6 @@ protected:
 	 * durring a paint operation (or vice-versa).
 	 */
 	SDL_mutex* paintMutex;
-	
-	Mix_Music* music;
 	
 	/**
 	 * The currently active game of Lights Out.

@@ -64,7 +64,6 @@ LightsOutGameManager::~LightsOutGameManager() {
 	
 	SDL_FreeSurface(surface);
 	SDL_DestroyMutex(paintMutex);
-	Mix_HaltMusic();
 }
 
 
@@ -188,9 +187,6 @@ void LightsOutGameManager::run() {
 	EventPublisher::getInstance().addEventObserver(this);
 	
 	managerStartTime = SDL_GetTicks();
-	
-	music = Mix_LoadMUS("bgm.mp3");
-	Mix_PlayMusic(music, -1);
 	
 	while (runThread) {
 		SDL_mutexP(paintMutex);

@@ -46,17 +46,11 @@ SDL_Surface* screen; //This pointer will reference the backbuffer
 
 
 void initSDL(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
+	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		std::cerr << "Unable to initialize SDL: " << SDL_GetError() << std::endl;
 		throw 1;
 	}
 	atexit(SDL_Quit);
-	
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512) != 0) {
-		std::cerr << "Unable to open audio: " << Mix_GetError() << std::endl;
-		throw 1;
-	}
-	atexit(Mix_CloseAudio);
 	
 	TTF_Init();
 	atexit(TTF_Quit);
