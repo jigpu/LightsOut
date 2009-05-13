@@ -124,7 +124,7 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 	    this->surface->w != width ||
 	    this->surface->h != height) {
 		SDL_FreeSurface(this->surface);
-		this->surface = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,16,0,0,0,0);
+		this->surface = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,0,0,0,0);
 		dirty = true;
 	}
 	
