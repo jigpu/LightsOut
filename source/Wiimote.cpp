@@ -38,7 +38,7 @@ Wiimote::Wiimote() {
 }
 
 
-void Wiimote::eventOccured(SDL_Event* event) {
+void Wiimote::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
 		case SDL_QUIT: {
 			stop();

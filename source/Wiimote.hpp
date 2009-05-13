@@ -40,7 +40,7 @@ class Wiimote : public Thread, public EventObserver {
 public:
 	Wiimote();
 	
-	void eventOccured(SDL_Event* event);
+	void eventOccured(const SDL_Event* const event);
 	
 	/**
 	 * The Wiimote thread periodically polls the state of the
