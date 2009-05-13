@@ -298,7 +298,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 		SDL_Color clrFg = {255,255,255,0};
 		
 		dest.x = this->surface->h + 8;
-		dest.y = 16;
+		dest.y = 0;
 		dest.w = 0;
 		dest.h = 0;
 		SDL_Surface* movesLS = TTF_RenderText_Blended(font, "Moves:", clrFg);
@@ -312,7 +312,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 		SDL_BlitSurface(movesS, NULL, this->surface, &dest);
 		SDL_FreeSurface(movesS);
 				
-		dest.y = 112;
+		dest.y = 96;
 		SDL_Surface* timeLS = TTF_RenderText_Blended(font, "Time:", clrFg);
 		SDL_BlitSurface(timeLS, NULL, this->surface, &dest);
 		SDL_FreeSurface(timeLS);
@@ -327,17 +327,30 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 		SDL_BlitSurface(timeS, NULL, this->surface, &dest);
 		SDL_FreeSurface(timeS);
 				
-		dest.y = this->surface->h - 64;
-		SDL_Surface* diffLS = TTF_RenderText_Blended(font, "Difficulty:", clrFg);
+		dest.y = this->surface->h - 96;
+		SDL_Surface* diffLS = TTF_RenderText_Blended(font, "Color Map:", clrFg);
 		SDL_BlitSurface(diffLS, NULL, this->surface, &dest);
 		SDL_FreeSurface(diffLS);
 		
+		/*
 		dest.y += 32;
 		std::stringstream difficultyText;
 		difficultyText << states << " States";
 		SDL_Surface* diffS = TTF_RenderText_Blended(font, difficultyText.str().c_str(), clrFg);
 		SDL_BlitSurface(diffS, NULL, this->surface, &dest);
 		SDL_FreeSurface(diffS);
+		*/
+		dest.y += 48;
+		for (unsigned int i=0; i<states; i++) {
+			Light* l = new Light(states);
+			for (int j=0; j<i; j++)
+				l->nextState();
+			
+			SDL_Surface subsurface;
+			l->paint(subsurface, 24, 24);
+			SDL_BlitSurface(&subsurface, NULL, this->surface, &dest);
+			dest.x += 27;
+		}
 	}
 	
 	//Set surface and return
