@@ -198,10 +198,12 @@ void LightsOutGame::getMoveHint(unsigned int& suggestedX, unsigned int& suggeste
 
 void LightsOutGame::move(int deltaX, int deltaY) {
 	SDL_mutexP(paintMutex);
-	unsigned int newX = x+deltaX;
-	unsigned int newY = y+deltaY;
+	int newX = x+deltaX;
+	int newY = y+deltaY;
 	SDL_mutexV(paintMutex);
 	
+	if (newX < 0) newX = 0;
+	if (newY < 0) newY = 0;	
 	if (newX >= lights->getWidth()) newX = lights->getWidth()-1;
 	if (newY >= lights->getHeight()) newY = lights->getHeight()-1;
 	
@@ -275,8 +277,8 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 	
 	//Paint cursor onto gameboard, and blit gameboard onto surface
 	if (dirty || dirtysub) {
-		dest.x = (int)(tileWidth*(this->x-1));
-		dest.y = (int)(tileHeight*(this->y-1));
+		dest.x = (int)(tileWidth*((int)(this->x)-1));
+		dest.y = (int)(tileHeight*((int)(this->y)-1));
 		dest.w = (int)(tileWidth*3);
 		dest.h = (int)(tileHeight*3);
 		
