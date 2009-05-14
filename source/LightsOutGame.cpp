@@ -352,6 +352,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 			l->paint(subsurface, 24, 24);
 			SDL_BlitSurface(&subsurface, NULL, this->surface, &dest);
 			dest.x += 27;
+			delete l;
 		}
 	}
 	
