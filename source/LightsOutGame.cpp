@@ -79,8 +79,9 @@ LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned i
 	minMoves = 0;
 	for (unsigned int x=0; x<width; x++) {
 		for (unsigned int y=0; y<height; y++) {
-			for (unsigned int i=0; i<rand()%states; i++) {
-				minMoves++;
+			int presses = rand()%states;
+			minMoves+=(states-presses)%states;
+			for (unsigned int i=0; i<presses; i++) {
 				pressButton(x,y);
 			}
 		}
@@ -397,7 +398,7 @@ void LightsOutGame::run() {
 		SDL_mutexP(paintMutex);
 		dirty = true;
 		SDL_mutexV(paintMutex);
-		yield(250);
+		yield(25);
 	};
 	
 	EventPublisher::getInstance().removeEventObserver(this);
