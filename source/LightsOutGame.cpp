@@ -343,7 +343,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 		SDL_FreeSurface(timeS);
 		
 		if (autoplay) {
-			SDL_Color apClr = {192,192,255,0};
+			SDL_Color apClr = {128,128,255,0};
 			dest.y += 64;
 			SDL_Surface* autoplayLS = TTF_RenderText_Blended(font, "DEMO MODE", apClr);
 			SDL_BlitSurface(autoplayLS, NULL, this->surface, &dest);
