@@ -67,6 +67,7 @@ void initSDL(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
 int main(int argc, char** argv) {
 	#ifndef PC
 	fatInitDefault();
+	chdir("/apps/lightsout");
 	#endif
 	
 	initSDL();
