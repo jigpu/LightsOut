@@ -226,8 +226,6 @@ void LightsOutGameManager::run() {
 			gamesCompleted++;
 	};
 	
-	std::cout << "Thanks for playing!" << std::endl;
-	
 	EventPublisher::getInstance().removeEventObserver(this);
 }
 
