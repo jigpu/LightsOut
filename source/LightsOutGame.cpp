@@ -39,7 +39,7 @@ TTF_Font* LightsOutGame::font = NULL;
 SDL_Surface* LightsOutGame::cursorTexture = NULL;
 
 
-LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned int states) {
+LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned int states, bool autoplay) {
 	//std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGame." << std::endl;
 	
 	if (font == NULL) {
@@ -61,6 +61,7 @@ LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned i
 	x = 0;
 	y = 0;
 	this->states = states;
+	this->autoplay = autoplay;
 	
 	lights = new RectangleMap<Light*>(width, height);
 	
@@ -135,6 +136,11 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 				case SDLK_DOWN:   move( 0, 1); break;
 				case SDLK_LEFT:   move(-1, 0); break;
 				case SDLK_RIGHT:  move( 1, 0); break;
+				case SDLK_1:
+					SDL_mutexP(paintMutex);
+					autoplay = !autoplay;
+					SDL_mutexV(paintMutex);
+					break;
 				default: break;
 			}
 			break;
@@ -315,7 +321,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 		SDL_BlitSurface(movesS, NULL, this->surface, &dest);
 		SDL_FreeSurface(movesS);
 				
-		dest.y = 96;
+		dest.y += 64;
 		SDL_Surface* timeLS = TTF_RenderText_Blended(font, "Time:", clrFg);
 		SDL_BlitSurface(timeLS, NULL, this->surface, &dest);
 		SDL_FreeSurface(timeLS);
@@ -329,6 +335,14 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 		SDL_Surface* timeS = TTF_RenderText_Blended(font, timeString.str().c_str(), clrFg);
 		SDL_BlitSurface(timeS, NULL, this->surface, &dest);
 		SDL_FreeSurface(timeS);
+		
+		if (autoplay) {
+			SDL_Color apClr = {192,192,255,0};
+			dest.y += 64;
+			SDL_Surface* autoplayLS = TTF_RenderText_Blended(font, "DEMO MODE", apClr);
+			SDL_BlitSurface(autoplayLS, NULL, this->surface, &dest);
+			SDL_FreeSurface(autoplayLS);
+		}
 				
 		dest.y = this->surface->h - 96;
 		SDL_Surface* diffLS = TTF_RenderText_Blended(font, "Color Map:", clrFg);
@@ -397,8 +411,16 @@ void LightsOutGame::run() {
 	while (runThread && !winningState()) {
 		SDL_mutexP(paintMutex);
 		dirty = true;
+		bool automove = autoplay;
 		SDL_mutexV(paintMutex);
-		yield(25);
+		
+		if (automove) {
+			unsigned int newX, newY;
+			getMoveHint(newX, newY);
+			moveAbsolute(newX, newY);
+			select();
+		}
+		yield(250);
 	};
 	
 	EventPublisher::getInstance().removeEventObserver(this);

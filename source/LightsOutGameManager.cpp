@@ -44,6 +44,7 @@ LightsOutGameManager::LightsOutGameManager() {
 	gamesCompleted = 0;
 	managerStartTime = 0;
 	this->game = NULL;
+	autoplay = false;
 	
 	paintMutex = SDL_CreateMutex();
 	surface = NULL;
@@ -90,6 +91,9 @@ void LightsOutGameManager::eventOccured(const SDL_Event* const event) {
 					if (level < 2) level = 2;
 					newGame = true;
 					break;
+				case SDLK_1:
+					autoplay = !autoplay;
+					break;
 				default:
 					break;
 			}
@@ -133,7 +137,7 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 	
 	//Create & paint game surface
 	///////////////////////////////////////////////////
-	dest.x = 16;
+	dest.x = 8;
 	dest.y = 16;
 	dest.w = this->surface->w - 2*dest.x;
 	dest.h = this->surface->h - dest.y - 48;
@@ -202,7 +206,7 @@ void LightsOutGameManager::run() {
 			delete this->game;
 		}
 		
-		this->game = new LightsOutGame(5,5,level);
+		this->game = new LightsOutGame(5,5,level,autoplay);
 		SDL_mutexV(paintMutex);
 		
 		//Start the game and wait for it to get over

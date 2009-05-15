@@ -74,6 +74,11 @@ protected:
 	 */
 	bool newGame;
 	
+	/**
+	 * Toggles automatic playing of future games.
+	 */
+	bool autoplay;
+	
 public:
 	LightsOutGameManager();
 	

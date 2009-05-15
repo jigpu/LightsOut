@@ -94,6 +94,11 @@ protected:
 	RectangleMap<Light*>* lights;
 	
 	/**
+	 * Toggles autoplay of the current game.
+	 */
+	bool autoplay;
+	
+	/**
 	 * Press the button at the given cursor location. This causes
 	 * it and the four neighboring lights to advance to their
 	 * next state. This method DOES NOT move the cursor.
@@ -116,7 +121,7 @@ public:
 	 * traditional 5x5 board size, with 2-state lights. Board
 	 * size and number of states may be changed if desired.
 	 */
-	LightsOutGame(unsigned int width=5, unsigned int height=5, unsigned int states=2);
+	LightsOutGame(unsigned int width=5, unsigned int height=5, unsigned int states=2, bool autoplay=false);
 	
 	~LightsOutGame();
 	
