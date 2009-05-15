@@ -40,10 +40,15 @@ Wiimote::Wiimote() {
 
 void Wiimote::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
-		case SDL_QUIT: {
+		case SDL_USEREVENT:
+			//std::clog << SDL_GetTicks() << " (" << this << "): Renderer gracefully stopping." << std::endl;
 			stop();
 			break;
-		}
+		
+		case SDL_QUIT:
+			//std::clog << SDL_GetTicks() << " (" << this << "): Renderer quitting NOW." << std::endl;
+			kill();
+			break;
 	}
 }
 
