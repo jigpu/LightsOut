@@ -32,6 +32,7 @@
 
 
 #ifndef PC
+#include <debug.h>
 #include <fat.h>
 #include <gccore.h>
 #include "Wiimote.hpp"
@@ -73,6 +74,8 @@ int main(int argc, char** argv) {
 	EventPublisher::getInstance().start();
 	
 	#ifndef PC
+	//DEBUG_Init(GDBSTUB_DEVICE_WIFI, 8000);
+	//_break();
 	Wiimote* wiimote = new Wiimote();
 	wiimote->start();
 	#endif
