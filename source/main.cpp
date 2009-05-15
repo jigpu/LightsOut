@@ -32,9 +32,12 @@
 
 
 #ifndef PC
+#ifdef WII_DEBUG
 #include <debug.h>
+#endif
 #include <fat.h>
 #include <gccore.h>
+#include <unistd.h>
 #include "Wiimote.hpp"
 #endif
 
@@ -65,21 +68,30 @@ void initSDL(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
 
 
 int main(int argc, char** argv) {
-	#ifndef PC
-	fatInitDefault();
-	chdir("/apps/lightsout");
-	#endif
-	
 	initSDL();
 	
-	EventPublisher::getInstance().start();
-	
 	#ifndef PC
-	//DEBUG_Init(GDBSTUB_DEVICE_WIFI, 8000);
-	//_break();
+	std::cerr << std::endl;
+	#ifdef WII_DEBUG
+	DEBUG_Init(GDBSTUB_DEVICE_WIFI, 8000);
+	_break();
+	#endif
+	if (!fatInitDefault()) {
+		std::cerr << "Unable to initialize FAT subsystem!" << std::endl;
+		sleep(5);
+		throw 1;
+	}
+	if (chdir("/apps/lightsout")) {
+		std::cerr << "Unable to change to application directory!" << std::endl;
+		sleep(5);
+		exit(-1);
+	}
+	
 	Wiimote* wiimote = new Wiimote();
 	wiimote->start();
 	#endif
+	
+	EventPublisher::getInstance().start();
 	
 	LightsOutGameManager* manager = new LightsOutGameManager();
 	manager->start();

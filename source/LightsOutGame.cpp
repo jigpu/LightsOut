@@ -43,7 +43,10 @@ LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned i
 	//std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGame." << std::endl;
 	
 	if (font == NULL) {
-		font = TTF_OpenFont("yukari.ttf", 36);
+		//font = TTF_OpenFont("yukari.ttf", 36);
+		FILE* file = fopen("yukari.ttf", "r");
+		font = TTF_OpenFontRW(SDL_RWFromFP(file, 0), 1, 36);
+		//fclose(file); //File must remain open for SDL_TTF to use the font
 		if (font == NULL) {
 			std::cerr << "Error loading yukari.ttf: " << SDL_GetError() << std::endl;
 			throw 1;
@@ -51,7 +54,10 @@ LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned i
 	}
 	
 	if (cursorTexture == NULL) {
-		cursorTexture = IMG_Load("cursor.png");
+		//cursorTexture = IMG_Load("cursor.png");
+		FILE* file = fopen("cursor.png", "r");
+		cursorTexture = IMG_Load_RW(SDL_RWFromFP(file, 0), 1);
+		fclose(file);
 		if (cursorTexture == NULL) {
 			std::cerr << "Error loading cursor.png: " << SDL_GetError() << std::endl;
 			throw 1;
@@ -413,7 +419,6 @@ void LightsOutGame::run() {
 		dirty = true;
 		bool automove = autoplay;
 		SDL_mutexV(paintMutex);
-		
 		if (automove) {
 			unsigned int newX, newY;
 			getMoveHint(newX, newY);

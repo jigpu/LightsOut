@@ -35,7 +35,10 @@ Light::Light(unsigned int states) {
 	//std::clog << SDL_GetTicks() << " (" << this << "): new Light." << std::endl;
 	
 	if (glassTexture == NULL) {
-		glassTexture = IMG_Load("glass.png");
+		//glassTexture = IMG_Load("glass.png");
+		FILE* file = fopen("glass.png", "r");
+		glassTexture = IMG_Load_RW(SDL_RWFromFP(file, 0), 1);
+		fclose(file);
 		if (glassTexture == NULL) {
 			std::cerr << "Error loading glass.png: " << SDL_GetError() << std::endl;
 			throw 1;

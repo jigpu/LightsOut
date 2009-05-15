@@ -51,7 +51,10 @@ LightsOutGameManager::LightsOutGameManager() {
 	dirty = true;
 	
 	if (font == NULL) {
-		font = TTF_OpenFont("yukari.ttf", 24);
+		//font = TTF_OpenFont("yukari.ttf", 24);
+		FILE* file = fopen("yukari.ttf", "r");
+		font = TTF_OpenFontRW(SDL_RWFromFP(file, 0), 1, 24);
+		//fclose(file);  //File must remain open for SDL_TTF to use the font
 		if (font == NULL) {
 			std::cerr << "Error loading yukari.ttf: " << SDL_GetError() << std::endl;
 			throw 1;
