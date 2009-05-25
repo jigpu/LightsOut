@@ -64,6 +64,13 @@ protected:
 	unsigned int state, states;
 	
 	/**
+	 * The number of presses the light has recieved. A game of
+	 * LightsOut can be solved by pressing each light N (mod
+	 * states) times.
+	 */
+	unsigned int presses;
+	
+	/**
 	 * A mutex to prevent the change of internal object state
 	 * while a paint is taking place (or vice-versa).
 	 */
@@ -79,18 +86,36 @@ public:
 	~Light();
 	
 	/**
-	 * Returns true if the light is on.
+	 * Returns true if the light is on. This method is influenced
+	 * by calls to the "nextState" method.
 	 */
 	bool isLightOn() const;
 	
 	/**
 	 * Cycles the light to the next available state. Lights at
 	 * the highest available state will be reset to the "off"
-	 * state.
+	 * state. The "press" method should be called in addition to
+	 * this if the light was the direct recipient of a press.
 	 */
 	void nextState();
 	
 	bool paint(SDL_Surface& surface, unsigned int width, unsigned int height) const;
+	
+	/**
+	 * Lets the light know that it was the direct recipeient of a
+	 * press. This is used to keep track of lights need to be
+	 * pressed to reset the game to an all-off state. The
+	 * "nextState" method should be called as well to ensure that
+	 * the light actually changes color from the press.
+	 */
+	void press();
+	
+	/**
+	 * Returns true if the light should be pressed to arrive at
+	 * an all-off state. This method is influenced by calls to
+	 * the "press" method.
+	 */
+	bool shouldPress() const;
 	
 };
 

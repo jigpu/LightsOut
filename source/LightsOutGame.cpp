@@ -167,45 +167,42 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 
 
 void LightsOutGame::getMoveHint(unsigned int& suggestedX, unsigned int& suggestedY) const {
-	SDL_mutexP(paintMutex);
-	for (unsigned int y=0; y<lights->getHeight(); y++) {
-		for (unsigned int x=0; x<lights->getWidth(); x++) {
-			if (lights->getTile(x,y)->object->isLightOn()) {
-				if (y+1 != lights->getHeight()) {
-					//"Chase the lights"
-					suggestedX = x;
-					suggestedY = y+1;
-					SDL_mutexV(paintMutex);
-					return;
-				}
-				else {
-					//Fixing the top
-					suggestedY = 0;
-					switch (x) {
-						case 0: suggestedX = 1; SDL_mutexV(paintMutex); return;
-						case 1: suggestedX = 0; SDL_mutexV(paintMutex); return;
-						case 2: suggestedX = 3; SDL_mutexV(paintMutex); return;
-					}
-				}
-			}
-		}
-	}
-	
-	//There's no reasonable "hint" for a board that has already won ;)
-	if (winningState()) {
+	bool won = winningState();
+	if (won) {
 		std::clog << SDL_GetTicks() << " (" << this << "): Game has already been won, providing bogus hint of (0,0)." << std::endl;
 		suggestedX = 0;
 		suggestedY = 0;
-		SDL_mutexV(paintMutex);
 		return;
 	}
 	
-	//Unsolvable
-	//How on earth we got here after the constructor ensured
-	//the board was solvable is beyond me.
-	std::cerr << "Game is not solvable, cannot give move hint." << std::endl;
+	SDL_mutexP(paintMutex);
+	bool moveAvailable = false;
+	for (unsigned int x=0; x<lights->getWidth(); x++) {
+		for (unsigned int y=0; y<lights->getHeight(); y++) {
+			moveAvailable = moveAvailable || lights->getTile(x,y)->object->shouldPress();
+		}
+	}
 	SDL_mutexV(paintMutex);
-	throw 10;
+	if (!moveAvailable) {
+		std::clog << SDL_GetTicks() << " (" << this << "): Game not won, yet no move available?? Providing bogus hint of (0,0)." << std::endl;
+		suggestedX = 0;
+		suggestedY = 0;
+		return;
+	}
+	
+	SDL_mutexP(paintMutex);
+	int x=0;
+	int y=0;
+	do {
+		x = rand()%lights->getWidth();
+		y = rand()%lights->getHeight();
+	} while (!(lights->getTile(x,y)->object->shouldPress()));
+	SDL_mutexV(paintMutex);
+	
+	suggestedX = x;
+	suggestedY = y;
+	
+	return;
 }
 
 
@@ -402,6 +399,7 @@ void LightsOutGame::pressButton(unsigned int x, unsigned int y) {
 	
 	moves++;
 	
+	lights->getTile(x,y)->object->press();
 	toggleLight(x,y);
 	toggleLight(x-1,y);
 	toggleLight(x+1,y);

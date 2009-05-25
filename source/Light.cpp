@@ -47,6 +47,7 @@ Light::Light(unsigned int states) {
 	
 	this->states = states;
 	state = 0;
+	presses = 0;
 	
 	paintMutex = SDL_CreateMutex();
 	
@@ -130,5 +131,21 @@ bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height)
 		
 		return false;
 	}
+}
+
+
+void Light::press() {
+	SDL_mutexP(paintMutex);
+	presses++;
+	if (presses >= states)
+		presses = 0;
+	
+	dirty = true;
+	SDL_mutexV(paintMutex);
+}
+
+
+bool Light::shouldPress() const {
+	return presses != 0;
 }
 
