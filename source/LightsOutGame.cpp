@@ -96,8 +96,12 @@ LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned i
 		
 	moves = 0; //Moves is modified by the initialization above, so we reset it here
 	
-	surface = NULL;
 	dirty = true;
+	uid_dirty = true;
+	surface = NULL;
+	uid_surface = NULL;
+	
+	uid = (rand()%255 << 16) | (rand()%255 << 8) | rand()%255;
 }
 
 
@@ -156,6 +160,20 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 			stop();
 			break;
 		
+		case SDL_USEREVENT+1: {
+			Uint32 uid = (Uint32)(event->user.code);
+			//std::clog << SDL_GetTicks() << " (" << this << "): Recieved UID: " << (int)uid << std::endl;
+			for (unsigned int y=0; y<lights->getHeight(); y++) {
+				for (unsigned int x=0; x<lights->getWidth(); x++) {
+					if (lights->getTile(x,y)->object->getUID(this->uid_surface->format) == uid) {
+						moveAbsolute(x, y);
+						return;
+					}
+				}
+			}
+			break;
+		}
+		
 		case SDL_QUIT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGame quitting NOW." << std::endl;
 			kill();
@@ -206,6 +224,13 @@ void LightsOutGame::getMoveHint(unsigned int& suggestedX, unsigned int& suggeste
 }
 
 
+bool LightsOutGame::isSameColor(SDL_Color a, SDL_Color b) const {
+	return a.r == b.r &&
+	       a.g == b.g &&
+	       a.b == b.b;
+}
+
+
 void LightsOutGame::move(int deltaX, int deltaY) {
 	SDL_mutexP(paintMutex);
 	int newX = x+deltaX;
@@ -231,18 +256,33 @@ void LightsOutGame::moveAbsolute(unsigned int x, unsigned int y) {
 }
 
 
-bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int height) const {
+bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int height, unsigned int type) const {
 	SDL_mutexP(paintMutex);
 	
-	if (dirty ||
+	if (type == PAINT_NORMAL && (dirty ||
 	    this->surface == NULL ||
 	    this->surface->w != width ||
-	    this->surface->h != height) {
+	    this->surface->h != height)) {
 		SDL_FreeSurface(this->surface);
 		this->surface = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,0,0,0,0);
 		dirty = true;
 	}
 	
+	if (type == PAINT_UID && (uid_dirty ||
+	    this->uid_surface == NULL ||
+	    this->uid_surface->w != width ||
+	    this->uid_surface->h != height)) {
+		SDL_FreeSurface(this->uid_surface);
+		this->uid_surface = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
+		SDL_FillRect(this->uid_surface, NULL, SDL_MapRGB(this->uid_surface->format, (Uint8)(uid & 0x00FF0000 >> 16), (Uint8)(uid & 0x0000FF00 >> 8), (Uint8)(uid & 0x000000FF)));
+		uid_dirty = true;
+	}
+	
+	SDL_Surface* target = NULL;
+	switch (type) {
+		case PAINT_NORMAL: target = this->surface; break;
+		case PAINT_UID:    target = this->uid_surface; break;
+	}
 	SDL_Rect dest;
 	bool dirtysub = false;
 	
@@ -261,7 +301,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 	amask = 0xff000000;
 	#endif
 
-	SDL_Surface* gameboard = SDL_CreateRGBSurface(SDL_HWSURFACE,this->surface->h,this->surface->h,32,rmask,gmask,bmask,amask);
+	SDL_Surface* gameboard = SDL_CreateRGBSurface(SDL_SWSURFACE,target->h,target->h,32,rmask,gmask,bmask,amask);
 	double tileWidth  = (double)gameboard->w/(double)lights->getWidth();
 	double tileHeight = (double)gameboard->h/(double)lights->getHeight();
 	
@@ -275,18 +315,21 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 			
 			SDL_Surface subsurface;
 			
-			bool dirtyPaint = lights->getTile(x,y)->object->paint(subsurface, dest.w, dest.h);
+			bool dirtyPaint = lights->getTile(x,y)->object->paint(subsurface, dest.w, dest.h, type);
 			dirtysub |= dirtyPaint;
 			
 			//If we're dirty [moved cursor], we need to blit all
 			//lights back onto the screen to "undraw" the cursor
-			if (dirty || dirtyPaint)
+			if ((dirty || dirtyPaint) && type == PAINT_NORMAL)
 				SDL_BlitSurface(&subsurface, NULL, gameboard, &dest);
+			if ((uid_dirty || dirtyPaint) && type == PAINT_UID)
+				SDL_BlitSurface(&subsurface, NULL, gameboard, &dest);
+		
 		}
 	}
 	
 	//Paint cursor onto gameboard, and blit gameboard onto surface
-	if (dirty || dirtysub) {
+	if ((dirty || dirtysub) && type == PAINT_NORMAL) {
 		dest.x = (int)(tileWidth*((int)(this->x)-1));
 		dest.y = (int)(tileHeight*((int)(this->y)-1));
 		dest.w = (int)(tileWidth*3);
@@ -298,35 +341,38 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 		SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
 		SDL_BlitSurface(zoom, NULL, gameboard, &dest);
 		SDL_FreeSurface(zoom);
-		
-		SDL_BlitSurface(gameboard, NULL, this->surface, NULL);
 	}
+	
+	if ((dirty || dirtysub) && type == PAINT_NORMAL)
+		SDL_BlitSurface(gameboard, NULL, target, NULL);
+	if ((uid_dirty || dirtysub) && type == PAINT_UID)
+		SDL_BlitSurface(gameboard, NULL, target, NULL);
 	SDL_FreeSurface(gameboard);
 	
 	//Paint stats onto surface
 	///////////////////////////////////////////////////
-	if (dirty) {
+	if (dirty && type == PAINT_NORMAL) {
 		//Paint game text
 		SDL_Color clrFg = {255,255,255,0};
 		
-		dest.x = this->surface->h + 8;
+		dest.x = target->h + 8;
 		dest.y = 0;
 		dest.w = 0;
 		dest.h = 0;
 		SDL_Surface* movesLS = TTF_RenderText_Blended(font, "Moves:", clrFg);
-		SDL_BlitSurface(movesLS, NULL, this->surface, &dest);
+		SDL_BlitSurface(movesLS, NULL, target, &dest);
 		SDL_FreeSurface(movesLS);
 		
 		dest.y += 32;
 		std::stringstream movesString;
 		movesString << moves << "/" << minMoves;
 		SDL_Surface* movesS = TTF_RenderText_Blended(font, movesString.str().c_str(), clrFg );
-		SDL_BlitSurface(movesS, NULL, this->surface, &dest);
+		SDL_BlitSurface(movesS, NULL, target, &dest);
 		SDL_FreeSurface(movesS);
 				
 		dest.y += 64;
 		SDL_Surface* timeLS = TTF_RenderText_Blended(font, "Time:", clrFg);
-		SDL_BlitSurface(timeLS, NULL, this->surface, &dest);
+		SDL_BlitSurface(timeLS, NULL, target, &dest);
 		SDL_FreeSurface(timeLS);
 		
 		dest.y += 32;
@@ -336,20 +382,20 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 		           << std::setw(2) << std::setfill('0') << elapsed/60000 % 60 << ":"
 		           << std::setw(2) << std::setfill('0') << elapsed/1000 % 60;
 		SDL_Surface* timeS = TTF_RenderText_Blended(font, timeString.str().c_str(), clrFg);
-		SDL_BlitSurface(timeS, NULL, this->surface, &dest);
+		SDL_BlitSurface(timeS, NULL, target, &dest);
 		SDL_FreeSurface(timeS);
 		
 		if (autoplay) {
 			SDL_Color apClr = {128,128,255,0};
 			dest.y += 64;
 			SDL_Surface* autoplayLS = TTF_RenderText_Blended(font, "DEMO MODE", apClr);
-			SDL_BlitSurface(autoplayLS, NULL, this->surface, &dest);
+			SDL_BlitSurface(autoplayLS, NULL, target, &dest);
 			SDL_FreeSurface(autoplayLS);
 		}
 				
 		dest.y = this->surface->h - 96;
 		SDL_Surface* diffLS = TTF_RenderText_Blended(font, "Color Map:", clrFg);
-		SDL_BlitSurface(diffLS, NULL, this->surface, &dest);
+		SDL_BlitSurface(diffLS, NULL, target, &dest);
 		SDL_FreeSurface(diffLS);
 		
 		/*
@@ -357,7 +403,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 		std::stringstream difficultyText;
 		difficultyText << states << " States";
 		SDL_Surface* diffS = TTF_RenderText_Blended(font, difficultyText.str().c_str(), clrFg);
-		SDL_BlitSurface(diffS, NULL, this->surface, &dest);
+		SDL_BlitSurface(diffS, NULL, target, &dest);
 		SDL_FreeSurface(diffS);
 		*/
 		dest.y += 48;
@@ -368,7 +414,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 			
 			SDL_Surface subsurface;
 			l->paint(subsurface, 24, 24);
-			SDL_BlitSurface(&subsurface, NULL, this->surface, &dest);
+			SDL_BlitSurface(&subsurface, NULL, target, &dest);
 			dest.x += 27;
 			delete l;
 		}
@@ -376,20 +422,22 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 	
 	//Set surface and return
 	///////////////////////////////////////////////////
-	surface = *(this->surface);
+	surface = *target;
 	
-	if (dirty || dirtysub) {
-		dirty = false;
-		SDL_mutexV(paintMutex);
+	switch (type) {
+		case PAINT_NORMAL:
+			dirtysub |= dirty;
+			dirty = false;
+			break;
 		
-		return true;
+		case PAINT_UID:
+			dirtysub |= uid_dirty;
+			uid_dirty = false;
+			break;
 	}
-	else {
-		dirty = false;
-		SDL_mutexV(paintMutex);
-		
-		return false;
-	}
+	
+	SDL_mutexV(paintMutex);
+	return dirtysub;
 }
 
 

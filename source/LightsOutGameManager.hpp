@@ -86,7 +86,7 @@ public:
 	
 	void eventOccured(const SDL_Event* const event);
 	
-	bool paint(SDL_Surface& surface, unsigned int width, unsigned int height) const;
+	bool paint(SDL_Surface& surface, unsigned int width, unsigned int height, unsigned int type = PAINT_NORMAL) const;
 	
 	/**
 	 * Runs the manager, which creates new games for the player

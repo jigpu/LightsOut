@@ -47,8 +47,12 @@ LightsOutGameManager::LightsOutGameManager() {
 	autoplay = false;
 	
 	paintMutex = SDL_CreateMutex();
-	surface = NULL;
 	dirty = true;
+	uid_dirty = true;
+	surface = NULL;
+	uid_surface = NULL;
+	
+	uid = (rand()%255 << 16) | (rand()%255 << 8) | rand()%255;
 	
 	if (font == NULL) {
 		//font = TTF_OpenFont("yukari.ttf", 24);
@@ -118,7 +122,7 @@ void LightsOutGameManager::eventOccured(const SDL_Event* const event) {
 }
 
 
-bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsigned int height) const {
+bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsigned int height, unsigned int type) const {
 	while (this->game == NULL) {
 		//std::clog << SDL_GetTicks() << " (" << this << "): No game yet..." << std::endl;
 		yield(100);
@@ -126,15 +130,30 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 	
 	SDL_mutexP(paintMutex);
 	
-	if (dirty ||
+	if (type == PAINT_NORMAL && (dirty ||
 	    this->surface == NULL ||
 	    this->surface->w != width ||
-	    this->surface->h != height) {
+	    this->surface->h != height)) {
 		SDL_FreeSurface(this->surface);
 		this->surface = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,0,0,0,0);
 		dirty = true;
 	}
 	
+	if (type == PAINT_UID && (uid_dirty ||
+	    this->uid_surface == NULL ||
+	    this->uid_surface->w != width ||
+	    this->uid_surface->h != height)) {
+		SDL_FreeSurface(this->uid_surface);
+		this->uid_surface = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
+		SDL_FillRect(this->uid_surface, NULL, SDL_MapRGB(this->uid_surface->format, (Uint8)(uid & 0x00FF0000 >> 16), (Uint8)(uid & 0x0000FF00 >> 8), (Uint8)(uid & 0x000000FF)));
+		uid_dirty = true;
+	}
+	
+	SDL_Surface* target = NULL;
+	switch (type) {
+		case PAINT_NORMAL: target = this->surface; break;
+		case PAINT_UID:    target = this->uid_surface; break;
+	}
 	SDL_Rect dest;
 	bool dirtysub = false;
 	
@@ -142,57 +161,60 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 	///////////////////////////////////////////////////
 	dest.x = 8;
 	dest.y = 16;
-	dest.w = this->surface->w - 2*dest.x;
-	dest.h = this->surface->h - dest.y - 48;
+	dest.w = target->w - 2*dest.x;
+	dest.h = target->h - dest.y - 48;
 	SDL_Surface gameSurface;
-	bool dirtyPaint = game->paint(gameSurface, dest.w, dest.h);
+	bool dirtyPaint = game->paint(gameSurface, dest.w, dest.h, type);
 	dirtysub |= dirtyPaint;
-	if (dirty || dirtyPaint)
-		SDL_BlitSurface(&gameSurface, NULL, this->surface, &dest);
-	
-	
+	if ((dirty || dirtyPaint) && type == PAINT_NORMAL)
+		SDL_BlitSurface(&gameSurface, NULL, target, &dest);
+	if ((uid_dirty || dirtyPaint) && type == PAINT_UID)
+		SDL_BlitSurface(&gameSurface, NULL, target, &dest);
+		
 	//Paint stats onto surface
 	///////////////////////////////////////////////////
-	if (dirty) {
+	if (dirty && type == PAINT_NORMAL) {
 		SDL_Color clrFg = {255,255,255,0};
 		dest.x = 16;
-		dest.y = this->surface->h - 48;
+		dest.y = target->h - 48;
 		dest.w = 0;
 		dest.h = 0;
 		
 		std::stringstream gamesString;
 		gamesString << "Games Completed: " << gamesCompleted;
 		SDL_Surface* gamesLS = TTF_RenderText_Blended(font, gamesString.str().c_str(), clrFg);
-		SDL_BlitSurface(gamesLS, NULL, this->surface, &dest);
+		SDL_BlitSurface(gamesLS, NULL, target, &dest);
 		SDL_FreeSurface(gamesLS);
 		
-		dest.x = this->surface->w - 230;
+		dest.x = target->w - 230;
 		Uint32 elapsed = SDL_GetTicks() - managerStartTime;
 		std::stringstream timeString;
 		timeString << "Total Time: " << std::setw(2) << std::setfill('0') << elapsed/3600000 << ":"
 		           << std::setw(2) << std::setfill('0') << elapsed/60000 % 60 << ":"
 		           << std::setw(2) << std::setfill('0') << elapsed/1000 % 60;
 		SDL_Surface* timeLS = TTF_RenderText_Blended(font, timeString.str().c_str(), clrFg);
-		SDL_BlitSurface(timeLS, NULL, this->surface, &dest);
+		SDL_BlitSurface(timeLS, NULL, target, &dest);
 		SDL_FreeSurface(timeLS);
 	}
 	
 	//Set surface and return
 	///////////////////////////////////////////////////
-	surface = *(this->surface);
+	surface = *target;
 	
-	if (dirty || dirtysub) {
-		dirty = false;
-		SDL_mutexV(paintMutex);
+	switch (type) {
+		case PAINT_NORMAL:
+			dirtysub |= dirty;
+			dirty = false;
+			break;
 		
-		return true;
+		case PAINT_UID:
+			dirtysub |= uid_dirty;
+			uid_dirty = false;
+			break;
 	}
-	else {
-		dirty = false;
-		SDL_mutexV(paintMutex);
-		
-		return false;
-	}
+	
+	SDL_mutexV(paintMutex);
+	return dirtysub;
 }
 
 

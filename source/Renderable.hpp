@@ -29,6 +29,10 @@
 #include <SDL/SDL.h>
 
 
+#define PAINT_NORMAL 0
+#define PAINT_UID    1
+
+
 /**
  * Renderable objects have the ability to paint themselves onto
  * an SDL surface. Many Renderable objects are "complex" objects
@@ -48,18 +52,47 @@ protected:
 	 * This boolean should not depend on the dirtyness of
 	 * sub-objects, though obviously something with dirty
 	 * sub-objects will need to be re-painted.
+	 *
+	 * uid_dirty is similar, but should only be marked dirty if
+	 * something causes a change in the uid_surface. This would
+	 * be caused by an object being created/deleted/moved/etc.
 	 */
 	mutable bool dirty;
+	mutable bool uid_dirty;
 	
 	/**
 	 * When painting a dirty object, paint operations should be
 	 * sent to this object. This surface can be passed back to
 	 * the caller of the paint method if not dirty, or re-created
 	 * and painted again before passing back.
+	 *
+	 * uid_surface is similar, but contains the result of calling
+	 * paint with the PAINT_UID type. Just like the normal
+	 * surface, this is cached to keep render times down.
 	 */
 	mutable SDL_Surface* surface;
+	mutable SDL_Surface* uid_surface;
+	
+	/**
+	 * A unique id that defines this object. As a color, this ID
+	 * may be painted onto the screen. This makes object picking
+	 * with the mouse extremely easy since the color under the
+	 * mouse can be matched directly to an object.
+	 *
+	 * Ideally, this should not change, but if it does the
+	 * uid_dirty flag MUST be set.
+	 */
+	mutable Uint32 uid;
 	
 public:
+	/**
+	 * Returns the UID color associated with this object. Objects
+	 * may not necessarily know "where" they are, meaning their
+	 * parents may have to perform the identification. Without
+	 * access to the UIDs, this is impossible.
+	 */
+	Uint32 getUID(SDL_PixelFormat* fmt) { return SDL_MapRGB(fmt, (Uint8)(uid & 0x00FF0000 >> 16), (Uint8)(uid & 0x0000FF00 >> 8), (Uint8)(uid & 0x000000FF)); }
+	
 	/**
 	 * The paint method will be called any time that the screen
 	 * needs to be updated. The caller should pass in a NULL
@@ -70,7 +103,7 @@ public:
 	 * to let the caller know that it may want to update its
 	 * own surface as well.
 	 */
-	virtual bool paint(SDL_Surface& surface, unsigned int width, unsigned int height) const = 0;
+	virtual bool paint(SDL_Surface& surface, unsigned int width, unsigned int height, unsigned int type = PAINT_NORMAL) const = 0;
 	
 };
 

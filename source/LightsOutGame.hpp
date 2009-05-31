@@ -135,6 +135,11 @@ public:
 	void getMoveHint(unsigned int& suggestedX, unsigned int& suggestedY) const;
 	
 	/**
+	 * Compares two SDL_Color objects to see if they're the same.
+	 */
+	bool isSameColor(SDL_Color a, SDL_Color b) const;
+	
+	/**
 	 * Move the cursor a specified ammount.
 	 */
 	void move(int deltaX, int deltaY);
@@ -145,7 +150,7 @@ public:
 	 */
 	void moveAbsolute(unsigned int x, unsigned int y);
 	
-	bool paint(SDL_Surface& surface, unsigned int width, unsigned int height) const;
+	bool paint(SDL_Surface& surface, unsigned int width, unsigned int height, unsigned int type = PAINT_NORMAL) const;
 	
 	/**
 	 * Runs the game, which does nothing but wait for a winning

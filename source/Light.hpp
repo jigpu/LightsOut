@@ -99,7 +99,7 @@ public:
 	 */
 	void nextState();
 	
-	bool paint(SDL_Surface& surface, unsigned int width, unsigned int height) const;
+	bool paint(SDL_Surface& surface, unsigned int width, unsigned int height, unsigned int type = PAINT_NORMAL) const;
 	
 	/**
 	 * Lets the light know that it was the direct recipeient of a

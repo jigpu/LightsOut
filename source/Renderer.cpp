@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include "EventPublisher.hpp"
+#include "Renderable.hpp"
 #include "Renderer.hpp"
 
 
@@ -35,6 +36,11 @@ Renderer::Renderer(SDL_Surface* surface, const Renderable* child) {
 
 void Renderer::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
+		case SDL_MOUSEMOTION:
+			//Locate and send the moused-over object an event
+			mouseOver(event->motion.x, event->motion.y);
+			break;
+		
 		case SDL_USEREVENT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): Renderer gracefully stopping." << std::endl;
 			stop();
@@ -45,6 +51,47 @@ void Renderer::eventOccured(const SDL_Event* const event) {
 			kill();
 			break;
 	}
+}
+
+
+SDL_Color Renderer::getPixel(SDL_Surface* pSurface, unsigned int x, unsigned int y) {
+	//Code copied from http://www.gamedev.net/reference/programming/features/sdl2/page5.asp
+	
+	SDL_Color color ;
+	Uint32 col = 0 ;
+	
+	char* pPosition = ( char* ) pSurface->pixels ;
+	pPosition += ( pSurface->pitch * y ) ;
+	pPosition += ( pSurface->format->BytesPerPixel * x ) ;
+	
+	memcpy ( &col , pPosition , pSurface->format->BytesPerPixel ) ;
+	
+	SDL_GetRGB ( col , pSurface->format , &color.r , &color.g , &color.b ) ;
+	return ( color ) ;
+}
+
+
+void Renderer::mouseOver(unsigned int x, unsigned int y) {
+	//SDL_Surface* color_buffer = SDL_CreateRGBSurface(SDL_SWSURFACE,surface->w,surface->h,32,0,0,0,0);
+	SDL_Surface color_buffer;
+	child->paint(color_buffer, surface->w, surface->h, PAINT_UID);
+	
+	bool lock = SDL_MUSTLOCK((&color_buffer));
+	if(lock) {
+		if (SDL_LockSurface(&color_buffer) != 0)
+			std::cerr << SDL_GetTicks() << " (" << this << "): Unable to lock color buffer!" << std::endl;
+	}
+	
+	SDL_Color color = getPixel(&color_buffer, x, y);
+	Uint32 uid = SDL_MapRGB(color_buffer.format, color.r, color.g, color.b);
+	
+	std::clog << SDL_GetTicks() << " (" << this << "): Sending UID: " << (int)uid << std::endl;
+	SDL_Event mouseover;
+	mouseover.user.type = SDL_USEREVENT + 1;
+	mouseover.user.code = (int)uid;
+	SDL_PushEvent(&mouseover);
+	
+	if(lock) { SDL_UnlockSurface(&color_buffer); }
 }
 
 

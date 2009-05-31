@@ -52,7 +52,11 @@ Light::Light(unsigned int states) {
 	paintMutex = SDL_CreateMutex();
 	
 	dirty = true;
+	uid_dirty = true;
 	surface = NULL;
+	uid_surface = NULL;
+	
+	uid = (rand()%255 << 16) | (rand()%255 << 8) | rand()%255;
 }
 
 
@@ -81,7 +85,7 @@ void Light::nextState() {
 }
 
 
-bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height) const {
+bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height, unsigned int type) const {
 	SDL_mutexP(paintMutex);
 	
 	if (dirty ||
@@ -93,18 +97,34 @@ bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height)
 		dirty = true;
 	}
 	
+	if (uid_dirty ||
+	    this->uid_surface == NULL ||
+	    this->uid_surface->w != width ||
+	    this->uid_surface->h != height) {
+		SDL_FreeSurface(this->uid_surface);
+		this->uid_surface = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
+		SDL_FillRect(this->uid_surface, NULL, SDL_MapRGB(this->uid_surface->format, (Uint8)(uid & 0x00FF0000 >> 16), (Uint8)(uid & 0x0000FF00 >> 8), (Uint8)(uid & 0x000000FF)));
+		uid_dirty = true;
+	}
+	
+	SDL_Surface* target = NULL;
+	switch (type) {
+		case PAINT_NORMAL: target = this->surface; break;
+		case PAINT_UID:    target = this->uid_surface; break;
+	}
+	
 	//Draw light onto surface
 	///////////////////////////////////////////////////
-	if (dirty) {
+	if (dirty && type == PAINT_NORMAL) {
 		switch (state) {
-			case 0:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_0));   break;
-			case 1:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_1));   break;
-			case 2:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_2));   break;
-			case 3:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_3));   break;
-			case 4:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_4));   break;
-			case 5:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_5));   break;
-			case 6:  SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_6));   break;
-			default: SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, COLOR_UNK)); break;
+			case 0:  SDL_FillRect(target, NULL, SDL_MapRGB(target->format, COLOR_0));   break;
+			case 1:  SDL_FillRect(target, NULL, SDL_MapRGB(target->format, COLOR_1));   break;
+			case 2:  SDL_FillRect(target, NULL, SDL_MapRGB(target->format, COLOR_2));   break;
+			case 3:  SDL_FillRect(target, NULL, SDL_MapRGB(target->format, COLOR_3));   break;
+			case 4:  SDL_FillRect(target, NULL, SDL_MapRGB(target->format, COLOR_4));   break;
+			case 5:  SDL_FillRect(target, NULL, SDL_MapRGB(target->format, COLOR_5));   break;
+			case 6:  SDL_FillRect(target, NULL, SDL_MapRGB(target->format, COLOR_6));   break;
+			default: SDL_FillRect(target, NULL, SDL_MapRGB(target->format, COLOR_UNK)); break;
 		}
 		
 		double widthPercent  = ((double)(this->surface->w))/((double)(glassTexture->w));
@@ -117,20 +137,23 @@ bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height)
 	
 	//Set surface and return
 	///////////////////////////////////////////////////
-	surface = *(this->surface);
+	surface = *target;
 	
-	if (dirty) {
-		dirty = false;
-		SDL_mutexV(paintMutex);
+	bool dirt = false;
+	switch (type) {
+		case PAINT_NORMAL:
+			dirt = dirty;
+			dirty = false;
+			break;
 		
-		return true;
+		case PAINT_UID:
+			dirt = uid_dirty;
+			uid_dirty = false;
+			break;
 	}
-	else {
-		dirty = false;
-		SDL_mutexV(paintMutex);
-		
-		return false;
-	}
+	
+	SDL_mutexV(paintMutex);
+	return dirt;
 }
 
 
