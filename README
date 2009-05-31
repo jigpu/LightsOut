@@ -9,13 +9,15 @@ LightsOut is a version of the classic light-extinguishing puzzle "Lights Out". T
 
 Controls
 =============
-|   Wiimote   |  Keyboard  |       Action       |
-|-------------|------------|--------------------|
-| D-Pad       | Arrow Keys | Move cursor        |
-| A Button    | ENTER      | Press light        |
-| B Button    | TAB        | "Cheat" for 1 move |
-| 1 Button    | 1          | Toggle demo mode   |
-| HOME Button | ESCAPE     | Exit game          |
+|   Wiimote   |  Keyboard  |       Action        |
+|-------------|------------|---------------------|
+| D-Pad       | Arrow Keys | Move cursor         |
+| A Button    | ENTER      | Press light         |
+| B Button    | TAB        | "Cheat" for 1 move  |
+| + Button    | Page Up    | Increase Difficulty |
+| - Button    | Page Down  | Decrease Difficulty |
+| 1 Button    | 1          | Toggle demo mode    |
+| HOME Button | ESCAPE     | Exit game           |
 
 
 Gameplay
@@ -34,6 +36,9 @@ Changelog
 * Wiimote pointer support
 * Classic controller support
 * Levels & level editor
+
+## Version 1.01 (2009-04-30)
+* Fix documentation
 
 ## Version 1.0 (2009-04-29)
 * Initial release for Wii and PC.
