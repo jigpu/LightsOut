@@ -170,10 +170,16 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 		
 		case SDL_MOUSEMOTION: {
 			Uint32 uid = Renderer::getMouseoverUID();
-			for (unsigned int y=0; y<lights->getHeight(); y++) {
-				for (unsigned int x=0; x<lights->getWidth(); x++) {
+			//We very likely are in the same tile...
+			if (lights->getTile(this->x, this->y)->object->getUID() == uid)
+				break;
+			//But its possible we aren't!
+			bool found = false;
+			for (unsigned int y=0; y<lights->getHeight() && !found; y++) {
+				for (unsigned int x=0; x<lights->getWidth() && !found; x++) {
 					if (lights->getTile(x,y)->object->getUID() == uid) {
 						moveAbsolute(x, y);
+						found = true;
 					}
 				}
 			}
@@ -336,11 +342,8 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 			
 			//If we're dirty [moved cursor], we need to blit all
 			//lights back onto the screen to "undraw" the cursor
-			if ((dirty || dirtyPaint) && type == PAINT_NORMAL)
+			if (dirtyPaint || (dirty && type == PAINT_NORMAL) || (uid_dirty && type == PAINT_UID))
 				SDL_BlitSurface(&subsurface, NULL, gameboard, &dest);
-			if ((uid_dirty || dirtyPaint) && type == PAINT_UID)
-				SDL_BlitSurface(&subsurface, NULL, gameboard, &dest);
-		
 		}
 	}
 	
@@ -359,9 +362,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 		SDL_FreeSurface(zoom);
 	}
 	
-	if ((dirty || dirtysub) && type == PAINT_NORMAL)
-		SDL_BlitSurface(gameboard, NULL, target, NULL);
-	if ((uid_dirty || dirtysub) && type == PAINT_UID)
+	if (dirtysub || (dirty && type == PAINT_NORMAL) || (uid_dirty && type == PAINT_UID))
 		SDL_BlitSurface(gameboard, NULL, target, NULL);
 	SDL_FreeSurface(gameboard);
 	

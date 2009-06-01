@@ -190,9 +190,7 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 	SDL_Surface gameSurface;
 	bool dirtyPaint = game->paint(gameSurface, dest.w, dest.h, type);
 	dirtysub |= dirtyPaint;
-	if ((dirty || dirtyPaint) && type == PAINT_NORMAL)
-		SDL_BlitSurface(&gameSurface, NULL, target, &dest);
-	if ((uid_dirty || dirtyPaint) && type == PAINT_UID)
+	if (dirtyPaint || (dirty && type == PAINT_NORMAL) || (uid_dirty && type == PAINT_UID))
 		SDL_BlitSurface(&gameSurface, NULL, target, &dest);
 		
 	//Paint stats onto surface
