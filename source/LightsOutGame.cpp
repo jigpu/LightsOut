@@ -101,7 +101,7 @@ LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned i
 	surface = NULL;
 	uid_surface = NULL;
 	
-	uid = (rand()%255 << 16) | (rand()%255 << 8) | (rand()%255);
+	uid = (rand()%256 << 16) | (rand()%256 << 8) | (rand()%256);
 }
 
 
