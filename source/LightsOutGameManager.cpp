@@ -39,7 +39,7 @@ TTF_Font* LightsOutGameManager::font = NULL;
 LightsOutGameManager::LightsOutGameManager() {
 	//std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGameManager." << std::endl;
 	
-	srand ( 1000 );
+	srand ( time(NULL) );
 	level = 2;
 	gamesCompleted = 0;
 	managerStartTime = 0;
