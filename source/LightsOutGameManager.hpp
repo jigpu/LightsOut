@@ -43,6 +43,12 @@ class LightsOutGameManager : public EventObserver, public Thread, public Rendera
 
 protected:
 	/**
+	 * A static surface containing the pointer texture that
+	 * represents the mouse.
+	 */
+	static SDL_Surface* pointerTexture;
+	
+	/**
 	 * A static font used for display of game statistics on the
 	 * screen. DO NOT CLOSE THIS FONT! AFTER CREATION IT SHOULD
 	 * REMAIN IN MEMORY FOR OTHER LIGHTSOUTGAMES.
@@ -65,7 +71,7 @@ protected:
 	 * number of games that have been completed, and time that
 	 * the manager was started (for an idea of overall play time)
 	 */
-	unsigned int level, gamesCompleted, managerStartTime;
+	unsigned int level, gamesCompleted, managerStartTime, mouseX, mouseY;
 	
 	/**
 	 * newGame should be set to true when the manager should stop

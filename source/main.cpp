@@ -64,6 +64,8 @@ void initSDL(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
 		std::cerr << "Unable to set video mode: " << SDL_GetError() << std::endl;
 		throw 1;
 	}
+	
+	SDL_ShowCursor(0);
 }
 
 

@@ -28,9 +28,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <SDL/SDL_image.h>
 #include <SDL/SDL_keysym.h>
 #include "EventPublisher.hpp"
 #include "LightsOutGameManager.hpp"
+
+
+SDL_Surface* LightsOutGameManager::pointerTexture = NULL;
 
 
 TTF_Font* LightsOutGameManager::font = NULL;
@@ -53,6 +57,16 @@ LightsOutGameManager::LightsOutGameManager() {
 	uid_surface = NULL;
 	
 	uid = (rand()%256 << 16) | (rand()%256 << 8) | (rand()%256);
+	
+	if (pointerTexture == NULL) {
+		FILE* file = fopen("generic_point.png", "r");
+		pointerTexture = IMG_Load_RW(SDL_RWFromFP(file, 0), 1);
+		fclose(file);
+		if (pointerTexture == NULL) {
+			std::cerr << "Error loading generic_point.png: " << SDL_GetError() << std::endl;
+			throw 1;
+		}
+	}
 	
 	if (font == NULL) {
 		//font = TTF_OpenFont("yukari.ttf", 24);
@@ -105,6 +119,15 @@ void LightsOutGameManager::eventOccured(const SDL_Event* const event) {
 					break;
 			}
 			break;
+		
+		case SDL_MOUSEMOTION: {
+			SDL_mutexP(paintMutex);
+			mouseX = event->motion.x;
+			mouseY = event->motion.y;
+			dirty = true;
+			SDL_mutexV(paintMutex);
+			break;
+		}
 		
 		case SDL_USEREVENT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGameManager gracefully stopping." << std::endl;
@@ -196,6 +219,14 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 		SDL_Surface* timeLS = TTF_RenderText_Blended(font, timeString.str().c_str(), clrFg);
 		SDL_BlitSurface(timeLS, NULL, target, &dest);
 		SDL_FreeSurface(timeLS);
+	}
+	
+	// Paint mouse cursor onto surface
+	///////////////////////////////////////////////////
+	if ((dirty || dirtysub) && type == PAINT_NORMAL) {
+		dest.x = mouseX-48;
+		dest.y = mouseY-48;
+		SDL_BlitSurface(pointerTexture, NULL, target, &dest);
 	}
 	
 	//Set surface and return
