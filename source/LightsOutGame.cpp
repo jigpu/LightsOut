@@ -185,24 +185,6 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 			stop();
 			break;
 		
-		case SDL_USEREVENT+1: {
-			Uint32 uid = (Uint32)(event->user.code);
-			SDL_Event* mouseEvent = (SDL_Event*)(event->user.data1);
-			std::clog << SDL_GetTicks() << " (" << this << "): Recieved UID: " << (int)uid << std::endl;
-			for (unsigned int y=0; y<lights->getHeight(); y++) {
-				for (unsigned int x=0; x<lights->getWidth(); x++) {
-					if (lights->getTile(x,y)->object->getUID() == uid) {
-						std::clog << "MATCH" << std::endl;
-						if (mouseEvent->type == SDL_MOUSEBUTTONDOWN)
-							select();
-						else if (mouseEvent->type == SDL_MOUSEMOTION)
-							moveAbsolute(x,y);
-					}
-				}
-			}
-			break;
-		}
-		
 		case SDL_QUIT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGame quitting NOW." << std::endl;
 			kill();
