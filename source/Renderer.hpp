@@ -46,6 +46,11 @@ class Renderer : public Thread, public EventObserver {
 
 protected:
 	/**
+	 * The UID of the object the mouse is currently over
+	 */
+	static Uint32 mouseoverUID;
+	
+	/**
 	 * The surface which the Renderer is rendering onto. This
 	 * will typically be the screen surface.
 	 */
@@ -58,11 +63,14 @@ protected:
 	const Renderable* child;
 	
 public:
+	/**
+	 * Returns the UID of the object currently under the mouse.
+	 */
+	static Uint32 getMouseoverUID();
+	
 	Renderer(SDL_Surface* surface, const Renderable* child);
 	
 	void eventOccured(const SDL_Event* const event);
-	
-	void mouseOver(unsigned int x, unsigned int y);
 	
 	/**
 	 * Runs the renderer, periodically calling the paint method

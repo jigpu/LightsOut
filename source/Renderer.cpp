@@ -28,6 +28,9 @@
 #include "Renderer.hpp"
 
 
+Uint32 Renderer::mouseoverUID = 0;
+
+
 Renderer::Renderer(SDL_Surface* surface, const Renderable* child) {
 	this->surface = surface;
 	this->child = child;
@@ -36,10 +39,25 @@ Renderer::Renderer(SDL_Surface* surface, const Renderable* child) {
 
 void Renderer::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
-		case SDL_MOUSEMOTION:
-			//Locate and send the moused-over object an event
-			mouseOver(event->motion.x, event->motion.y);
+		case SDL_MOUSEMOTION: {
+			SDL_Surface color_buffer;
+			child->paint(color_buffer, surface->w, surface->h, PAINT_UID);
+			
+			bool lock = SDL_MUSTLOCK((&color_buffer));
+			if(lock) {
+				if (SDL_LockSurface(&color_buffer) != 0)
+					std::cerr << SDL_GetTicks() << " (" << this << "): Unable to lock color buffer!" << std::endl;
+			}
+			
+			Uint8* position = (Uint8*)color_buffer.pixels;
+			position += color_buffer.pitch * event->motion.y;
+			position += color_buffer.format->BytesPerPixel * event->motion.x;
+			memcpy(&mouseoverUID, position, color_buffer.format->BytesPerPixel);
+			
+			if(lock) { SDL_UnlockSurface(&color_buffer); }
+			//std::clog << SDL_GetTicks() << " (" << this << "): Mouse over UID " << mouseoverUID << std::endl;
 			break;
+		}
 		
 		case SDL_USEREVENT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): Renderer gracefully stopping." << std::endl;
@@ -54,29 +72,8 @@ void Renderer::eventOccured(const SDL_Event* const event) {
 }
 
 
-void Renderer::mouseOver(unsigned int x, unsigned int y) {
-	SDL_Surface color_buffer;
-	child->paint(color_buffer, surface->w, surface->h, PAINT_UID);
-	
-	bool lock = SDL_MUSTLOCK((&color_buffer));
-	if(lock) {
-		if (SDL_LockSurface(&color_buffer) != 0)
-			std::cerr << SDL_GetTicks() << " (" << this << "): Unable to lock color buffer!" << std::endl;
-	}
-	
-	Uint32 uid = 0;
-	Uint8* position = (Uint8*)color_buffer.pixels;
-	position += color_buffer.pitch * y;
-	position += color_buffer.format->BytesPerPixel * x;
-	memcpy(&uid, position, color_buffer.format->BytesPerPixel);
-	
-	if(lock) { SDL_UnlockSurface(&color_buffer); }
-	
-	std::clog << SDL_GetTicks() << " (" << this << "): Sending UID: " << (int)uid << std::endl;
-	SDL_Event mouseover;
-	mouseover.user.type = SDL_USEREVENT + 1;
-	mouseover.user.code = (int)uid;
-	SDL_PushEvent(&mouseover);
+Uint32 Renderer::getMouseoverUID() {
+	return mouseoverUID;
 }
 
 

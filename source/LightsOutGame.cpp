@@ -31,6 +31,7 @@
 #include <SDL/SDL_rotozoom.h>
 #include "EventPublisher.hpp"
 #include "LightsOutGame.hpp"
+#include "Renderer.hpp"
 
 
 TTF_Font* LightsOutGame::font = NULL;
@@ -155,6 +156,30 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 			}
 			break;
 		
+		case SDL_MOUSEBUTTONDOWN: {
+			Uint32 uid = Renderer::getMouseoverUID();
+			for (unsigned int y=0; y<lights->getHeight(); y++) {
+				for (unsigned int x=0; x<lights->getWidth(); x++) {
+					if (lights->getTile(x,y)->object->getUID() == uid) {
+						select();
+					}
+				}
+			}
+			break;
+		}
+		
+		case SDL_MOUSEMOTION: {
+			Uint32 uid = Renderer::getMouseoverUID();
+			for (unsigned int y=0; y<lights->getHeight(); y++) {
+				for (unsigned int x=0; x<lights->getWidth(); x++) {
+					if (lights->getTile(x,y)->object->getUID() == uid) {
+						moveAbsolute(x, y);
+					}
+				}
+			}
+			break;
+		}
+		
 		case SDL_USEREVENT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGame gracefully stopping." << std::endl;
 			stop();
@@ -162,12 +187,16 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 		
 		case SDL_USEREVENT+1: {
 			Uint32 uid = (Uint32)(event->user.code);
-			//std::clog << SDL_GetTicks() << " (" << this << "): Recieved UID: " << (int)uid << std::endl;
+			SDL_Event* mouseEvent = (SDL_Event*)(event->user.data1);
+			std::clog << SDL_GetTicks() << " (" << this << "): Recieved UID: " << (int)uid << std::endl;
 			for (unsigned int y=0; y<lights->getHeight(); y++) {
 				for (unsigned int x=0; x<lights->getWidth(); x++) {
 					if (lights->getTile(x,y)->object->getUID() == uid) {
-						moveAbsolute(x, y);
-						return;
+						std::clog << "MATCH" << std::endl;
+						if (mouseEvent->type == SDL_MOUSEBUTTONDOWN)
+							select();
+						else if (mouseEvent->type == SDL_MOUSEMOTION)
+							moveAbsolute(x,y);
 					}
 				}
 			}
