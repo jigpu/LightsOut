@@ -54,25 +54,7 @@ void Renderer::eventOccured(const SDL_Event* const event) {
 }
 
 
-Uint32 Renderer::getPixel(SDL_Surface* pSurface, unsigned int x, unsigned int y) {
-	//Code copied from http://www.gamedev.net/reference/programming/features/sdl2/page5.asp
-	
-	SDL_Color color ;
-	Uint32 col = 0 ;
-	
-	char* pPosition = ( char* ) pSurface->pixels ;
-	pPosition += ( pSurface->pitch * y ) ;
-	pPosition += ( pSurface->format->BytesPerPixel * x ) ;
-	
-	memcpy ( &col , pPosition , pSurface->format->BytesPerPixel ) ;
-	return col;
-	//SDL_GetRGB ( col , pSurface->format , &color.r , &color.g , &color.b ) ;
-	//return ( color ) ;
-}
-
-
 void Renderer::mouseOver(unsigned int x, unsigned int y) {
-	//SDL_Surface* color_buffer = SDL_CreateRGBSurface(SDL_SWSURFACE,surface->w,surface->h,32,0,0,0,0);
 	SDL_Surface color_buffer;
 	child->paint(color_buffer, surface->w, surface->h, PAINT_UID);
 	
@@ -82,17 +64,19 @@ void Renderer::mouseOver(unsigned int x, unsigned int y) {
 			std::cerr << SDL_GetTicks() << " (" << this << "): Unable to lock color buffer!" << std::endl;
 	}
 	
-	//SDL_Color color = getPixel(&color_buffer, x, y);
-	//Uint32 uid = SDL_MapRGB(color_buffer.format, color.r, color.g, color.b);
-	Uint32 uid = getPixel(&color_buffer, x, y);
+	Uint32 uid = 0;
+	Uint8* position = (Uint8*)color_buffer.pixels;
+	position += color_buffer.pitch * y;
+	position += color_buffer.format->BytesPerPixel * x;
+	memcpy(&uid, position, color_buffer.format->BytesPerPixel);
+	
+	if(lock) { SDL_UnlockSurface(&color_buffer); }
 	
 	std::clog << SDL_GetTicks() << " (" << this << "): Sending UID: " << (int)uid << std::endl;
 	SDL_Event mouseover;
 	mouseover.user.type = SDL_USEREVENT + 1;
 	mouseover.user.code = (int)uid;
 	SDL_PushEvent(&mouseover);
-	
-	if(lock) { SDL_UnlockSurface(&color_buffer); }
 }
 
 
