@@ -126,6 +126,7 @@ void LightsOutGameManager::eventOccured(const SDL_Event* const event) {
 			mouseY = event->motion.y;
 			dirty = true;
 			SDL_mutexV(paintMutex);
+			break;
 		}
 		
 		case SDL_USEREVENT:
@@ -222,10 +223,11 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 	
 	// Paint mouse cursor onto surface
 	///////////////////////////////////////////////////
-	//dest.x = mouseX-48;
-	//dest.y = mouseY-48;
-	//SDL_SetAlpha(target, SDL_SRCALPHA, 0);
-	//SDL_BlitSurface(pointerTexture, NULL, target, &dest);
+	if ((dirty || dirtysub) && type == PAINT_NORMAL) {
+		dest.x = mouseX-48;
+		dest.y = mouseY-48;
+		SDL_BlitSurface(pointerTexture, NULL, target, &dest);
+	}
 	
 	//Set surface and return
 	///////////////////////////////////////////////////
