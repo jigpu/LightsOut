@@ -39,7 +39,7 @@ TTF_Font* LightsOutGameManager::font = NULL;
 LightsOutGameManager::LightsOutGameManager() {
 	//std::clog << SDL_GetTicks() << " (" << this << "): new LightsOutGameManager." << std::endl;
 	
-	srand ( time(NULL) );
+	srand ( 1000 );
 	level = 2;
 	gamesCompleted = 0;
 	managerStartTime = 0;
@@ -52,7 +52,7 @@ LightsOutGameManager::LightsOutGameManager() {
 	surface = NULL;
 	uid_surface = NULL;
 	
-	uid = (rand()%255 << 16) | (rand()%255 << 8) | rand()%255;
+	uid = (rand()%255 << 16) | (rand()%255 << 8) | (rand()%255);
 	
 	if (font == NULL) {
 		//font = TTF_OpenFont("yukari.ttf", 24);
@@ -145,7 +145,8 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 	    this->uid_surface->h != height)) {
 		SDL_FreeSurface(this->uid_surface);
 		this->uid_surface = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
-		SDL_FillRect(this->uid_surface, NULL, SDL_MapRGB(this->uid_surface->format, (Uint8)(uid & 0x00FF0000 >> 16), (Uint8)(uid & 0x0000FF00 >> 8), (Uint8)(uid & 0x000000FF)));
+		uid = SDL_MapRGB(this->uid_surface->format, (Uint8)((uid & 0x00FF0000) >> 16), (Uint8)((uid & 0x0000FF00) >> 8), (Uint8)(uid & 0x000000FF));
+		SDL_FillRect(this->uid_surface, NULL, uid);
 		uid_dirty = true;
 	}
 	

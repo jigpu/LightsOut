@@ -56,7 +56,7 @@ Light::Light(unsigned int states) {
 	surface = NULL;
 	uid_surface = NULL;
 	
-	uid = (rand()%255 << 16) | (rand()%255 << 8) | rand()%255;
+	uid = (rand()%255 << 16) | (rand()%255 << 8) | (rand()%255);
 }
 
 
@@ -88,22 +88,28 @@ void Light::nextState() {
 bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height, unsigned int type) const {
 	SDL_mutexP(paintMutex);
 	
-	if (dirty ||
+	if (type == PAINT_NORMAL && (dirty ||
 	    this->surface == NULL ||
 	    this->surface->w != width ||
-	    this->surface->h != height) {
+	    this->surface->h != height)) {
 		SDL_FreeSurface(this->surface);
 		this->surface = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,0,0,0,0);
 		dirty = true;
 	}
 	
-	if (uid_dirty ||
+	if (type == PAINT_UID && (uid_dirty ||
 	    this->uid_surface == NULL ||
 	    this->uid_surface->w != width ||
-	    this->uid_surface->h != height) {
+	    this->uid_surface->h != height)) {
 		SDL_FreeSurface(this->uid_surface);
 		this->uid_surface = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
-		SDL_FillRect(this->uid_surface, NULL, SDL_MapRGB(this->uid_surface->format, (Uint8)(uid & 0x00FF0000 >> 16), (Uint8)(uid & 0x0000FF00 >> 8), (Uint8)(uid & 0x000000FF)));
+		std::clog << "UID_b: " << (int)uid << std::endl;
+		uid = SDL_MapRGB(this->uid_surface->format, (Uint8)((uid & 0x00FF0000) >> 16), (Uint8)((uid & 0x0000FF00) >> 8), (Uint8)(uid & 0x000000FF));
+		std::clog << "UID_a: " << (int)uid << std::endl;
+		SDL_FillRect(this->uid_surface, NULL, uid);
+		Uint32 col = 0;
+		memcpy ( &col , this->uid_surface->pixels , this->uid_surface->format->BytesPerPixel ) ;
+		std::clog << "UID_o: " << (int)col << std::endl;
 		uid_dirty = true;
 	}
 	

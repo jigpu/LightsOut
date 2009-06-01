@@ -101,7 +101,7 @@ LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned i
 	surface = NULL;
 	uid_surface = NULL;
 	
-	uid = (rand()%255 << 16) | (rand()%255 << 8) | rand()%255;
+	uid = (rand()%255 << 16) | (rand()%255 << 8) | (rand()%255);
 }
 
 
@@ -165,7 +165,7 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 			//std::clog << SDL_GetTicks() << " (" << this << "): Recieved UID: " << (int)uid << std::endl;
 			for (unsigned int y=0; y<lights->getHeight(); y++) {
 				for (unsigned int x=0; x<lights->getWidth(); x++) {
-					if (lights->getTile(x,y)->object->getUID(this->uid_surface->format) == uid) {
+					if (lights->getTile(x,y)->object->getUID() == uid) {
 						moveAbsolute(x, y);
 						return;
 					}
@@ -274,7 +274,8 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 	    this->uid_surface->h != height)) {
 		SDL_FreeSurface(this->uid_surface);
 		this->uid_surface = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
-		SDL_FillRect(this->uid_surface, NULL, SDL_MapRGB(this->uid_surface->format, (Uint8)(uid & 0x00FF0000 >> 16), (Uint8)(uid & 0x0000FF00 >> 8), (Uint8)(uid & 0x000000FF)));
+		uid = SDL_MapRGB(this->uid_surface->format, (Uint8)((uid & 0x00FF0000) >> 16), (Uint8)((uid & 0x0000FF00) >> 8), (Uint8)(uid & 0x000000FF));
+		SDL_FillRect(this->uid_surface, NULL, uid);
 		uid_dirty = true;
 	}
 	
@@ -301,7 +302,11 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 	amask = 0xff000000;
 	#endif
 
-	SDL_Surface* gameboard = SDL_CreateRGBSurface(SDL_SWSURFACE,target->h,target->h,32,rmask,gmask,bmask,amask);
+	SDL_Surface* gameboard = NULL;
+	if (type == PAINT_NORMAL)
+		gameboard = SDL_CreateRGBSurface(SDL_SWSURFACE,target->h,target->h,32,rmask,gmask,bmask,amask);
+	else if (type == PAINT_UID)
+		gameboard = SDL_CreateRGBSurface(SDL_SWSURFACE,target->h,target->h,32,0,0,0,0);
 	double tileWidth  = (double)gameboard->w/(double)lights->getWidth();
 	double tileHeight = (double)gameboard->h/(double)lights->getHeight();
 	

@@ -91,7 +91,7 @@ public:
 	 * parents may have to perform the identification. Without
 	 * access to the UIDs, this is impossible.
 	 */
-	Uint32 getUID(SDL_PixelFormat* fmt) { return SDL_MapRGB(fmt, (Uint8)(uid & 0x00FF0000 >> 16), (Uint8)(uid & 0x0000FF00 >> 8), (Uint8)(uid & 0x000000FF)); }
+	Uint32 getUID() { return uid; }
 	
 	/**
 	 * The paint method will be called any time that the screen

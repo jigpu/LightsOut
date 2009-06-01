@@ -62,7 +62,7 @@ public:
 	
 	void eventOccured(const SDL_Event* const event);
 	
-	SDL_Color getPixel(SDL_Surface* pSurface, unsigned int x, unsigned int y);
+	Uint32 getPixel(SDL_Surface* pSurface, unsigned int x, unsigned int y);
 	
 	void mouseOver(unsigned int x, unsigned int y);
 	
