@@ -40,21 +40,23 @@ Renderer::Renderer(SDL_Surface* surface, const Renderable* child) {
 void Renderer::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
 		case SDL_MOUSEMOTION: {
-			SDL_Surface color_buffer;
-			child->paint(color_buffer, surface->w, surface->h, PAINT_UID);
+			SDL_Surface uid_buffer;
+			bool dirty = child->paint(uid_buffer, surface->w, surface->h, PAINT_UID);
+			if (dirty)
+				std::clog << "uid_buffer was dirty!" << std::endl;
 			
-			bool lock = SDL_MUSTLOCK((&color_buffer));
+			bool lock = SDL_MUSTLOCK((&uid_buffer));
 			if(lock) {
-				if (SDL_LockSurface(&color_buffer) != 0)
-					std::cerr << SDL_GetTicks() << " (" << this << "): Unable to lock color buffer!" << std::endl;
+				if (SDL_LockSurface(&uid_buffer) != 0)
+					std::cerr << SDL_GetTicks() << " (" << this << "): Unable to lock uid_buffer!" << std::endl;
 			}
 			
-			Uint8* position = (Uint8*)color_buffer.pixels;
-			position += color_buffer.pitch * event->motion.y;
-			position += color_buffer.format->BytesPerPixel * event->motion.x;
-			memcpy(&mouseoverUID, position, color_buffer.format->BytesPerPixel);
+			Uint8* position = (Uint8*)uid_buffer.pixels;
+			position += uid_buffer.pitch * event->motion.y;
+			position += uid_buffer.format->BytesPerPixel * event->motion.x;
+			memcpy(&mouseoverUID, position, uid_buffer.format->BytesPerPixel);
 			
-			if(lock) { SDL_UnlockSurface(&color_buffer); }
+			if(lock) { SDL_UnlockSurface(&uid_buffer); }
 			//std::clog << SDL_GetTicks() << " (" << this << "): Mouse over UID " << mouseoverUID << std::endl;
 			break;
 		}
