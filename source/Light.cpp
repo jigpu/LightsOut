@@ -103,13 +103,8 @@ bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height,
 	    this->uid_surface->h != height)) {
 		SDL_FreeSurface(this->uid_surface);
 		this->uid_surface = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
-		std::clog << "UID_b: " << (int)uid << std::endl;
 		uid = SDL_MapRGB(this->uid_surface->format, (Uint8)((uid & 0x00FF0000) >> 16), (Uint8)((uid & 0x0000FF00) >> 8), (Uint8)(uid & 0x000000FF));
-		std::clog << "UID_a: " << (int)uid << std::endl;
 		SDL_FillRect(this->uid_surface, NULL, uid);
-		Uint32 col = 0;
-		memcpy ( &col , this->uid_surface->pixels , this->uid_surface->format->BytesPerPixel ) ;
-		std::clog << "UID_o: " << (int)col << std::endl;
 		uid_dirty = true;
 	}
 	
