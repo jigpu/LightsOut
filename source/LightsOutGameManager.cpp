@@ -72,35 +72,51 @@ LightsOutGameManager::~LightsOutGameManager() {
 }
 
 
+void LightsOutGameManager::demoMode(const bool enable) {
+	SDL_mutexP(paintMutex);
+	autoplay = enable;
+	SDL_mutexV(paintMutex);
+}
+
+
 void LightsOutGameManager::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
 		case SDL_KEYDOWN:
 			switch(event->key.keysym.sym) {
-				case SDLK_ESCAPE:
-				case SDLK_HOME:
-					SDL_Event die;
-					die.user.type = SDL_USEREVENT;
-					SDL_PushEvent(&die);
+				case SDLK_ESCAPE:   quit(); break;
+				case SDLK_PAGEUP:   levelChange(1); break;
+				case SDLK_PAGEDOWN: levelChange(-1); break;
+				case SDLK_1:        demoMode(!autoplay); break;
+				default:
 					break;
-				case SDLK_PAGEUP:
-				case SDLK_PLUS:
-					level++;
-					if (level > 7) level = 7;
-					newGame = true;
+			}
+			break;
+		
+		#ifndef PC
+		case SDL_JOYBUTTONDOWN:
+			//std::clog << SDL_GetTicks() << " (" << this << "): Joystick button down!" << std::endl;
+			switch(event->jbutton.button) {
+				case 6: //Wiimote Home button
+				case 19: //Classic controller Home button
+					quit();
 					break;
-				case SDLK_PAGEDOWN:
-				case SDLK_MINUS:
-					level--;
-					if (level < 2) level = 2;
-					newGame = true;
+				case 5: //Wiimote + button
+				case 18: //Classic controller + button
+					levelChange(1);
 					break;
-				case SDLK_1:
-					autoplay = !autoplay;
+				case 4: //Wiimote - button
+				case 17: //Classic controller - button
+					levelChange(-1);
+					break;
+				case 2: //Wiimote 1 button
+				case 11: //Classic controller X button
+					demoMode(!autoplay);
 					break;
 				default:
 					break;
 			}
 			break;
+		#endif
 		
 		case SDL_USEREVENT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGameManager gracefully stopping." << std::endl;
@@ -115,6 +131,26 @@ void LightsOutGameManager::eventOccured(const SDL_Event* const event) {
 		default:
 			break;
 	}
+}
+
+
+void LightsOutGameManager::levelChange(const int delta, const bool restart) {
+	SDL_mutexP(paintMutex);
+	int newLevel = level+delta;
+	SDL_mutexV(paintMutex);
+	
+	if (newLevel < 0) newLevel = 0;
+	if (newLevel > 7) newLevel = 7;
+	
+	levelAbsolute(newLevel, restart);
+}
+
+
+void LightsOutGameManager::levelAbsolute(const unsigned int newLevel, const bool restart) {
+	SDL_mutexP(paintMutex);
+	level = newLevel;
+	newGame = restart;
+	SDL_mutexV(paintMutex);
 }
 
 
@@ -193,6 +229,13 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 		
 		return false;
 	}
+}
+
+
+void LightsOutGameManager::quit() {
+	SDL_Event die;
+	die.user.type = SDL_USEREVENT;
+	SDL_PushEvent(&die);
 }
 
 

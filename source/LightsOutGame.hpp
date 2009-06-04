@@ -125,6 +125,19 @@ public:
 	
 	~LightsOutGame();
 	
+	/**
+	 * Cheat for a single move. Have the computer determine and
+	 * perform a single move which will get you closer to a
+	 * solved game.
+	 */
+	void cheat();
+	
+	/**
+	 * Enables or disables demo mode, which causes the game to
+	 * play itself.
+	 */
+	void demoMode(const bool enable);
+	
 	void eventOccured(const SDL_Event* const event);
 	
 	/**

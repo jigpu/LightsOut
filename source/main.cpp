@@ -49,8 +49,8 @@
 SDL_Surface* screen; //This pointer will reference the backbuffer
 
 
-void initSDL(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+void initSDL(Uint32 hardware = SDL_INIT_VIDEO, Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
+	if (SDL_Init(hardware) != 0) {
 		std::cerr << "Unable to initialize SDL: " << SDL_GetError() << std::endl;
 		throw 1;
 	}
@@ -68,7 +68,11 @@ void initSDL(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
 
 
 int main(int argc, char** argv) {
-	initSDL();
+	Uint32 hardware = SDL_INIT_VIDEO;
+	#ifndef PC
+	hardware |= SDL_INIT_JOYSTICK; //Wiimote is a Joystick in SDL
+	#endif
+	initSDL(hardware);
 	
 	#ifndef PC
 	std::cerr << std::endl;
