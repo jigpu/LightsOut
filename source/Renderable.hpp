@@ -27,6 +27,7 @@
 
 
 #include <SDL/SDL.h>
+#include "Thread.hpp"
 
 
 #define PAINT_NORMAL 0
@@ -44,66 +45,87 @@ class Renderable {
 
 protected:
 	/**
-	 * This boolean describes the state of the object itself.
-	 * When a modification occurs, this should be made true so
-	 * that the paint method knows that it needs to repaint the
-	 * surface.
-	 *
-	 * This boolean should not depend on the dirtyness of
-	 * sub-objects, though obviously something with dirty
-	 * sub-objects will need to be re-painted.
-	 *
-	 * uid_dirty is similar, but should only be marked dirty if
-	 * something causes a change in the uid_surface. This would
-	 * be caused by an object being created/deleted/moved/etc.
+	 * This boolean is used to keep track of if the object has
+	 * been modified since the last paint operation.
 	 */
-	mutable bool dirty;
-	mutable bool uid_dirty;
+	mutable bool isDirty;
 	
 	/**
-	 * When painting a dirty object, paint operations should be
-	 * sent to this object. This surface can be passed back to
-	 * the caller of the paint method if not dirty, or re-created
-	 * and painted again before passing back.
-	 *
-	 * uid_surface is similar, but contains the result of calling
-	 * paint with the PAINT_UID type. Just like the normal
-	 * surface, this is cached to keep render times down.
+	 * Mutex to prevent the modification of internal state
+	 * durring a paint operation (or vice-versa).
 	 */
-	mutable SDL_Surface* surface;
-	mutable SDL_Surface* uid_surface;
+	SDL_mutex* paintMutex;
 	
 	/**
-	 * A unique id that defines this object. As a color, this ID
-	 * may be painted onto the screen. This makes object picking
-	 * with the mouse extremely easy since the color under the
-	 * mouse can be matched directly to an object.
+	 * A reference to the parent Renderable. Parents are notified
+	 * when their children become dirty so that they may be
+	 * marked dirty as well.
+	 */
+	Renderable* parentRenderable;
+	
+	/**
+	 * A unique id that defines this object. This id can be
+	 * interpreted as a 32-bit color and painted to the screen
+	 * to ease object picking.
 	 *
-	 * Ideally, this should not change, but if it does the
-	 * uid_dirty flag MUST be set.
+	 * Ideally this should not change, but if it does, the
+	 * object MUST be marked dirty and the UID buffer must be
+	 * redrawn.
 	 */
 	mutable Uint32 uid;
 	
+	/**
+	 * Marks this object and all parents as being dirty. This
+	 * should be called whenever a method changes the object's
+	 * visual state.
+	 */
+	void markDirty() const {
+		SDL_mutexP(paintMutex);
+		if (!isDirty) {
+			isDirty = true;
+			if (parentRenderable != NULL)
+				parentRenderable->markDirty();
+		}
+		SDL_mutexV(paintMutex);
+	}
+	
 public:
 	/**
-	 * Returns the UID color associated with this object. Objects
-	 * may not necessarily know "where" they are, meaning their
-	 * parents may have to perform the identification. Without
-	 * access to the UIDs, this is impossible.
+	 * Returns the UID associated with this renderable. The UID
+	 * is used in object picking to determine exactly what the
+	 * cursor is currently over.
 	 */
-	Uint32 getUID() { return uid; }
+	Uint32 getUID() const {
+		return uid;
+	}
 	
 	/**
-	 * The paint method will be called any time that the screen
-	 * needs to be updated. The caller should pass in a NULL
-	 * surface, allowing the child to create and pass back its
-	 * own surface.
-	 *
-	 * Paint operations that were "dirty" should return true
-	 * to let the caller know that it may want to update its
-	 * own surface as well.
+	 * The paint method may be called at any time to obtain the
+	 * most current rendering. The caller should pass in an empty
+	 * surface object, NOT anything from SDL_CreateRGBSurface (or
+	 * relatives). The callee is responsible for creating the
+	 * actual surface and returning a reference to it via the
+	 * surface argument.
+	 * 
+	 * If the paint was performed while the object was dirty,
+	 * 'true' should be returned. Otherwise, return 'false'.
 	 */
-	virtual bool paint(SDL_Surface& surface, unsigned int width, unsigned int height, unsigned int type = PAINT_NORMAL) const = 0;
+	virtual bool paint(SDL_Surface& surface,
+	                   unsigned int width,
+	                   unsigned int height,
+	                   unsigned int type = PAINT_NORMAL) const = 0;
+	
+	/**
+	 * Sets the parent renderable of the object. Since a newly-
+	 * created renderable has no notion of what object is it
+	 * "contained" in, this method should be called to ensure
+	 * that changes in dirtyness can be propogated up the tree.
+	 */
+	void setParent(Renderable* parent) {
+		SDL_mutexP(paintMutex);
+		this->parentRenderable = parent;
+		SDL_mutexV(paintMutex);
+	}
 	
 };
 

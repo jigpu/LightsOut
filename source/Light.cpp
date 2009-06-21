@@ -50,11 +50,9 @@ Light::Light(unsigned int states) {
 	presses = 0;
 	
 	paintMutex = SDL_CreateMutex();
-	
-	dirty = true;
-	uid_dirty = true;
-	surface = NULL;
-	uid_surface = NULL;
+	isDirty = true;
+	parentRenderable = NULL;
+	surfaceCache = NULL;
 	
 	uid = (rand()%256 << 16) | (rand()%256 << 8) | (rand()%256);
 }
@@ -64,7 +62,7 @@ Light::~Light() {
 	//std::clog << SDL_GetTicks() << " (" << this << "): delete Light." << std::endl;
 	
 	SDL_DestroyMutex(paintMutex);
-	SDL_FreeSurface(surface);
+	SDL_FreeSurface(surfaceCache);
 	//Do not free glassTexture on destruction since it is static
 }
 
@@ -80,7 +78,7 @@ void Light::nextState() {
 	if (state >= states)
 		state = 0;
 	
-	dirty = true;
+	markDirty();
 	SDL_mutexV(paintMutex);
 }
 
@@ -88,35 +86,28 @@ void Light::nextState() {
 bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height, unsigned int type) const {
 	SDL_mutexP(paintMutex);
 	
-	if (type == PAINT_NORMAL && (dirty ||
-	    this->surface == NULL ||
-	    this->surface->w != width ||
-	    this->surface->h != height)) {
-		SDL_FreeSurface(this->surface);
-		this->surface = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,0,0,0,0);
-		dirty = true;
-	}
-	
-	if (type == PAINT_UID && (uid_dirty ||
-	    this->uid_surface == NULL ||
-	    this->uid_surface->w != width ||
-	    this->uid_surface->h != height)) {
-		SDL_FreeSurface(this->uid_surface);
-		this->uid_surface = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
-		uid = SDL_MapRGB(this->uid_surface->format, (Uint8)((uid & 0x00FF0000) >> 16), (Uint8)((uid & 0x0000FF00) >> 8), (Uint8)(uid & 0x000000FF));
-		SDL_FillRect(this->uid_surface, NULL, uid);
-		uid_dirty = true;
-	}
-	
 	SDL_Surface* target = NULL;
-	switch (type) {
-		case PAINT_NORMAL: target = this->surface; break;
-		case PAINT_UID:    target = this->uid_surface; break;
+	
+	if (type == PAINT_NORMAL) {
+		if (isDirty ||
+		    this->surfaceCache == NULL ||
+		    this->surfaceCache->w != width ||
+		    this->surfaceCache->h != height) {
+			SDL_FreeSurface(this->surfaceCache);
+			this->surfaceCache = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,0,0,0,0);
+			isDirty = true; //Don't markDirty() since this is a local phenomenon
+		}
+		target = this->surfaceCache;
+	}
+	else if (type == PAINT_UID) {
+		target = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
+		uid = SDL_MapRGB(target->format, (Uint8)((uid & 0x00FF0000) >> 16), (Uint8)((uid & 0x0000FF00) >> 8), (Uint8)(uid & 0x000000FF));
+		SDL_FillRect(target, NULL, uid);
 	}
 	
 	//Draw light onto surface
 	///////////////////////////////////////////////////
-	if (dirty && type == PAINT_NORMAL) {
+	if (isDirty && type == PAINT_NORMAL) {
 		switch (state) {
 			case 0:  SDL_FillRect(target, NULL, SDL_MapRGB(target->format, COLOR_0));   break;
 			case 1:  SDL_FillRect(target, NULL, SDL_MapRGB(target->format, COLOR_1));   break;
@@ -128,11 +119,11 @@ bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height,
 			default: SDL_FillRect(target, NULL, SDL_MapRGB(target->format, COLOR_UNK)); break;
 		}
 		
-		double widthPercent  = ((double)(this->surface->w))/((double)(glassTexture->w));
-		double heightPercent = ((double)(this->surface->h))/((double)(glassTexture->h));
+		double widthPercent  = ((double)(target->w))/((double)(glassTexture->w));
+		double heightPercent = ((double)(target->h))/((double)(glassTexture->h));
 		SDL_Surface* zoom = rotozoomSurfaceXY(glassTexture, 0.0, widthPercent, heightPercent, 1);
 		SDL_SetAlpha(zoom, SDL_SRCALPHA, 0);
-		SDL_BlitSurface(zoom, NULL, this->surface, NULL);
+		SDL_BlitSurface(zoom, NULL, target, NULL);
 		SDL_FreeSurface(zoom);
 	}
 	
@@ -143,13 +134,12 @@ bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height,
 	bool dirt = false;
 	switch (type) {
 		case PAINT_NORMAL:
-			dirt = dirty;
-			dirty = false;
+			dirt = isDirty;
+			isDirty = false;
 			break;
 		
 		case PAINT_UID:
-			dirt = uid_dirty;
-			uid_dirty = false;
+			dirt = true;
 			break;
 	}
 	
@@ -164,7 +154,7 @@ void Light::press() {
 	if (presses >= states)
 		presses = 0;
 	
-	dirty = true;
+	markDirty();
 	SDL_mutexV(paintMutex);
 }
 

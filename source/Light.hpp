@@ -26,7 +26,7 @@
 #define __Light_hpp__
 
 
-#include "Renderable.hpp"
+#include "CachedRenderable.hpp"
 
 
 #define COLOR_0   64,64,64
@@ -45,7 +45,7 @@
  * has only two states. More advanced versions allow for additional
  * states.
  */
-class Light : public Renderable {
+class Light : public CachedRenderable {
 
 protected:
 	/**
@@ -69,12 +69,6 @@ protected:
 	 * states) times.
 	 */
 	unsigned int presses;
-	
-	/**
-	 * A mutex to prevent the change of internal object state
-	 * while a paint is taking place (or vice-versa).
-	 */
-	SDL_mutex* paintMutex;
 	
 public:
 	/**

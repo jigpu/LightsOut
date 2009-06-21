@@ -23,23 +23,56 @@
 
 
 #include <iostream>
+#include <SDL/SDL_image.h>
 #include "EventPublisher.hpp"
-#include "Renderable.hpp"
-#include "Renderer.hpp"
+#include "Cursor.hpp"
 
 
-Uint32 Renderer::mouseoverUID = 0;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+#define rmask 0xff000000
+#define gmask 0x00ff0000
+#define bmask 0x0000ff00
+#define amask 0x000000ff
+#else
+#define rmask 0x000000ff
+#define gmask 0x0000ff00
+#define bmask 0x00ff0000
+#define amask 0xff000000
+#endif
 
 
-Renderer::Renderer(SDL_Surface* surface, const Renderable* child) {
-	this->surface = surface;
-	this->child = child;
+SDL_Surface* Cursor::pointerTexture = NULL;
+
+
+Cursor::Cursor() {
+	if (pointerTexture == NULL) {
+		FILE* file = fopen("generic_point.png", "r");
+		pointerTexture = IMG_Load_RW(SDL_RWFromFP(file, 0), 1);
+		fclose(file);
+		if (pointerTexture == NULL) {
+			std::cerr << "Error loading generic_point.png: " << SDL_GetError() << std::endl;
+			throw 1;
+		}
+	}
+	
+	paintMutex = SDL_CreateMutex();
+	isDirty = true;
+	parentRenderable = NULL;
+	this->x = 0;
+	this->y = 0;
+	
+	EventPublisher::getInstance().addEventObserver(this);
 }
 
 
-void Renderer::eventOccured(const SDL_Event* const event) {
+void Cursor::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
 		case SDL_MOUSEMOTION: {
+			//std::clog << SDL_GetTicks() << " (" << this << "): Cursor detected mouse movement." << std::endl;
+			this->x = event->motion.x;
+			this->y = event->motion.y;
+			markDirty();
+			/*
 			SDL_Surface uid_buffer;
 			bool dirty = child->paint(uid_buffer, surface->w, surface->h, PAINT_UID);
 			if (dirty)
@@ -59,54 +92,32 @@ void Renderer::eventOccured(const SDL_Event* const event) {
 			if(lock) { SDL_UnlockSurface(&uid_buffer); }
 			//std::clog << SDL_GetTicks() << " (" << this << "): Mouse over UID " << mouseoverUID << std::endl;
 			break;
+			*/
 		}
-		
-		case SDL_USEREVENT:
-			//std::clog << SDL_GetTicks() << " (" << this << "): Renderer gracefully stopping." << std::endl;
-			stop();
-			break;
-		
-		case SDL_QUIT:
-			//std::clog << SDL_GetTicks() << " (" << this << "): Renderer quitting NOW." << std::endl;
-			kill();
-			break;
 	}
 }
 
 
-Uint32 Renderer::getMouseoverUID() {
-	return mouseoverUID;
-}
-
-
-void Renderer::run() {
-	unsigned int currTime    = 0;
-	unsigned int prevTime    = 0;
-	unsigned int timeElapsed = 0;
+bool Cursor::paint(SDL_Surface& surface, unsigned int width, unsigned int height, unsigned int type) const {
+	if (type != PAINT_NORMAL)
+		return false;
 	
-	EventPublisher::getInstance().addEventObserver(this);
+	SDL_mutexP(paintMutex);
 	
-	//Frame-rate independent code based on
-	//http://hdrlab.org.nz/frame-rate-independent-animation-using-sdl-and-opengl-with-frame-rate-limiting/
-	while (runThread) {
-		currTime = SDL_GetTicks();
-		timeElapsed = currTime - prevTime;
-		while (timeElapsed < MIN_FRAMETIME_MSECS && runThread) {
-			yield(MIN_FRAMETIME_MSECS - timeElapsed);
-			currTime = SDL_GetTicks();
-			timeElapsed = currTime - prevTime;
-		}
-		prevTime = currTime;
-		
-		SDL_Surface buffer;
-		bool dirtyPaint = child->paint(buffer, surface->w, surface->h);
-		if (dirtyPaint) {
-			//std::clog << "Blitting buffer to surface and flipping." << std::endl;
-			SDL_BlitSurface(&buffer, NULL, surface, NULL);
-			SDL_Flip(surface);
-		}
-	}
+	//std::clog << SDL_GetTicks() << " (" << this << "): Cursor being painted." << std::endl;
+	SDL_Surface* target = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, rmask, gmask, bmask, amask);
 	
-	EventPublisher::getInstance().removeEventObserver(this);
+	SDL_Rect dest;
+	dest.x = this->x - 48;
+	dest.y = this->y - 48;
+	
+	SDL_BlitSurface(pointerTexture, NULL, target, &dest);
+	
+	surface = *target;
+	bool wasDirty = isDirty;
+	isDirty = false;
+	
+	SDL_mutexV(paintMutex);
+	return wasDirty;
 }
 

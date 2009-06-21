@@ -30,7 +30,7 @@
 #include "EventObserver.hpp"
 #include "Thread.hpp"
 #include "LightsOutGame.hpp"
-#include "Renderable.hpp"
+#include "CachedRenderable.hpp"
 
 
 /**
@@ -39,27 +39,15 @@
  * when to end the set of games, keeping track of scores across the
  * set of games, etc.
  */
-class LightsOutGameManager : public EventObserver, public Thread, public Renderable {
+class LightsOutGameManager : public EventObserver, public Thread, public CachedRenderable {
 
 protected:
-	/**
-	 * A static surface containing the pointer texture that
-	 * represents the mouse.
-	 */
-	static SDL_Surface* pointerTexture;
-	
 	/**
 	 * A static font used for display of game statistics on the
 	 * screen. DO NOT CLOSE THIS FONT! AFTER CREATION IT SHOULD
 	 * REMAIN IN MEMORY FOR OTHER LIGHTSOUTGAMES.
 	 */
 	static TTF_Font* font;
-	
-	/**
-	 * Mutex to prevent the modification of internal state
-	 * durring a paint operation (or vice-versa).
-	 */
-	SDL_mutex* paintMutex;
 	
 	/**
 	 * The currently active game of Lights Out.
@@ -71,7 +59,7 @@ protected:
 	 * number of games that have been completed, and time that
 	 * the manager was started (for an idea of overall play time)
 	 */
-	unsigned int level, gamesCompleted, managerStartTime, mouseX, mouseY;
+	unsigned int level, gamesCompleted, managerStartTime;
 	
 	/**
 	 * newGame should be set to true when the manager should stop

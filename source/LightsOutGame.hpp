@@ -30,7 +30,7 @@
 #include "EventObserver.hpp"
 #include "Light.hpp"
 #include "RectangleMap.tpp"
-#include "Renderable.hpp"
+#include "CachedRenderable.hpp"
 #include "Thread.hpp"
 #include "Tile.tpp"
 
@@ -41,7 +41,7 @@
  * thread. When the game ends, the thread will exit. Simply create a
  * new LightsOutGame if additional rounds of play are requested.
  */
-class LightsOutGame : public EventObserver, public Renderable, public Thread {
+class LightsOutGame : public EventObserver, public CachedRenderable, public Thread {
 
 protected:
 	/**
@@ -81,12 +81,6 @@ protected:
 	 * on.
 	 */
 	unsigned int states;
-	
-	/**
-	 * A mutex to prevent the modification of internal state
-	 * durring a paint operation (or vice-versa).
-	 */
-	SDL_mutex* paintMutex;
 	
 	/**
 	 * The map containing the individual light objects.

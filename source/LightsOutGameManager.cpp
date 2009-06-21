@@ -28,13 +28,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <SDL/SDL_image.h>
 #include <SDL/SDL_keysym.h>
 #include "EventPublisher.hpp"
 #include "LightsOutGameManager.hpp"
 
 
-SDL_Surface* LightsOutGameManager::pointerTexture = NULL;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+#define rmask 0xff000000
+#define gmask 0x00ff0000
+#define bmask 0x0000ff00
+#define amask 0x000000ff
+#else
+#define rmask 0x000000ff
+#define gmask 0x0000ff00
+#define bmask 0x00ff0000
+#define amask 0xff000000
+#endif
 
 
 TTF_Font* LightsOutGameManager::font = NULL;
@@ -51,22 +60,11 @@ LightsOutGameManager::LightsOutGameManager() {
 	autoplay = false;
 	
 	paintMutex = SDL_CreateMutex();
-	dirty = true;
-	uid_dirty = true;
-	surface = NULL;
-	uid_surface = NULL;
+	isDirty = true;
+	parentRenderable = NULL;
+	surfaceCache = NULL;
 	
 	uid = (rand()%256 << 16) | (rand()%256 << 8) | (rand()%256);
-	
-	if (pointerTexture == NULL) {
-		FILE* file = fopen("generic_point.png", "r");
-		pointerTexture = IMG_Load_RW(SDL_RWFromFP(file, 0), 1);
-		fclose(file);
-		if (pointerTexture == NULL) {
-			std::cerr << "Error loading generic_point.png: " << SDL_GetError() << std::endl;
-			throw 1;
-		}
-	}
 	
 	if (font == NULL) {
 		//font = TTF_OpenFont("yukari.ttf", 24);
@@ -84,7 +82,7 @@ LightsOutGameManager::LightsOutGameManager() {
 LightsOutGameManager::~LightsOutGameManager() {
 	//std::clog << SDL_GetTicks() << " (" << this << "): delete LightsOutGameManager." << std::endl;
 	
-	SDL_FreeSurface(surface);
+	SDL_FreeSurface(surfaceCache);
 	SDL_DestroyMutex(paintMutex);
 	//Do not close font on destruction since its static
 }
@@ -120,15 +118,6 @@ void LightsOutGameManager::eventOccured(const SDL_Event* const event) {
 			}
 			break;
 		
-		case SDL_MOUSEMOTION: {
-			SDL_mutexP(paintMutex);
-			mouseX = event->motion.x;
-			mouseY = event->motion.y;
-			dirty = true;
-			SDL_mutexV(paintMutex);
-			break;
-		}
-		
 		case SDL_USEREVENT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGameManager gracefully stopping." << std::endl;
 			stop();
@@ -147,37 +136,29 @@ void LightsOutGameManager::eventOccured(const SDL_Event* const event) {
 
 bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsigned int height, unsigned int type) const {
 	while (this->game == NULL) {
-		//std::clog << SDL_GetTicks() << " (" << this << "): No game yet..." << std::endl;
+		std::clog << SDL_GetTicks() << " (" << this << "): No game yet..." << std::endl;
 		yield(100);
 	}
 	
 	SDL_mutexP(paintMutex);
 	
-	if (type == PAINT_NORMAL && (dirty ||
-	    this->surface == NULL ||
-	    this->surface->w != width ||
-	    this->surface->h != height)) {
-		SDL_FreeSurface(this->surface);
-		this->surface = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,0,0,0,0);
-		dirty = true;
-	}
-	
-	if (type == PAINT_UID && (uid_dirty ||
-	    this->uid_surface == NULL ||
-	    this->uid_surface->w != width ||
-	    this->uid_surface->h != height)) {
-		SDL_FreeSurface(this->uid_surface);
-		this->uid_surface = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
-		uid = SDL_MapRGB(this->uid_surface->format, (Uint8)((uid & 0x00FF0000) >> 16), (Uint8)((uid & 0x0000FF00) >> 8), (Uint8)(uid & 0x000000FF));
-		SDL_FillRect(this->uid_surface, NULL, uid);
-		uid_dirty = true;
-	}
-	
 	SDL_Surface* target = NULL;
-	switch (type) {
-		case PAINT_NORMAL: target = this->surface; break;
-		case PAINT_UID:    target = this->uid_surface; break;
+	
+	if (type == PAINT_NORMAL && (isDirty ||
+	    this->surfaceCache == NULL ||
+	    this->surfaceCache->w != width ||
+	    this->surfaceCache->h != height)) {
+		SDL_FreeSurface(this->surfaceCache);
+		this->surfaceCache = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,rmask,gmask,bmask,amask);
+		target = this->surfaceCache;
+		isDirty = true; //Don't markDirty() since this is a local phenomenon
 	}
+	else if (type == PAINT_UID) {
+		target = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
+		uid = SDL_MapRGB(target->format, (Uint8)((uid & 0x00FF0000) >> 16), (Uint8)((uid & 0x0000FF00) >> 8), (Uint8)(uid & 0x000000FF));
+		SDL_FillRect(target, NULL, uid);
+	}
+	
 	SDL_Rect dest;
 	bool dirtysub = false;
 	
@@ -190,12 +171,12 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 	SDL_Surface gameSurface;
 	bool dirtyPaint = game->paint(gameSurface, dest.w, dest.h, type);
 	dirtysub |= dirtyPaint;
-	if (dirtyPaint || (dirty && type == PAINT_NORMAL) || (uid_dirty && type == PAINT_UID))
+	if (dirtyPaint || (isDirty && type == PAINT_NORMAL) || (type == PAINT_UID))
 		SDL_BlitSurface(&gameSurface, NULL, target, &dest);
 		
 	//Paint stats onto surface
 	///////////////////////////////////////////////////
-	if (dirty && type == PAINT_NORMAL) {
+	if (isDirty && type == PAINT_NORMAL) {
 		SDL_Color clrFg = {255,255,255,0};
 		dest.x = 16;
 		dest.y = target->h - 48;
@@ -219,27 +200,18 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 		SDL_FreeSurface(timeLS);
 	}
 	
-	// Paint mouse cursor onto surface
-	///////////////////////////////////////////////////
-	if ((dirty || dirtysub) && type == PAINT_NORMAL) {
-		dest.x = mouseX-48;
-		dest.y = mouseY-48;
-		SDL_BlitSurface(pointerTexture, NULL, target, &dest);
-	}
-	
 	//Set surface and return
 	///////////////////////////////////////////////////
 	surface = *target;
 	
 	switch (type) {
 		case PAINT_NORMAL:
-			dirtysub |= dirty;
-			dirty = false;
+			dirtysub |= isDirty;
+			isDirty = false;
 			break;
 		
 		case PAINT_UID:
-			dirtysub |= uid_dirty;
-			uid_dirty = false;
+			dirtysub = true;
 			break;
 	}
 	
@@ -254,14 +226,18 @@ void LightsOutGameManager::run() {
 	managerStartTime = SDL_GetTicks();
 	
 	while (runThread) {
+		std::clog << "Starting new game." << std::endl;
+		markDirty();
 		SDL_mutexP(paintMutex);
-		dirty = true;
+		std::clog << "Manager made dirty" << std::endl;
 		if (this->game != NULL) {
 			this->game->kill();
 			delete this->game;
 		}
-		
+		std::clog << "Constructing game" << std::endl;
 		this->game = new LightsOutGame(5,5,level,autoplay);
+		std::clog << "Setting parent" << std::endl;
+		game->setParent(this);
 		SDL_mutexV(paintMutex);
 		
 		//Start the game and wait for it to get over
@@ -271,7 +247,7 @@ void LightsOutGameManager::run() {
 		this->game->start();
 		while (runThread && !newGame && !this->game->winningState()) {
 			SDL_mutexP(paintMutex);
-			dirty = true;
+			markDirty();
 			SDL_mutexV(paintMutex);
 			yield(250);
 		}

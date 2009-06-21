@@ -26,9 +26,10 @@
 #include <iostream>
 #include <SDL/SDL.h>
 #include <SDL/SDL_ttf.h>
+#include "Cursor.hpp"
 #include "EventPublisher.hpp"
 #include "LightsOutGameManager.hpp"
-#include "Renderer.hpp"
+#include "ScreenRenderer.hpp"
 
 
 #ifndef PC
@@ -95,13 +96,20 @@ int main(int argc, char** argv) {
 	
 	EventPublisher::getInstance().start();
 	
-	LightsOutGameManager* manager = new LightsOutGameManager();
-	manager->start();
-	
-	Renderer* renderer = new Renderer(screen, manager);
+	ScreenRenderer* renderer = new ScreenRenderer(screen);
 	renderer->start();
 	
+	Cursor* cursor = new Cursor();
+	cursor->setParent(renderer);
+	renderer->addChild(cursor);
+	
+	LightsOutGameManager* manager = new LightsOutGameManager();
+	manager->setParent(renderer);
+	renderer->addChild(manager);
+	manager->start();
 	manager->join();
+	
+	renderer->join();
 	
 	//For a clean shutdown, we need to ensure a few things:
 	//

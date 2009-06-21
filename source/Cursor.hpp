@@ -22,62 +22,42 @@
  */
 
 
-#ifndef __Renderer_hpp__
-#define __Renderer_hpp__
+#ifndef __Cursor_hpp__
+#define __Cursor_hpp__
 
 
-#include <SDL/SDL.h>
-#include <vector>
-#include "EventObserver.hpp"
 #include "Renderable.hpp"
-#include "Thread.hpp"
-
-
-#define MIN_FRAMETIME_MSECS 32
+#include "EventObserver.hpp"
 
 
 /**
- * The Renderer is in charge of the SDL GUI. While it does not
- * initialize SDL, it should be started shortly afterward. It
- * periodically calls the paint method of its child Renderable to
- * ensure that the display is up to date.
+ * A Cursor is a Renderable which is responsible for not only
+ * creating a mouse cursor at the correct spot on screen; but
+ * also for notifying other classes of movements, clicks, etc.
  */
-class Renderer : public Thread, public EventObserver {
+class Cursor : public Renderable, public EventObserver {
 
 protected:
 	/**
-	 * The UID of the object the mouse is currently over
+	 * A static surface containing the pointer texture that
+	 * represents the mouse.
 	 */
-	static Uint32 mouseoverUID;
+	static SDL_Surface* pointerTexture;
 	
 	/**
-	 * The surface which the Renderer is rendering onto. This
-	 * will typically be the screen surface.
+	 * The most up-to-date coordinates of the cursor.
 	 */
-	SDL_Surface* surface;
-	
-	/**
-	 * The primary object to be rendered. All paint operations
-	 * will trickle through this Renderable.
-	 */
-	const Renderable* child;
+	int x, y;
 	
 public:
-	/**
-	 * Returns the UID of the object currently under the mouse.
-	 */
-	static Uint32 getMouseoverUID();
-	
-	Renderer(SDL_Surface* surface, const Renderable* child);
+	Cursor();
 	
 	void eventOccured(const SDL_Event* const event);
 	
-	/**
-	 * Runs the renderer, periodically calling the paint method
-	 * on the child.
-	 */
-	void run();
-	
+	bool paint(SDL_Surface& surface,
+	           unsigned int width,
+	           unsigned int height,
+	           unsigned int type = PAINT_NORMAL) const;
 };
 
 
