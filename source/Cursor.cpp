@@ -53,6 +53,7 @@ Cursor::Cursor() {
 			std::cerr << "Error loading generic_point.png: " << SDL_GetError() << std::endl;
 			throw 1;
 		}
+		SDL_SetAlpha(pointerTexture, 0, 0);
 	}
 	
 	paintMutex = SDL_CreateMutex();
@@ -114,7 +115,7 @@ bool Cursor::paint(SDL_Surface& surface, unsigned int width, unsigned int height
 	SDL_mutexP(paintMutex);
 	
 	//std::clog << SDL_GetTicks() << " (" << this << "): Cursor being painted." << std::endl;
-	SDL_Surface* target = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 16, 0,0,0,0);
+	SDL_Surface* target = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, rmask, gmask, bmask, amask);
 	
 	SDL_Rect dest;
 	dest.x = this->x - 48;

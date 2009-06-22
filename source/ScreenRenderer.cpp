@@ -82,7 +82,7 @@ bool ScreenRenderer::paint(SDL_Surface& surface, unsigned int width, unsigned in
 		//std::clog << SDL_GetTicks() << " (" << this << "): ScreenRenderer painting due to dirt." << std::endl;
 		isDirty = true; //Don't markDirty() since this is a local phenomenon
 		SDL_FreeSurface(surfaceCache);
-		surfaceCache = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height,32,rmask,gmask,bmask,amask);
+		surfaceCache = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height,32,0,0,0,0);
 		//SDL_SetAlpha(surfaceCache, SDL_SRCALPHA, 128);
 		
 		std::list<Renderable*>::const_reverse_iterator riter;
