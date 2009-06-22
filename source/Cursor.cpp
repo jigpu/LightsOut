@@ -65,13 +65,22 @@ Cursor::Cursor() {
 }
 
 
+Cursor::~Cursor() {
+	EventPublisher::getInstance().removeEventObserver(this);
+	SDL_DestroyMutex(paintMutex);
+	SDL_FreeSurface(pointerTexture);
+}
+
+
 void Cursor::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
 		case SDL_MOUSEMOTION: {
 			//std::clog << SDL_GetTicks() << " (" << this << "): Cursor detected mouse movement." << std::endl;
+			SDL_mutexP(paintMutex);
 			this->x = event->motion.x;
 			this->y = event->motion.y;
 			markDirty();
+			SDL_mutexV(paintMutex);
 			/*
 			SDL_Surface uid_buffer;
 			bool dirty = child->paint(uid_buffer, surface->w, surface->h, PAINT_UID);
@@ -105,7 +114,7 @@ bool Cursor::paint(SDL_Surface& surface, unsigned int width, unsigned int height
 	SDL_mutexP(paintMutex);
 	
 	//std::clog << SDL_GetTicks() << " (" << this << "): Cursor being painted." << std::endl;
-	SDL_Surface* target = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, rmask, gmask, bmask, amask);
+	SDL_Surface* target = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 16, 0,0,0,0);
 	
 	SDL_Rect dest;
 	dest.x = this->x - 48;

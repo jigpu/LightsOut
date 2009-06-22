@@ -102,14 +102,13 @@ int main(int argc, char** argv) {
 	Cursor* cursor = new Cursor();
 	cursor->setParent(renderer);
 	renderer->addChild(cursor);
+	//renderer->join();
 	
 	LightsOutGameManager* manager = new LightsOutGameManager();
 	manager->setParent(renderer);
 	renderer->addChild(manager);
 	manager->start();
 	manager->join();
-	
-	renderer->join();
 	
 	//For a clean shutdown, we need to ensure a few things:
 	//
@@ -120,6 +119,7 @@ int main(int argc, char** argv) {
 	die.user.type = SDL_USEREVENT;
 	SDL_PushEvent(&die);
 	
+	delete cursor;
 	renderer->join();
 	EventPublisher::getInstance().join();
 	

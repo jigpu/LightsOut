@@ -144,14 +144,17 @@ bool LightsOutGameManager::paint(SDL_Surface& surface, unsigned int width, unsig
 	
 	SDL_Surface* target = NULL;
 	
-	if (type == PAINT_NORMAL && (isDirty ||
-	    this->surfaceCache == NULL ||
-	    this->surfaceCache->w != width ||
-	    this->surfaceCache->h != height)) {
-		SDL_FreeSurface(this->surfaceCache);
-		this->surfaceCache = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,rmask,gmask,bmask,amask);
+	if (type == PAINT_NORMAL) {
+		if (isDirty ||
+		    this->surfaceCache == NULL ||
+		    this->surfaceCache->w != width ||
+		    this->surfaceCache->h != height) {
+			SDL_FreeSurface(this->surfaceCache);
+			this->surfaceCache = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,rmask,gmask,bmask,amask);
+			target = this->surfaceCache;
+			isDirty = true; //Don't markDirty() since this is a local phenomenon
+		}
 		target = this->surfaceCache;
-		isDirty = true; //Don't markDirty() since this is a local phenomenon
 	}
 	else if (type == PAINT_UID) {
 		target = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
@@ -227,17 +230,14 @@ void LightsOutGameManager::run() {
 	
 	while (runThread) {
 		std::clog << "Starting new game." << std::endl;
-		markDirty();
 		SDL_mutexP(paintMutex);
-		std::clog << "Manager made dirty" << std::endl;
 		if (this->game != NULL) {
 			this->game->kill();
 			delete this->game;
 		}
-		std::clog << "Constructing game" << std::endl;
 		this->game = new LightsOutGame(5,5,level,autoplay);
-		std::clog << "Setting parent" << std::endl;
-		game->setParent(this);
+		this->game->setParent(this);
+		markDirty();
 		SDL_mutexV(paintMutex);
 		
 		//Start the game and wait for it to get over
@@ -246,10 +246,10 @@ void LightsOutGameManager::run() {
 		newGame = false;
 		this->game->start();
 		while (runThread && !newGame && !this->game->winningState()) {
-			SDL_mutexP(paintMutex);
-			markDirty();
-			SDL_mutexV(paintMutex);
-			yield(250);
+			//SDL_mutexP(paintMutex);
+			//markDirty();
+			//SDL_mutexV(paintMutex);
+			yield(50);
 		}
 		this->game->stop();
 		

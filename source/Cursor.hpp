@@ -52,6 +52,8 @@ protected:
 public:
 	Cursor();
 	
+	~Cursor();
+	
 	void eventOccured(const SDL_Event* const event);
 	
 	bool paint(SDL_Surface& surface,

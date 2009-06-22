@@ -168,21 +168,21 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 				default: break;
 			}
 			break;
-		
+		/*
 		case SDL_MOUSEBUTTONDOWN: {
-			/*Uint32 uid = Renderer::getMouseoverUID();
+			Uint32 uid = Renderer::getMouseoverUID();
 			for (unsigned int y=0; y<lights->getHeight(); y++) {
 				for (unsigned int x=0; x<lights->getWidth(); x++) {
 					if (lights->getTile(x,y)->object->getUID() == uid) {
 						select();
 					}
 				}
-			}*/
+			}
 			break;
 		}
 		
 		case SDL_MOUSEMOTION: {
-			/*Uint32 uid = Renderer::getMouseoverUID();
+			Uint32 uid = Renderer::getMouseoverUID();
 			//We very likely are in the same tile...
 			if (lights->getTile(this->x, this->y)->object->getUID() == uid)
 				break;
@@ -195,9 +195,9 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 						found = true;
 					}
 				}
-			}*/
+			}
 			break;
-		}
+		}*/
 		
 		case SDL_USEREVENT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGame gracefully stopping." << std::endl;
@@ -280,7 +280,6 @@ void LightsOutGame::moveAbsolute(unsigned int x, unsigned int y) {
 	SDL_mutexP(paintMutex);
 	this->x = x;
 	this->y = y;
-	
 	markDirty();
 	SDL_mutexV(paintMutex);
 }
@@ -291,14 +290,17 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 	
 	SDL_Surface* target = NULL;
 	
-	if (type == PAINT_NORMAL && (isDirty ||
-	    this->surfaceCache == NULL ||
-	    this->surfaceCache->w != width ||
-	    this->surfaceCache->h != height)) {
-		SDL_FreeSurface(this->surfaceCache);
-		this->surfaceCache = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,0,0,0,0);
+	if (type == PAINT_NORMAL) {
+		if (isDirty ||
+		    this->surfaceCache == NULL ||
+		    this->surfaceCache->w != width ||
+		    this->surfaceCache->h != height) {
+			SDL_FreeSurface(this->surfaceCache);
+			this->surfaceCache = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,0,0,0,0);
+			target = this->surfaceCache;
+			isDirty = true; //Don't markDirty() since this is a local phenomenon
+		}
 		target = this->surfaceCache;
-		isDirty = true; //Don't markDirty() since this is a local phenomenon
 	}
 	else if (type == PAINT_UID) {
 		target = SDL_CreateRGBSurface(SDL_SWSURFACE,width,height,32,0,0,0,0);
@@ -470,8 +472,8 @@ void LightsOutGame::run() {
 	gameStartTime = SDL_GetTicks();
 	while (runThread && !winningState()) {
 		SDL_mutexP(paintMutex);
-		markDirty();
 		bool automove = autoplay;
+		markDirty();
 		SDL_mutexV(paintMutex);
 		if (automove) {
 			unsigned int newX, newY;
@@ -479,7 +481,7 @@ void LightsOutGame::run() {
 			moveAbsolute(newX, newY);
 			select();
 		}
-		yield(250);
+		yield(1000);
 	};
 	
 	EventPublisher::getInstance().removeEventObserver(this);

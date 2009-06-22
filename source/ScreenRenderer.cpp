@@ -27,6 +27,19 @@
 #include "ScreenRenderer.hpp"
 
 
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+#define rmask 0xff000000
+#define gmask 0x00ff0000
+#define bmask 0x0000ff00
+#define amask 0x000000ff
+#else
+#define rmask 0x000000ff
+#define gmask 0x0000ff00
+#define bmask 0x00ff0000
+#define amask 0xff000000
+#endif
+
+
 ScreenRenderer::ScreenRenderer(SDL_Surface* screenSurface) {
 	this->screenSurface = screenSurface;
 	paintMutex = SDL_CreateMutex();
@@ -39,9 +52,8 @@ ScreenRenderer::ScreenRenderer(SDL_Surface* screenSurface) {
 void ScreenRenderer::addChild(Renderable* const child) {
 	SDL_mutexP(paintMutex);
 	children.push_back(child);
-	SDL_mutexV(paintMutex);
-	
 	markDirty();
+	SDL_mutexV(paintMutex);
 }
 
 
@@ -70,8 +82,8 @@ bool ScreenRenderer::paint(SDL_Surface& surface, unsigned int width, unsigned in
 		//std::clog << SDL_GetTicks() << " (" << this << "): ScreenRenderer painting due to dirt." << std::endl;
 		isDirty = true; //Don't markDirty() since this is a local phenomenon
 		SDL_FreeSurface(surfaceCache);
-		surfaceCache = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height,32,0,0,0,0);
-		//SDL_SetAlpha(surfaceCache, SDL_SRCALPHA, SDL_ALPHA_OPAQUE);
+		surfaceCache = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height,32,rmask,gmask,bmask,amask);
+		//SDL_SetAlpha(surfaceCache, SDL_SRCALPHA, 128);
 		
 		std::list<Renderable*>::const_reverse_iterator riter;
 		riter = children.rbegin();
@@ -79,7 +91,7 @@ bool ScreenRenderer::paint(SDL_Surface& surface, unsigned int width, unsigned in
 			//std::clog << SDL_GetTicks() << " (" << this << "): ScreenRenderer painting a child." << std::endl;
 			SDL_Surface layer;
 			(*riter)->paint(layer, width, height, type);
-			//SDL_SetAlpha(surfaceCache, SDL_SRCALPHA, SDL_ALPHA_OPAQUE);
+			SDL_SetAlpha(&layer, SDL_SRCALPHA, 128);
 			SDL_BlitSurface(&layer, NULL, surfaceCache, NULL);
 			riter++;
 		}
@@ -97,9 +109,8 @@ bool ScreenRenderer::paint(SDL_Surface& surface, unsigned int width, unsigned in
 void ScreenRenderer::removeChild(Renderable* const child) {
 	SDL_mutexP(paintMutex);
 	children.remove(child);
-	SDL_mutexV(paintMutex);
-	
 	markDirty();
+	SDL_mutexV(paintMutex);
 }
 
 
@@ -128,6 +139,7 @@ void ScreenRenderer::run() {
 			bool dirtyPaint = paint(buffer, screenSurface->w, screenSurface->h);
 			SDL_BlitSurface(&buffer, NULL, screenSurface, NULL);
 			SDL_Flip(screenSurface);
+			isDirty = false;
 		}
 	}
 	

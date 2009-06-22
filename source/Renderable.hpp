@@ -78,15 +78,19 @@ protected:
 	 * Marks this object and all parents as being dirty. This
 	 * should be called whenever a method changes the object's
 	 * visual state.
+	 *
+	 * Note that this method does *NOT* lock paintMutex. It it
+	 * did, a race condition would exist between the unlock call
+	 * just after a dirtying operation and the call to this
+	 * method.
 	 */
 	void markDirty() const {
-		SDL_mutexP(paintMutex);
-		if (!isDirty) {
+		//if (!isDirty) {
+			//std::clog << SDL_GetTicks() << " (" << this << "): I am being marked dirty!" << std::endl;
 			isDirty = true;
 			if (parentRenderable != NULL)
 				parentRenderable->markDirty();
-		}
-		SDL_mutexV(paintMutex);
+		//}
 	}
 	
 public:
