@@ -52,7 +52,7 @@ LightsOutGameManager::LightsOutGameManager() {
 	
 	if (font == NULL) {
 		//font = TTF_OpenFont("yukari.ttf", 24);
-		FILE* file = fopen("yukari.ttf", "r");
+		FILE* file = fopen("fonts/yukari.ttf", "r");
 		font = TTF_OpenFontRW(SDL_RWFromFP(file, 0), 1, 24);
 		//fclose(file);  //File must remain open for SDL_TTF to use the font
 		if (font == NULL) {

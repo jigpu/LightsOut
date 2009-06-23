@@ -36,7 +36,7 @@ Light::Light(unsigned int states) {
 	
 	if (glassTexture == NULL) {
 		//glassTexture = IMG_Load("glass.png");
-		FILE* file = fopen("glass.png", "r");
+		FILE* file = fopen("graphics/glass.png", "r");
 		glassTexture = IMG_Load_RW(SDL_RWFromFP(file, 0), 1);
 		fclose(file);
 		if (glassTexture == NULL) {

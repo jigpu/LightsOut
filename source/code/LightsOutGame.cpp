@@ -44,7 +44,7 @@ LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned i
 	
 	if (font == NULL) {
 		//font = TTF_OpenFont("yukari.ttf", 36);
-		FILE* file = fopen("yukari.ttf", "r");
+		FILE* file = fopen("fonts/yukari.ttf", "r");
 		font = TTF_OpenFontRW(SDL_RWFromFP(file, 0), 1, 36);
 		//fclose(file); //File must remain open for SDL_TTF to use the font
 		if (font == NULL) {
@@ -55,7 +55,7 @@ LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned i
 	
 	if (cursorTexture == NULL) {
 		//cursorTexture = IMG_Load("cursor.png");
-		FILE* file = fopen("cursor.png", "r");
+		FILE* file = fopen("graphics/cursor.png", "r");
 		cursorTexture = IMG_Load_RW(SDL_RWFromFP(file, 0), 1);
 		fclose(file);
 		if (cursorTexture == NULL) {
