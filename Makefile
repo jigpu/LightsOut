@@ -15,6 +15,12 @@ ifndef TARGET
 TARGET := native
 endif
 
+ifeq ($(TARGET), wii)
+ifeq ($(strip $(DEVKITPPC)),)
+$(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
+endif
+endif
+
 
 
 #--------------------------------------------------------------------
