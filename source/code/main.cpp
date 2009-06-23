@@ -32,7 +32,7 @@
 
 
 #ifndef PC
-#ifdef WII_DEBUG
+#ifdef DEBUG
 #include <debug.h>
 #endif
 #include <fat.h>
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 	
 	#ifndef PC
 	std::cerr << std::endl;
-	#ifdef WII_DEBUG
+	#ifdef DEBUG
 	DEBUG_Init(GDBSTUB_DEVICE_WIFI, 8000);
 	_break();
 	#endif
