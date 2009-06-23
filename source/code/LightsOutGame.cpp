@@ -124,32 +124,73 @@ LightsOutGame::~LightsOutGame() {
 }
 
 
+void LightsOutGame::cheat() {
+	unsigned int newX, newY;
+	getMoveHint(newX, newY);
+	moveAbsolute(newX, newY);
+	select();
+}
+
+
+void LightsOutGame::demoMode(const bool enable) {
+	SDL_mutexP(paintMutex);
+	autoplay = enable;
+	SDL_mutexV(paintMutex);
+}
+
+
 void LightsOutGame::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
 		case SDL_KEYDOWN:
 			switch(event->key.keysym.sym) {
-				case SDLK_TAB:
-				case SDLK_b:
-					unsigned int newX, newY;
-					getMoveHint(newX, newY);
-					moveAbsolute(newX, newY);
-					//break if you don't want auto-select.
-				case SDLK_RETURN:
-				case SDLK_a:
-					select();
-					break;
 				case SDLK_UP:     move( 0,-1); break;
 				case SDLK_DOWN:   move( 0, 1); break;
 				case SDLK_LEFT:   move(-1, 0); break;
 				case SDLK_RIGHT:  move( 1, 0); break;
-				case SDLK_1:
-					SDL_mutexP(paintMutex);
-					autoplay = !autoplay;
-					SDL_mutexV(paintMutex);
-					break;
+				case SDLK_RETURN: select(); break;
+				case SDLK_TAB:    cheat(); break;
+				case SDLK_1:      demoMode(!autoplay); break;
 				default: break;
 			}
 			break;
+		
+		#ifndef PC
+		case SDL_JOYHATMOTION:
+			//std::clog << SDL_GetTicks() << " (" << this << "): Joystick hat moved!" << std::endl;
+			
+			//The Wiimote hat directions are correct when holding
+			//it "NES" style, not "Pointer" style.
+			//
+			//This does not work correctly with the classic controller
+			//since now pressing UP on it causes a RIGHT move :(
+			switch(event->jhat.value) {
+				case SDL_HAT_RIGHT: move( 0, 1); break;
+				case SDL_HAT_LEFT:  move( 0,-1); break;
+				case SDL_HAT_UP:    move( 1, 0); break;
+				case SDL_HAT_DOWN:  move(-1, 0); break;
+			}
+			break;
+		
+		case SDL_JOYBUTTONDOWN:
+			//std::clog << SDL_GetTicks() << " (" << this << "): Joystick button down!" << std::endl;
+			switch(event->jbutton.button) {
+				case 0: //Wiimote A button
+				case 9: //Classic controller A button
+					select();
+					break;
+				case 1: //Wiimote B button
+				case 10: //Classic controller B button
+					cheat();
+					break;
+				case 2: //Wiimote 1 button
+				case 11: //Classic controller X button
+					demoMode(!autoplay);
+					break;
+				default:
+					break;
+			}
+			break;
+		#endif
 		
 		case SDL_USEREVENT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGame gracefully stopping." << std::endl;

@@ -84,9 +84,17 @@ public:
 	
 	~LightsOutGameManager();
 	
+	void demoMode(const bool enable);
+	
 	void eventOccured(const SDL_Event* const event);
 	
+	void levelChange(const int delta, const bool restart=true);
+	
+	void levelAbsolute(const unsigned int newLevel, const bool restart=true);
+	
 	bool paint(SDL_Surface& surface, unsigned int width, unsigned int height) const;
+	
+	void quit();
 	
 	/**
 	 * Runs the manager, which creates new games for the player
