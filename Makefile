@@ -91,10 +91,12 @@ ifeq ($(TARGET), wii)
 MACHDEP  := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
 endif
 
+CFLAGS := $(MACHDEP) -Wall
+
 ifeq ($(DEBUG), true)
-CFLAGS   := -DDEBUG -g -O0 $(MACHDEP)
+CFLAGS   := $(CFLAGS) -DDEBUG -g -O0
 else
-CFLAGS   := -g -O2 -Wall $(MACHDEP)
+CFLAGS   := $(CFLAGS) -O2
 endif
 
 ifeq ($(TARGET), wii)
@@ -117,6 +119,10 @@ LIBS     := -lSDL_ttf -lSDL_gfx -lSDL_image -ljpeg -lpng -lz -lSDL  \
             -lfreetype
 
 ifeq ($(TARGET), wii)
+ifeq ($(DEBUG), true)
+LIBS     := $(LIBS) -ldb
+endif
+
 INCLUDES := $(INCLUDES) -I$(DEVKITPRO)/libogc/include
 LIBDIRS  := $(LIBDIRS) -L$(DEVKITPRO)/libogc/lib/wii
 LIBS     := $(LIBS) -lfat -lwiiuse -lbte -lwiikeyboard -logc -lm
@@ -128,9 +134,9 @@ endif
 # PHONY targets that don't actually create a file with the target's
 # name
 #--------------------------------------------------------------------
-.PHONY: all clean distclean nuke package dist binaries resources
+.PHONY: all clean distclean nuke package dist binaries resources wii native
 
-all: package
+all: package $(TARGET)
 
 clean:
 	rm -rf $(TARGET_BUILD)
@@ -142,25 +148,45 @@ nuke:
 	rm -rf $(BUILD_DIR)
 	rm -rf $(DIST_DIR)
 
-package: binaries resources $(TARGET_DIST)
-	cp $(TARGET_BUILD)/$(PROGRAM) $(TARGET_DIST)
+package: binaries resources $(TARGET_DIST)/$(PROGRAM) $(TARGET_DIST)
 	cp $(COMMON_BUILD)/* $(TARGET_DIST) -R
-ifeq ($(TARGET), wii)
-	mv $(TARGET_DIST)/$(PROGRAM) $(TARGET_DIST)/boot.elf
-else
-	rm $(TARGET_DIST)/meta.xml
-endif
 
-binaries: $(TARGET_BUILD)/$(PROGRAM)
+binaries: $(TARGET_BUILD)/$(PROGRAM) $(TARGET_BUILD)
 
 resources: $(XCF_OUT) $(TTF_OUT) $(M4_OUT)
+
+wii: $(TARGET_DIST)/boot.elf $(TARGET_DIST)/meta.xml $(TARGET_DIST)/icon.png $(TARGET_DIST)
+
+native:
 
 
 
 #--------------------------------------------------------------------
 # other targets
 #--------------------------------------------------------------------
-$(TARGET_BUILD)/$(PROGRAM): $(CPP_OUT)
+$(TARGET_DIST)/boot.elf: $(TARGET_DIST)/$(PROGRAM) $(TARGET_DIST)
+	mv $(TARGET_DIST)/$(PROGRAM) $(TARGET_DIST)/boot.elf
+
+
+$(TARGET_DIST)/meta.xml: $(SOURCE_DIR)/$(TARGET)/meta.xml.m4 $(TARGET_DIST)
+	m4 -DPROGRAM=$(PROGRAM) -DVERSION=$(VERSION) -DRELEASE_DATE=`date -u +%Y%m%d%H%M%S` $< > $@
+
+
+$(TARGET_DIST)/icon.png: $(SOURCE_DIR)/$(TARGET)/icon.xcf $(TARGET_DIST)
+	gimp --no-interface -n \
+           --batch \
+              '(let \
+                  ( (img (car (gimp-xcf-load 1 "$<" "$<"))) ) \
+                  (file-png-save-defaults 1 img (car (gimp-image-merge-visible-layers img 1)) "$@" "$@") \
+               )' \
+           --batch '(gimp-quit TRUE)'
+
+
+$(TARGET_DIST)/$(PROGRAM): $(TARGET_BUILD)/$(PROGRAM) $(TARGET_DIST)
+	cp $(TARGET_BUILD)/$(PROGRAM) $(TARGET_DIST)
+
+
+$(TARGET_BUILD)/$(PROGRAM): $(CPP_OUT) $(TARGET_BUILD)
 	$(LD) $(CPP_OUT) $(LDFLAGS) $(LIBDIRS) $(LIBS) -o $@
 
 
@@ -173,7 +199,7 @@ $(XCF_OUT): $(XCF_OUT_PAT): $(XCF_SRC_PAT) $(COMMON_BUILD)/graphics
            --batch \
               '(let \
                   ( (img (car (gimp-xcf-load 1 "$<" "$<"))) ) \
-                  (file-png-save-defaults 1 img (car (gimp-image-merge-visible-layers img 0)) "$@" "$@") \
+                  (file-png-save-defaults 1 img (car (gimp-image-merge-visible-layers img 1)) "$@" "$@") \
                )' \
            --batch '(gimp-quit TRUE)'
 
