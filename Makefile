@@ -8,19 +8,13 @@
 #--------------------------------------------------------------------
 # define project information
 #--------------------------------------------------------------------
-PROGRAM := $(notdir $(CURDIR))
+PROGRAM      := $(notdir $(CURDIR))
+VERSION      := 9999
 
 ifndef TARGET
 TARGET := native
-else
-PREFIX := $(TARGET)-
 endif
-AS      := $(PREFIX)as
-CC      := $(PREFIX)gcc
-CXX     := $(PREFIX)g++
-AR      := $(PREFIX)ar
-OBJCOPY := $(PREFIX)objcopy
-LD      := $(CXX)
+
 
 
 #--------------------------------------------------------------------
@@ -60,8 +54,51 @@ TTF_OUT_PAT := $(COMMON_BUILD)/fonts/%.ttf
 TTF_SRC     := $(call to_SRC, $(TTF_SRC_PAT))
 TTF_OUT     := $(call to_OUT, $(TTF_SRC_PAT), $(TTF_OUT_PAT), $(TTF_SRC))
 
-#M4FILES  := $(foreach dir,$(RESOURCE_DIR),$(wildcard $(dir)/*.m4))
-#M4OUTS   := $(subst $(RESOURCE_DIR), $(BUILD_DIR), $(basename$(M4FILES)))
+M4_SRC_PAT  := $(RESOURCE_DIR)/%.m4
+M4_OUT_PAT  := $(COMMON_BUILD)/%
+M4_SRC      := $(call to_SRC, $(M4_SRC_PAT))
+M4_OUT      := $(call to_OUT, $(M4_SRC_PAT), $(M4_OUT_PAT), $(M4_SRC))
+
+
+
+#--------------------------------------------------------------------
+# code generation options
+#--------------------------------------------------------------------
+PREFIX := $(TARGET)-
+
+ifeq ($(TARGET), native)
+PREFIX :=
+endif
+
+ifeq ($(TARGET), wii)
+PREFIX := powerpc-gekko-
+endif
+
+AS      := $(PREFIX)as
+CC      := $(PREFIX)gcc
+CXX     := $(PREFIX)g++
+AR      := $(PREFIX)ar
+OBJCOPY := $(PREFIX)objcopy
+LD      := $(CXX)
+
+ifeq ($(TARGET), wii)
+MACHDEP  := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
+endif
+
+ifeq ($(DEBUG), true)
+CFLAGS   := -DDEBUG -g -O0 $(MACHDEP)
+else
+CFLAGS   := -g -O2 -Wall $(MACHDEP)
+endif
+
+ifeq ($(TARGET), wii)
+CFLAGS   := $(CFLAGS)
+else
+CFLAGS   := $(CFLAGS) -DPC
+endif
+
+CXXFLAGS := $(CFLAGS)
+LDFLAGS  := -g $(MACHDEP) -Wl
 
 
 
@@ -73,7 +110,7 @@ LIBDIRS  :=
 LIBS     := -lSDL_ttf -lSDL_gfx -lSDL_image -ljpeg -lpng -lz -lSDL  \
             -lfreetype
 
-ifeq ($(TARGET), powerpc-gekko)
+ifeq ($(TARGET), wii)
 INCLUDES := $(INCLUDES) -I$(DEVKITPRO)/libogc/include
 LIBDIRS  := $(LIBDIRS) -L$(DEVKITPRO)/libogc/lib/wii
 LIBS     := $(LIBS) -lfat -lwiiuse -lbte -lwiikeyboard -logc -lm
@@ -82,44 +119,35 @@ endif
 
 
 #--------------------------------------------------------------------
-# code generation options
-#--------------------------------------------------------------------
-ifeq ($(TARGET), powerpc-gekko)
-MACHDEP  := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
-endif
-
-ifeq ($(DEBUG), true)
-CFLAGS   := -DDEBUG -g -O0 $(MACHDEP)
-else
-CFLAGS   := -g -O2 -Wall $(MACHDEP)
-endif
-
-ifeq ($(TARGET), powerpc-gekko)
-CFLAGS   := $(CFLAGS) -DHAVE_STDIO_H
-else
-CFLAGS   := $(CFLAGS) -DPC
-endif
-
-CXXFLAGS := $(CFLAGS)
-LDFLAGS  := -g $(MACHDEP) -Wl
-
-
-
-#--------------------------------------------------------------------
 # PHONY targets that don't actually create a file with the target's
 # name
 #--------------------------------------------------------------------
-.PHONY: all package dist binaries resources
+.PHONY: all clean distclean nuke package dist binaries resources
 
 all: package
+
+clean:
+	rm -rf $(TARGET_BUILD)
+
+distclean:
+	rm -rf $(TARGET_DIST)
+
+nuke:
+	rm -rf $(BUILD_DIR)
+	rm -rf $(DIST_DIR)
 
 package: binaries resources $(TARGET_DIST)
 	cp $(TARGET_BUILD)/$(PROGRAM) $(TARGET_DIST)
 	cp $(COMMON_BUILD)/* $(TARGET_DIST) -R
+ifeq ($(TARGET), wii)
+	mv $(TARGET_DIST)/$(PROGRAM) $(TARGET_DIST)/boot.elf
+else
+	rm $(TARGET_DIST)/meta.xml
+endif
 
 binaries: $(TARGET_BUILD)/$(PROGRAM)
 
-resources: $(XCF_OUT) $(TTF_OUT)
+resources: $(XCF_OUT) $(TTF_OUT) $(M4_OUT)
 
 
 
@@ -146,6 +174,10 @@ $(XCF_OUT): $(XCF_OUT_PAT): $(XCF_SRC_PAT) $(COMMON_BUILD)/graphics
 
 $(TTF_OUT): $(TTF_OUT_PAT): $(TTF_SRC_PAT) $(COMMON_BUILD)/fonts
 	cp $< $@
+
+
+$(M4_OUT): $(M4_OUT_PAT): $(M4_SRC_PAT) $(COMMON_BUILD)
+	m4 -DPROGRAM=$(PROGRAM) -DVERSION=$(VERSION) -DRELEASE_DATE=`date -u +%Y%m%d%H%M%S` $< > $@
 
 
 $(BUILD_DIR) $(TARGET_BUILD) $(COMMON_BUILD) $(COMMON_BUILD)/graphics $(COMMON_BUILD)/fonts $(DIST_DIR) $(TARGET_DIST) $(TARGET_DIST)/graphics $(TARGET_DIST)/fonts:
