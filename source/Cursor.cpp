@@ -115,7 +115,7 @@ bool Cursor::paint(SDL_Surface& surface, unsigned int width, unsigned int height
 	SDL_mutexP(paintMutex);
 	
 	//std::clog << SDL_GetTicks() << " (" << this << "): Cursor being painted." << std::endl;
-	SDL_Surface* target = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, rmask, gmask, bmask, amask);
+	SDL_Surface* target = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 32, rmask, gmask, bmask, amask);
 	
 	SDL_Rect dest;
 	dest.x = this->x - 48;

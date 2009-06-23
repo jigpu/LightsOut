@@ -81,9 +81,10 @@ bool ScreenRenderer::paint(SDL_Surface& surface, unsigned int width, unsigned in
 	    surfaceCache->h != height) {
 		//std::clog << SDL_GetTicks() << " (" << this << "): ScreenRenderer painting due to dirt." << std::endl;
 		isDirty = true; //Don't markDirty() since this is a local phenomenon
-		SDL_FreeSurface(surfaceCache);
-		surfaceCache = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height,32,0,0,0,0);
-		//SDL_SetAlpha(surfaceCache, SDL_SRCALPHA, 128);
+		SDL_FreeSurface(this->surfaceCache);
+		SDL_Surface* temp = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,16,0,0,0,0);
+		this->surfaceCache = SDL_DisplayFormat(temp);
+		SDL_FreeSurface(temp);
 		
 		std::list<Renderable*>::const_reverse_iterator riter;
 		riter = children.rbegin();
@@ -91,7 +92,7 @@ bool ScreenRenderer::paint(SDL_Surface& surface, unsigned int width, unsigned in
 			//std::clog << SDL_GetTicks() << " (" << this << "): ScreenRenderer painting a child." << std::endl;
 			SDL_Surface layer;
 			(*riter)->paint(layer, width, height, type);
-			SDL_SetAlpha(&layer, SDL_SRCALPHA, 128);
+			SDL_SetAlpha(&layer, SDL_SRCALPHA, SDL_ALPHA_OPAQUE);
 			SDL_BlitSurface(&layer, NULL, surfaceCache, NULL);
 			riter++;
 		}

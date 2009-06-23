@@ -85,12 +85,10 @@ protected:
 	 * method.
 	 */
 	void markDirty() const {
-		//if (!isDirty) {
-			//std::clog << SDL_GetTicks() << " (" << this << "): I am being marked dirty!" << std::endl;
-			isDirty = true;
-			if (parentRenderable != NULL)
-				parentRenderable->markDirty();
-		//}
+		//std::clog << SDL_GetTicks() << " (" << this << "): I am being marked dirty!" << std::endl;
+		isDirty = true;
+		if (parentRenderable != NULL)
+			parentRenderable->markDirty();
 	}
 	
 public:

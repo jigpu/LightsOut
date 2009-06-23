@@ -94,7 +94,9 @@ bool Light::paint(SDL_Surface& surface, unsigned int width, unsigned int height,
 		    this->surfaceCache->w != width ||
 		    this->surfaceCache->h != height) {
 			SDL_FreeSurface(this->surfaceCache);
-			this->surfaceCache = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,0,0,0,0);
+			SDL_Surface* temp = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,16,0,0,0,0);
+			this->surfaceCache = SDL_DisplayFormat(temp);
+			SDL_FreeSurface(temp);
 			isDirty = true; //Don't markDirty() since this is a local phenomenon
 		}
 		target = this->surfaceCache;
