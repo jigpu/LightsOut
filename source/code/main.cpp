@@ -85,11 +85,6 @@ int main(int argc, char** argv) {
 		sleep(5);
 		throw 1;
 	}
-	if (chdir("/apps/lightsout")) {
-		std::cerr << "Unable to change to application directory!" << std::endl;
-		sleep(5);
-		exit(-1);
-	}
 	
 	Wiimote* wiimote = new Wiimote();
 	wiimote->start();
