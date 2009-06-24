@@ -158,8 +158,8 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 		case SDL_JOYHATMOTION:
 			//std::clog << SDL_GetTicks() << " (" << this << "): Joystick hat moved!" << std::endl;
 			switch(event->jhat.value) {
-				case SDL_HAT_UP:    move( 0, 1); break;
-				case SDL_HAT_DOWN:  move( 0,-1); break;
+				case SDL_HAT_DOWN:  move( 0, 1); break;
+				case SDL_HAT_UP:    move( 0,-1); break;
 				case SDL_HAT_RIGHT: move( 1, 0); break;
 				case SDL_HAT_LEFT:  move(-1, 0); break;
 			}
