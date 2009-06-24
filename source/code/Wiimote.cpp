@@ -22,7 +22,7 @@
  */
 
 
-#ifndef PC
+#ifdef WII
 
 
 #include <iostream>

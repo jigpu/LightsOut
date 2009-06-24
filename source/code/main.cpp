@@ -31,7 +31,7 @@
 #include "Renderer.hpp"
 
 
-#ifndef PC
+#ifdef WII
 #ifdef DEBUG
 #include <debug.h>
 #endif
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	#endif
 	initSDL(hardware);
 	
-	#ifndef PC
+	#ifdef WII
 	std::cerr << std::endl;
 	#ifdef DEBUG
 	DEBUG_Init(GDBSTUB_DEVICE_WIFI, 8000);
