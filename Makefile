@@ -88,21 +88,13 @@ OBJCOPY := $(PREFIX)objcopy
 LD      := $(CXX)
 
 ifeq ($(TARGET), wii)
-MACHDEP  := -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
+MACHDEP  := -DGEKKO -DWII -mrvl -mcpu=750 -meabi -mhard-float
 endif
 
-CFLAGS := $(MACHDEP) -Wall
+CFLAGS := $(MACHDEP) -Wall -O2
 
-ifeq ($(DEBUG), true)
+ifdef DEBUG
 CFLAGS   := $(CFLAGS) -DDEBUG -g -O0
-else
-CFLAGS   := $(CFLAGS) -O2
-endif
-
-ifeq ($(TARGET), wii)
-CFLAGS   := $(CFLAGS)
-else
-CFLAGS   := $(CFLAGS) -DPC
 endif
 
 CXXFLAGS := $(CFLAGS)
@@ -119,7 +111,7 @@ LIBS     := -lSDL_ttf -lSDL_gfx -lSDL_image -ljpeg -lpng -lz -lSDL  \
             -lfreetype
 
 ifeq ($(TARGET), wii)
-ifeq ($(DEBUG), true)
+ifdef DEBUG
 LIBS     := $(LIBS) -ldb
 endif
 

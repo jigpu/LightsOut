@@ -31,7 +31,7 @@
 #include "Renderer.hpp"
 
 
-#ifndef PC
+#ifdef WII
 #ifdef DEBUG
 #include <debug.h>
 #endif
@@ -70,7 +70,7 @@ void initSDL(Uint32 flags = SDL_DOUBLEBUF | SDL_HWSURFACE) {
 int main(int argc, char** argv) {
 	initSDL();
 	
-	#ifndef PC
+	#ifdef WII
 	std::cerr << std::endl;
 	#ifdef DEBUG
 	DEBUG_Init(GDBSTUB_DEVICE_WIFI, 8000);
