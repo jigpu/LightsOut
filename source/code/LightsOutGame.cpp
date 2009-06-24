@@ -157,32 +157,26 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 		#ifndef PC
 		case SDL_JOYHATMOTION:
 			//std::clog << SDL_GetTicks() << " (" << this << "): Joystick hat moved!" << std::endl;
-			
-			//The Wiimote hat directions are correct when holding
-			//it "NES" style, not "Pointer" style.
-			//
-			//This does not work correctly with the classic controller
-			//since now pressing UP on it causes a RIGHT move :(
 			switch(event->jhat.value) {
-				case SDL_HAT_RIGHT: move( 0, 1); break;
-				case SDL_HAT_LEFT:  move( 0,-1); break;
-				case SDL_HAT_UP:    move( 1, 0); break;
-				case SDL_HAT_DOWN:  move(-1, 0); break;
+				case SDL_HAT_UP:    move( 0, 1); break;
+				case SDL_HAT_DOWN:  move( 0,-1); break;
+				case SDL_HAT_RIGHT: move( 1, 0); break;
+				case SDL_HAT_LEFT:  move(-1, 0); break;
 			}
 			break;
 		
 		case SDL_JOYBUTTONDOWN:
 			//std::clog << SDL_GetTicks() << " (" << this << "): Joystick button down!" << std::endl;
 			switch(event->jbutton.button) {
-				case 0: //Wiimote A button
+				case 3: //Wiimote 2 button
 				case 9: //Classic controller A button
 					select();
 					break;
-				case 1: //Wiimote B button
+				case 2: //Wiimote 1 button
 				case 10: //Classic controller B button
 					cheat();
 					break;
-				case 2: //Wiimote 1 button
+				case 1: //Wiimote B button
 				case 11: //Classic controller X button
 					demoMode(!autoplay);
 					break;

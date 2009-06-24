@@ -108,7 +108,7 @@ void LightsOutGameManager::eventOccured(const SDL_Event* const event) {
 				case 17: //Classic controller - button
 					levelChange(-1);
 					break;
-				case 2: //Wiimote 1 button
+				case 1: //Wiimote B button
 				case 11: //Classic controller X button
 					demoMode(!autoplay);
 					break;
