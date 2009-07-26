@@ -230,7 +230,7 @@ void LightsOutGameManager::run() {
 	managerStartTime = SDL_GetTicks();
 	
 	while (runThread) {
-		std::clog << "Starting new game." << std::endl;
+		//std::clog << "Starting new game." << std::endl;
 		SDL_mutexP(paintMutex);
 		if (this->game != NULL) {
 			this->game->kill();
@@ -238,7 +238,7 @@ void LightsOutGameManager::run() {
 		}
 		this->game = new LightsOutGame(5,5,level,autoplay);
 		this->game->setParent(this);
-		markDirty();
+		
 		SDL_mutexV(paintMutex);
 		
 		//Start the game and wait for it to get over
@@ -246,6 +246,7 @@ void LightsOutGameManager::run() {
 		//want to make myself dirty every once in a while :)
 		newGame = false;
 		this->game->start();
+		markDirty();
 		while (runThread && !newGame && !this->game->winningState()) {
 			//SDL_mutexP(paintMutex);
 			//markDirty();
