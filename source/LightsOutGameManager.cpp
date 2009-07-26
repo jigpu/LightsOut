@@ -95,7 +95,7 @@ void LightsOutGameManager::eventOccured(const SDL_Event* const event) {
 				case SDLK_ESCAPE:
 				case SDLK_HOME:
 					SDL_Event die;
-					die.user.type = SDL_USEREVENT;
+					die.user.type = SDL_QUIT;
 					SDL_PushEvent(&die);
 					break;
 				case SDLK_PAGEUP:
@@ -118,12 +118,12 @@ void LightsOutGameManager::eventOccured(const SDL_Event* const event) {
 			}
 			break;
 		
-		case SDL_USEREVENT:
+		case SDL_QUIT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGameManager gracefully stopping." << std::endl;
 			stop();
 			break;
 		
-		case SDL_QUIT:
+		case SDL_USEREVENT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGameManager quitting NOW." << std::endl;
 			kill();
 			break;

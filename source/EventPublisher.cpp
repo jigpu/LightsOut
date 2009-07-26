@@ -80,15 +80,19 @@ void EventPublisher::run() {
 		while(SDL_PollEvent(&event)) {
 			notifyEventObservers(&event);
 			
-			if (event.type == SDL_USEREVENT) {
+			if (event.type == SDL_USEREVENT || event.type == SDL_QUIT) {
 				//std::clog << SDL_GetTicks() << " (" << this << "): EventPublisher gracefully stopping." << std::endl;
-				//std::clog << SDL_GetTicks() << " (" << this << "): Waiting for all observers to unregister..." << std::endl;
-				while (observers.size() > 0)
+				//std::clog << SDL_GetTicks() << " (" << this << "): EventPublisher waiting for all observers to unregister..." << std::endl;
+				for (int i=0; i<50 && observers.size() > 0; i++)
 					yield(100);
-				return;
-			}
-			else if (event.type == SDL_QUIT) {
-				//std::clog << SDL_GetTicks() << " (" << this << "): EventPublisher quitting NOW." << std::endl;
+				
+				if (observers.size() > 0) {
+					std::cerr << SDL_GetTicks() << " (" << this << "): EventPublisher timed out waiting for observers to unregister. Sending KILL event and exiting." << std::endl;
+					
+					SDL_Event kill;
+					kill.user.type = SDL_USEREVENT;
+					notifyEventObservers(&kill);
+				}
 				return;
 			}
 		}

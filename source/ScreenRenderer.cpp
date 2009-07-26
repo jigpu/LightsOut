@@ -59,12 +59,12 @@ void ScreenRenderer::addChild(Renderable* const child) {
 
 void ScreenRenderer::eventOccured(const SDL_Event* const event) {
 	switch (event->type) {
-		case SDL_USEREVENT:
+		case SDL_QUIT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): ScreenRenderer gracefully stopping." << std::endl;
 			stop();
 			break;
 		
-		case SDL_QUIT:
+		case SDL_USEREVENT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): ScreenRenderer quitting NOW." << std::endl;
 			kill();
 			break;

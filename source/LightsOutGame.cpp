@@ -199,12 +199,12 @@ void LightsOutGame::eventOccured(const SDL_Event* const event) {
 			break;
 		}*/
 		
-		case SDL_USEREVENT:
+		case SDL_QUIT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGame gracefully stopping." << std::endl;
 			stop();
 			break;
 		
-		case SDL_QUIT:
+		case SDL_USEREVENT:
 			//std::clog << SDL_GetTicks() << " (" << this << "): LightsOutGame quitting NOW." << std::endl;
 			kill();
 			break;
