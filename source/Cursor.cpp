@@ -59,6 +59,7 @@ Cursor::Cursor() {
 	paintMutex = SDL_CreateMutex();
 	isDirty = true;
 	parentRenderable = NULL;
+	this->surfaceCache = NULL;
 	this->x = 0;
 	this->y = 0;
 	
@@ -115,14 +116,29 @@ bool Cursor::paint(SDL_Surface& surface, unsigned int width, unsigned int height
 	SDL_mutexP(paintMutex);
 	
 	//std::clog << SDL_GetTicks() << " (" << this << "): Cursor being painted." << std::endl;
-	SDL_Surface* target = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 32, rmask, gmask, bmask, amask);
 	
-	SDL_Rect dest;
-	dest.x = this->x - 48;
-	dest.y = this->y - 48;
+	SDL_Surface* target = NULL;
 	
-	SDL_BlitSurface(pointerTexture, NULL, target, &dest);
+	if (isDirty ||
+		    this->surfaceCache == NULL ||
+		    this->surfaceCache->w != width ||
+		    this->surfaceCache->h != height) {
+			SDL_FreeSurface(this->surfaceCache);
+			this->surfaceCache = SDL_CreateRGBSurface(SDL_HWSURFACE,width,height,32,rmask,gmask,bmask,amask);
+			//this->surfaceCache = SDL_DisplayFormat(temp);
+			//SDL_FreeSurface(temp);
+			isDirty = true; //Don't markDirty() since this is a local phenomenon
+		}
+	target = this->surfaceCache;
 	
+	if (isDirty) {
+		SDL_Rect dest;
+		dest.x = this->x - 48;
+		dest.y = this->y - 48;
+		
+		SDL_BlitSurface(pointerTexture, NULL, target, &dest);
+	}
+		
 	surface = *target;
 	bool wasDirty = isDirty;
 	isDirty = false;

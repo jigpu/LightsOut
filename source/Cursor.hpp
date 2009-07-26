@@ -26,7 +26,7 @@
 #define __Cursor_hpp__
 
 
-#include "Renderable.hpp"
+#include "CachedRenderable.hpp"
 #include "EventObserver.hpp"
 
 
@@ -35,7 +35,7 @@
  * creating a mouse cursor at the correct spot on screen; but
  * also for notifying other classes of movements, clicks, etc.
  */
-class Cursor : public Renderable, public EventObserver {
+class Cursor : public CachedRenderable, public EventObserver {
 
 protected:
 	/**
