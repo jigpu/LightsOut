@@ -33,7 +33,7 @@
 #include "Thread.hpp"
 
 
-#define MIN_FRAMETIME_MSECS 25
+#define MIN_FRAMETIME_MSECS 10
 
 
 /**

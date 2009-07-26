@@ -97,7 +97,7 @@ void EventPublisher::run() {
 			}
 		}
 		
-		yield(25);
+		yield(5);
 	}
 }
 
