@@ -86,7 +86,7 @@ LightsOutGame::LightsOutGame(unsigned int width, unsigned int height, unsigned i
 	minMoves = 0;
 	for (unsigned int x=0; x<width; x++) {
 		for (unsigned int y=0; y<height; y++) {
-			int presses = rand()%states;
+			unsigned int presses = rand()%states;
 			minMoves+=(states-presses)%states;
 			for (unsigned int i=0; i<presses; i++) {
 				pressButton(x,y);
@@ -249,8 +249,8 @@ void LightsOutGame::move(int deltaX, int deltaY) {
 	
 	if (newX < 0) newX = 0;
 	if (newY < 0) newY = 0;	
-	if (newX >= lights->getWidth()) newX = lights->getWidth()-1;
-	if (newY >= lights->getHeight()) newY = lights->getHeight()-1;
+	if ((unsigned int)newX >= lights->getWidth()) newX = lights->getWidth()-1;
+	if ((unsigned int)newY >= lights->getHeight()) newY = lights->getHeight()-1;
 	
 	moveAbsolute(newX, newY);
 }
@@ -398,7 +398,7 @@ bool LightsOutGame::paint(SDL_Surface& surface, unsigned int width, unsigned int
 		dest.y += 48;
 		for (unsigned int i=0; i<states; i++) {
 			Light* l = new Light(states);
-			for (int j=0; j<i; j++)
+			for (unsigned int j=0; j<i; j++)
 				l->nextState();
 			
 			SDL_Surface subsurface;
