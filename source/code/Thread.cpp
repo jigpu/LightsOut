@@ -23,7 +23,7 @@
 
 
 #include <iostream>
-#import "Thread.hpp"
+#include "Thread.hpp"
 
 
 int executor(void* val) {
