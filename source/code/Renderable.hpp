@@ -72,6 +72,7 @@ public:
 	 */
 	virtual bool paint(SDL_Surface& surface, unsigned int width, unsigned int height) const = 0;
 	
+	virtual ~Renderable() { };
 };
 
 
