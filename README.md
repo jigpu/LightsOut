@@ -46,8 +46,9 @@ Changelog
 
 Credits
 ============
-Game: Jason Gerecke
-Graphics: Jason Gerecke
-Font: "Yukarimobile" by Vic Fieger
+*Game:* Jason Gerecke  
+*Graphics:* Jason Gerecke  
+*Font:* "Yukarimobile" by Vic Fieger
+
 Thanks to all the people behind devkitPro, libogc, and SDL-Wii
 
