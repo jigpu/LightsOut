@@ -29,7 +29,7 @@
 int executor(void* val) {
 	Thread* obj = (Thread*)val;
 	obj->run();
-	return NULL;
+	return 0;
 }
 
 
