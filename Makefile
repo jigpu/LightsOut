@@ -98,7 +98,7 @@ CFLAGS   := $(CFLAGS) -DDEBUG -g -O0
 endif
 
 CXXFLAGS := $(CFLAGS)
-LDFLAGS  := -g $(MACHDEP) -Wl
+LDFLAGS  := -g $(MACHDEP)
 
 
 
